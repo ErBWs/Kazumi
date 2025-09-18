@@ -121,37 +121,44 @@ class _SearchPageState extends State<SearchPage> {
         children: [
           Padding(
             padding: const EdgeInsets.fromLTRB(8, 0, 8, 16),
-            child: SearchAnchor.bar(
-              searchController: searchController,
-              barElevation: WidgetStateProperty.all(0),
-              viewElevation: 0,
-              viewLeading: IconButton(
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-                icon: Icon(Icons.arrow_back),
-              ),
-              isFullScreen: MediaQuery.sizeOf(context).width <
-                  LayoutBreakpoint.compact['width']!,
-              suggestionsBuilder: (context, controller) => [
+            child: FocusScope(
+              descendantsAreFocusable: false,
+              child: SearchAnchor.bar(
+                searchController: searchController,
+                barElevation: WidgetStateProperty<double>.fromMap(
+                  <WidgetStatesConstraint, double>{WidgetState.any: 0},
+                ),
+                viewElevation: 0,
+                viewLeading: IconButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  icon: Icon(Icons.arrow_back),
+                ),
+                isFullScreen: MediaQuery.sizeOf(context).width <
+                    LayoutBreakpoint.compact['width']!,
+                suggestionsBuilder: (context, controller) => [
                   Observer(
                     builder: (context) {
                       if (controller.text.isNotEmpty) {
-                returnContainer(
-                  height: 400,
-                  alignment: Alignment.center,
-                  child: Text("无可用搜索建议，回车以直接检索"),);
+                        return Container(
+                          height: 400,
+                          alignment: Alignment.center,
+                          child: Text("无可用搜索建议，回车以直接检索"),
+                        );
                       } else {
                         return Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            for (var history
-                                in searchPageController.searchHistories.take(10))
+                            for (var history in searchPageController
+                                .searchHistories
+                                .take(10))
                               ListTile(
                                 title: Text(history.keyword),
                                 onTap: () {
                                   controller.text = history.keyword;
-                                  searchPageController.searchBangumi(controller.text,
+                                  searchPageController.searchBangumi(
+                                      controller.text,
                                       type: 'init');
                                   if (searchController.isOpen) {
                                     searchController.closeView(history.keyword);
@@ -160,7 +167,8 @@ class _SearchPageState extends State<SearchPage> {
                                 trailing: IconButton(
                                   icon: const Icon(Icons.close),
                                   onPressed: () {
-                                    searchPageController.deleteSearchHistory(history);
+                                    searchPageController
+                                        .deleteSearchHistory(history);
                                   },
                                 ),
                               ),
@@ -168,14 +176,15 @@ class _SearchPageState extends State<SearchPage> {
                         );
                       }
                     },
-                ),
-              ],
-              onSubmitted: (value) {
-                searchPageController.searchBangumi(value, type: 'init');
-                if (searchController.isOpen) {
-                  searchController.closeView(value);
-                }
-              },
+                  ),
+                ],
+                onSubmitted: (value) {
+                  searchPageController.searchBangumi(value, type: 'init');
+                  if (searchController.isOpen) {
+                    searchController.closeView(value);
+                  }
+                },
+              ),
             ),
           ),
           Expanded(
