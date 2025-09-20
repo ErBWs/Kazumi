@@ -213,23 +213,25 @@ class _SearchPageState extends State<SearchPage> {
                   searchPageController.bangumiList.isEmpty) {
                 return Center(child: CircularProgressIndicator());
               }
+              int crossCount = 3;
+              if (MediaQuery.sizeOf(context).width >
+                  LayoutBreakpoint.compact['width']!) {
+                crossCount = 5;
+              }
+              if (MediaQuery.sizeOf(context).width >
+                  LayoutBreakpoint.medium['width']!) {
+                crossCount = 6;
+              }
               return GridView.builder(
                 controller: scrollController,
                 padding: const EdgeInsets.fromLTRB(8, 0, 8, 0),
                 gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                   mainAxisSpacing: StyleString.cardSpace - 2,
                   crossAxisSpacing: StyleString.cardSpace,
-                  crossAxisCount:
-                      MediaQuery.of(context).orientation != Orientation.portrait
-                          ? 6
-                          : 3,
-                  mainAxisExtent: MediaQuery.of(context).size.width /
-                          (MediaQuery.of(context).orientation !=
-                                  Orientation.portrait
-                              ? 6
-                              : 3) /
-                          0.65 +
-                      MediaQuery.textScalerOf(context).scale(32.0),
+                  crossAxisCount: crossCount,
+                  mainAxisExtent:
+                      MediaQuery.of(context).size.width / crossCount / 0.65 +
+                          MediaQuery.textScalerOf(context).scale(32.0),
                 ),
                 itemCount: searchPageController.bangumiList.isNotEmpty
                     ? searchPageController.bangumiList.length
