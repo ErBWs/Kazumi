@@ -68,7 +68,9 @@ dependencies:
   provider: ^6.1.2
   flutter_displaymode: ^0.6.0
 
-  window_manager: ^0.4.2
+  url_launcher: ^6.3.0
+  device_info_plus: ^11.3.0
+  window_manager: ^0.5.1
   xpath_selector: ^3.0.2
   xpath_selector_html_parser: ^3.0.1
   canvas_danmaku: ^0.2.7
@@ -142,12 +144,12 @@ dev_dependencies:
   # activated in the `analysis_options.yaml` file located at the root of your
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
-  flutter_lints: ^3.0.0
+  flutter_lints: ^5.0.0
   build_runner: ^2.4.6
   mobx_codegen: ^2.3.0
   hive_generator: ^2.0.0
   flutter_launcher_icons: ^0.14.3
-  flutter_native_splash: ^2.4.1
+  flutter_native_splash: ^2.4.3
   msix: ^3.16.8
 
 # For information on the generic Dart part of this file, see the
