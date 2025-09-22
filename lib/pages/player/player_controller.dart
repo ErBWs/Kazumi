@@ -89,7 +89,7 @@ abstract class _PlayerController with Store {
   int bangumiID = 0;
 
   // 播放器实体
-  late VideoPlayerController mediaPlayer;
+  late VideoPlayerController? mediaPlayer;
 
   // 播放器面板状态
   @observable
@@ -118,16 +118,16 @@ abstract class _PlayerController with Store {
   int forwardTime = 80;
 
   // 播放器实时状态
-  bool get playerPlaying => mediaPlayer.value.isPlaying;
-  bool get playerBuffering => mediaPlayer.value.isBuffering;
+  bool get playerPlaying => mediaPlayer!.value.isPlaying;
+  bool get playerBuffering => mediaPlayer!.value.isBuffering;
   bool get playerCompleted =>
-      mediaPlayer.value.position >= mediaPlayer.value.duration;
-  double get playerVolume => mediaPlayer.value.volume;
-  Duration get playerPosition => mediaPlayer.value.position;
-  Duration get playerBuffer => mediaPlayer.value.buffered.isEmpty
+      mediaPlayer.value.position >= mediaPlayer!.value.duration;
+  double get playerVolume => mediaPlayer!.value.volume;
+  Duration get playerPosition => mediaPlayer!.value.position;
+  Duration get playerBuffer => mediaPlayer!.value.buffered.isEmpty
       ? Duration.zero
       : mediaPlayer.value.buffered[0].end;
-  Duration get playerDuration => mediaPlayer.value.duration;
+  Duration get playerDuration => mediaPlayer!.value.duration;
 
   // 播放器调试信息
   @observable
@@ -184,7 +184,7 @@ abstract class _PlayerController with Store {
     }
     getDanDanmakuByBgmBangumiID(
         videoPageController.bangumiItem.id, episodeFromTitle);
-    mediaPlayer = await createVideoController();
+    mediaPlayer ??= await createVideoController();
     bool autoPlay = setting.get(SettingBoxKey.autoPlay, defaultValue: true);
     playerSpeed =
         setting.get(SettingBoxKey.defaultPlaySpeed, defaultValue: 1.0);
@@ -214,42 +214,42 @@ abstract class _PlayerController with Store {
 
   Future<void> setupPlayerDebugInfoSubscription() async {
     await playerLogSubscription?.cancel();
-    playerLogSubscription = mediaPlayer.stream.log.listen((event) {
+    playerLogSubscription = mediaPlayer!.stream.log.listen((event) {
       playerLog.add(event.toString());
       if (playerDebugMode) {
         KazumiLogger().simpleLog(event.toString());
       }
     });
     await playerWidthSubscription?.cancel();
-    playerWidthSubscription = mediaPlayer.stream.width.listen((event) {
+    playerWidthSubscription = mediaPlayer!.stream.width.listen((event) {
       playerWidth = event ?? 0;
     });
     await playerHeightSubscription?.cancel();
-    playerHeightSubscription = mediaPlayer.stream.height.listen((event) {
+    playerHeightSubscription = mediaPlayer!.stream.height.listen((event) {
       playerHeight = event ?? 0;
     });
     await playerVideoParamsSubscription?.cancel();
     playerVideoParamsSubscription =
-        mediaPlayer.stream.videoParams.listen((event) {
+        mediaPlayer!.stream.videoParams.listen((event) {
       playerVideoParams = event.toString();
     });
     await playerAudioParamsSubscription?.cancel();
     playerAudioParamsSubscription =
-        mediaPlayer.stream.audioParams.listen((event) {
+        mediaPlayer!.stream.audioParams.listen((event) {
       playerAudioParams = event.toString();
     });
     await playerPlaylistSubscription?.cancel();
-    playerPlaylistSubscription = mediaPlayer.stream.playlist.listen((event) {
+    playerPlaylistSubscription = mediaPlayer!.stream.playlist.listen((event) {
       playerPlaylist = event.toString();
     });
     await playerTracksSubscription?.cancel();
-    playerTracksSubscription = mediaPlayer.stream.track.listen((event) {
+    playerTracksSubscription = mediaPlayer!.stream.track.listen((event) {
       playerAudioTracks = event.audio.toString();
       playerVideoTracks = event.video.toString();
     });
     await playerAudioBitrateSubscription?.cancel();
     playerAudioBitrateSubscription =
-        mediaPlayer.stream.audioBitrate.listen((event) {
+        mediaPlayer!.stream.audioBitrate.listen((event) {
       playerAudioBitrate = event.toString();
     });
   }
@@ -284,10 +284,11 @@ abstract class _PlayerController with Store {
     // 记录播放器内部日志
     playerLog.clear();
     setupPlayerDebugInfoSubscription();
+
     // error handle
     bool showPlayerError =
         setting.get(SettingBoxKey.showPlayerError, defaultValue: true);
-    mediaPlayer.addListener(() {
+    mediaPlayer!.addListener(() {
       if (mediaPlayer.value.hasError &&
           mediaPlayer.value.position < mediaPlayer.value.duration) {
         if (showPlayerError) {
@@ -301,14 +302,14 @@ abstract class _PlayerController with Store {
             'Player inent error. ${mediaPlayer.value.errorDescription} $videoUrl');
       }
     });
-    await mediaPlayer.initialize();
-    return mediaPlayer;
+    await mediaPlayer!.initialize();
+    return mediaPlayer!;
   }
 
   Future<void> setPlaybackSpeed(double playerSpeed) async {
     this.playerSpeed = playerSpeed;
     try {
-      mediaPlayer.setPlaybackSpeed(playerSpeed);
+      mediaPlayer!.setPlaybackSpeed(playerSpeed);
     } catch (e) {
       KazumiLogger().log(Level.error, '设置播放速度失败 ${e.toString()}');
     }
@@ -319,7 +320,7 @@ abstract class _PlayerController with Store {
     volume = value;
     try {
       if (Utils.isDesktop()) {
-        await mediaPlayer.setVolume(value);
+        await mediaPlayer!.setVolume(value);
       } else {
         await mediaPlayer.setVolume(volume / 100);
       }
@@ -327,7 +328,7 @@ abstract class _PlayerController with Store {
   }
 
   Future<void> playOrPause() async {
-    if (mediaPlayer.value.isPlaying) {
+    if (mediaPlayer!.value.isPlaying) {
       await pause();
     } else {
       await play();
@@ -337,7 +338,7 @@ abstract class _PlayerController with Store {
   Future<void> seek(Duration duration, {bool enableSync = true}) async {
     currentPosition = duration;
     danmakuController.clear();
-    await mediaPlayer.seekTo(duration);
+    await mediaPlayer!.seekTo(duration);
     if (syncplayController != null) {
       setSyncPlayCurrentPosition();
       if (enableSync) {
@@ -348,7 +349,7 @@ abstract class _PlayerController with Store {
 
   Future<void> pause({bool enableSync = true}) async {
     danmakuController.pause();
-    await mediaPlayer.pause();
+    await mediaPlayer!.pause();
     playing = false;
     if (syncplayController != null) {
       setSyncPlayCurrentPosition();
@@ -360,7 +361,7 @@ abstract class _PlayerController with Store {
 
   Future<void> play({bool enableSync = true}) async {
     danmakuController.resume();
-    await mediaPlayer.play();
+    await mediaPlayer!.play();
     playing = true;
     if (syncplayController != null) {
       setSyncPlayCurrentPosition();
@@ -382,18 +383,20 @@ abstract class _PlayerController with Store {
     try {
       await cancelPlayerDebugInfoSubscription();
     } catch (_) {}
-    await mediaPlayer.dispose();
+    await mediaPlayer?.dispose();
+    mediaPlayer = null;
+    videoController = null;
   }
 
   Future<void> stop() async {
     try {
-      await mediaPlayer.pause();
+      await mediaPlayer?.pause();
       loading = true;
     } catch (_) {}
   }
 
   // Future<Uint8List?> screenshot({String format = 'image/jpeg'}) async {
-  //   return await mediaPlayer.screenshot(format: format);
+  //   return await mediaPlayer!.screenshot(format: format);
   // }
 
   void setForwardTime(int time) {
