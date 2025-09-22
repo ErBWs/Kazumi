@@ -28,7 +28,6 @@ import 'package:kazumi/request/damaku.dart';
 import 'package:kazumi/modules/danmaku/danmaku_search_response.dart';
 import 'package:kazumi/modules/danmaku/danmaku_episode_response.dart';
 import 'package:kazumi/pages/player/player_item_surface.dart';
-import 'package:kazumi/bean/widget/text_display.dart';
 import 'package:mobx/mobx.dart' as mobx;
 import 'package:kazumi/pages/my/my_controller.dart';
 
@@ -503,7 +502,8 @@ class _PlayerItemState extends State<PlayerItem>
   }
 
   Widget get videoInfoBody {
-    return ListView(
+    return Observer(
+      builder: (context) {return ListView(
       children: [
         ListTile(
           title: const Text("Source"),
@@ -529,7 +529,8 @@ class _PlayerItemState extends State<PlayerItem>
             );
           },
         ),
-      ],
+      ],);
+      }
     );
   }
 
@@ -537,7 +538,16 @@ class _PlayerItemState extends State<PlayerItem>
     return Scaffold(
       body: Padding(
         padding: const EdgeInsets.fromLTRB(8.0, 8.0, 8.0, 0),
-        child: TextDisplayWidget(logLines: playerController.playerLog),
+        child: Observer(
+          builder: (context) {
+            return ListView.builder(
+              itemCount: playerController.playerLog.length,
+              itemBuilder: (context, index) {
+                return Text(playerController.playerLog[index]);
+              },
+            );
+          }
+        ),
       ),
       floatingActionButton: FloatingActionButton(
           child: const Icon(Icons.copy),
