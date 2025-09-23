@@ -20,7 +20,7 @@ version: 1.8.1+10801
 
 environment:
   sdk: ">=3.3.4 <4.0.0"
-  flutter: 3.27.4
+  flutter: ">=3.32.0"
 
 # Dependencies specify other packages that your package needs in order to work.
 # To automatically upgrade your package dependencies to the latest versions
@@ -87,8 +87,8 @@ dependencies:
   synchronized: any
   flutter_svg: ^2.0.17
   antlr4: ^4.13.2
-  fl_chart: ^0.69.2
-  skeletonizer: ^1.4.3
+  fl_chart: ^1.0.0
+  skeletonizer: ^2.0.0-pre
   webview_windows:
     git:
       url: https://github.com/Predidit/flutter-webview-windows.git

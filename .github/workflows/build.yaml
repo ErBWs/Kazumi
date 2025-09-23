@@ -49,7 +49,7 @@ jobs:
           distribution: 'temurin'
       - name: Setup flutter-ohos
         run: |
-          git clone -b oh-3.27.4-dev https://gitcode.com/openharmony-tpc/flutter_flutter.git $GITHUB_WORKSPACE/flutter
+          git clone -b oh-3.32.4-dev https://gitcode.com/openharmony-tpc/flutter_flutter.git $GITHUB_WORKSPACE/flutter
           echo "$GITHUB_WORKSPACE/flutter/bin" >> $GITHUB_PATH
         shell: bash
       - name: Print Flutter version

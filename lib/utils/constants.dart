@@ -13,13 +13,13 @@ class StyleString {
 /// it to false so we have the latest M3 style process indicator.
 /// ignore: deprecated_member_use
 const ProgressIndicatorThemeData progressIndicatorTheme2024 =
-    ProgressIndicatorThemeData();
+    ProgressIndicatorThemeData(year2023: false);
 
 /// `year2023` flag is deprecated since 3.29 but not default to false yet. Keep
 /// it to false so we have the latest M3 style slider.
 /// ignore: deprecated_member_use
 const SliderThemeData sliderTheme2024 = SliderThemeData(
-  // year2023: false,
+  year2023: false,
   showValueIndicator: ShowValueIndicator.always,
 );
 
