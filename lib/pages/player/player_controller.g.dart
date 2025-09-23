@@ -73,6 +73,38 @@ mixin _$PlayerController on _PlayerController, Store {
     });
   }
 
+  late final _$aspectRatioTypeAtom =
+      Atom(name: '_PlayerController.aspectRatioType', context: context);
+
+  @override
+  int get aspectRatioType {
+    _$aspectRatioTypeAtom.reportRead();
+    return super.aspectRatioType;
+  }
+
+  @override
+  set aspectRatioType(int value) {
+    _$aspectRatioTypeAtom.reportWrite(value, super.aspectRatioType, () {
+      super.aspectRatioType = value;
+    });
+  }
+
+  late final _$superResolutionTypeAtom =
+      Atom(name: '_PlayerController.superResolutionType', context: context);
+
+  @override
+  int get superResolutionType {
+    _$superResolutionTypeAtom.reportRead();
+    return super.superResolutionType;
+  }
+
+  @override
+  set superResolutionType(int value) {
+    _$superResolutionTypeAtom.reportWrite(value, super.superResolutionType, () {
+      super.superResolutionType = value;
+    });
+  }
+
   late final _$volumeAtom =
       Atom(name: '_PlayerController.volume', context: context);
 
@@ -393,134 +425,6 @@ mixin _$PlayerController on _PlayerController, Store {
     });
   }
 
-  late final _$playerWidthAtom =
-      Atom(name: '_PlayerController.playerWidth', context: context);
-
-  @override
-  int get playerWidth {
-    _$playerWidthAtom.reportRead();
-    return super.playerWidth;
-  }
-
-  @override
-  set playerWidth(int value) {
-    _$playerWidthAtom.reportWrite(value, super.playerWidth, () {
-      super.playerWidth = value;
-    });
-  }
-
-  late final _$playerHeightAtom =
-      Atom(name: '_PlayerController.playerHeight', context: context);
-
-  @override
-  int get playerHeight {
-    _$playerHeightAtom.reportRead();
-    return super.playerHeight;
-  }
-
-  @override
-  set playerHeight(int value) {
-    _$playerHeightAtom.reportWrite(value, super.playerHeight, () {
-      super.playerHeight = value;
-    });
-  }
-
-  late final _$playerVideoParamsAtom =
-      Atom(name: '_PlayerController.playerVideoParams', context: context);
-
-  @override
-  String get playerVideoParams {
-    _$playerVideoParamsAtom.reportRead();
-    return super.playerVideoParams;
-  }
-
-  @override
-  set playerVideoParams(String value) {
-    _$playerVideoParamsAtom.reportWrite(value, super.playerVideoParams, () {
-      super.playerVideoParams = value;
-    });
-  }
-
-  late final _$playerAudioParamsAtom =
-      Atom(name: '_PlayerController.playerAudioParams', context: context);
-
-  @override
-  String get playerAudioParams {
-    _$playerAudioParamsAtom.reportRead();
-    return super.playerAudioParams;
-  }
-
-  @override
-  set playerAudioParams(String value) {
-    _$playerAudioParamsAtom.reportWrite(value, super.playerAudioParams, () {
-      super.playerAudioParams = value;
-    });
-  }
-
-  late final _$playerPlaylistAtom =
-      Atom(name: '_PlayerController.playerPlaylist', context: context);
-
-  @override
-  String get playerPlaylist {
-    _$playerPlaylistAtom.reportRead();
-    return super.playerPlaylist;
-  }
-
-  @override
-  set playerPlaylist(String value) {
-    _$playerPlaylistAtom.reportWrite(value, super.playerPlaylist, () {
-      super.playerPlaylist = value;
-    });
-  }
-
-  late final _$playerAudioTracksAtom =
-      Atom(name: '_PlayerController.playerAudioTracks', context: context);
-
-  @override
-  String get playerAudioTracks {
-    _$playerAudioTracksAtom.reportRead();
-    return super.playerAudioTracks;
-  }
-
-  @override
-  set playerAudioTracks(String value) {
-    _$playerAudioTracksAtom.reportWrite(value, super.playerAudioTracks, () {
-      super.playerAudioTracks = value;
-    });
-  }
-
-  late final _$playerVideoTracksAtom =
-      Atom(name: '_PlayerController.playerVideoTracks', context: context);
-
-  @override
-  String get playerVideoTracks {
-    _$playerVideoTracksAtom.reportRead();
-    return super.playerVideoTracks;
-  }
-
-  @override
-  set playerVideoTracks(String value) {
-    _$playerVideoTracksAtom.reportWrite(value, super.playerVideoTracks, () {
-      super.playerVideoTracks = value;
-    });
-  }
-
-  late final _$playerAudioBitrateAtom =
-      Atom(name: '_PlayerController.playerAudioBitrate', context: context);
-
-  @override
-  String get playerAudioBitrate {
-    _$playerAudioBitrateAtom.reportRead();
-    return super.playerAudioBitrate;
-  }
-
-  @override
-  set playerAudioBitrate(String value) {
-    _$playerAudioBitrateAtom.reportWrite(value, super.playerAudioBitrate, () {
-      super.playerAudioBitrate = value;
-    });
-  }
-
   @override
   String toString() {
     return '''
@@ -528,6 +432,8 @@ danDanmakus: ${danDanmakus},
 danmakuOn: ${danmakuOn},
 syncplayRoom: ${syncplayRoom},
 syncplayClientRtt: ${syncplayClientRtt},
+aspectRatioType: ${aspectRatioType},
+superResolutionType: ${superResolutionType},
 volume: ${volume},
 brightness: ${brightness},
 lockPanel: ${lockPanel},
@@ -547,15 +453,7 @@ currentPosition: ${currentPosition},
 buffer: ${buffer},
 duration: ${duration},
 playerSpeed: ${playerSpeed},
-playerLog: ${playerLog},
-playerWidth: ${playerWidth},
-playerHeight: ${playerHeight},
-playerVideoParams: ${playerVideoParams},
-playerAudioParams: ${playerAudioParams},
-playerPlaylist: ${playerPlaylist},
-playerAudioTracks: ${playerAudioTracks},
-playerVideoTracks: ${playerVideoTracks},
-playerAudioBitrate: ${playerAudioBitrate}
+playerLog: ${playerLog}
     ''';
   }
 }

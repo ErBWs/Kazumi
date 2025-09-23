@@ -19,9 +19,9 @@ class _PlayerItemSurfaceState extends State<PlayerItemSurface> {
     return Observer(
       builder: (context) {
         return AspectRatio(
-          aspectRatio: playerController.mediaPlayer.value.aspectRatio,
+          aspectRatio: playerController.mediaPlayer!.value.aspectRatio,
           child: VideoPlayer(
-            playerController.mediaPlayer,
+            playerController.mediaPlayer!,
           ),
         );
       },

@@ -120,44 +120,17 @@ abstract class _PlayerController with Store {
   // 播放器实时状态
   bool get playerPlaying => mediaPlayer!.value.isPlaying;
   bool get playerBuffering => mediaPlayer!.value.isBuffering;
-  bool get playerCompleted =>
-      mediaPlayer.value.position >= mediaPlayer!.value.duration;
+  bool get playerCompleted => mediaPlayer!.value.position >= mediaPlayer!.value.duration;
   double get playerVolume => mediaPlayer!.value.volume;
   Duration get playerPosition => mediaPlayer!.value.position;
-  Duration get playerBuffer => mediaPlayer!.value.buffered.isEmpty
-      ? Duration.zero
-      : mediaPlayer.value.buffered[0].end;
+  Duration get playerBuffer => mediaPlayer!.value.buffered.isEmpty ? Duration.zero : mediaPlayer!.value.buffered[0].end;
   Duration get playerDuration => mediaPlayer!.value.duration;
 
   // 播放器调试信息
   @observable
-  ObservableList<String> playerLog = ObservableList.of([]);
-  @observable
-  int playerWidth = 0;
-  @observable
-  int playerHeight = 0;
-  @observable
-  String playerVideoParams = '';
-  @observable
-  String playerAudioParams = '';
-  @observable
-  String playerPlaylist = '';
-  @observable
-  String playerAudioTracks = '';
-  @observable
-  String playerVideoTracks = '';
-  @observable
-  String playerAudioBitrate = '';
-
-  /// 播放器调试信息订阅
-  StreamSubscription<PlayerLog>? playerLogSubscription;
-  StreamSubscription<int?>? playerWidthSubscription;
-  StreamSubscription<int?>? playerHeightSubscription;
-  StreamSubscription<VideoParams>? playerVideoParamsSubscription;
-  StreamSubscription<AudioParams>? playerAudioParamsSubscription;
-  StreamSubscription<Playlist>? playerPlaylistSubscription;
-  StreamSubscription<Track>? playerTracksSubscription;
-  StreamSubscription<double?>? playerAudioBitrateSubscription;
+  ObservableList<String> playerLog = ObservableList.of(['暂不支持']);
+  int get playerWidth => mediaPlayer!.value.size.width.toInt();
+  int get playerHeight => mediaPlayer!.value.size.height.toInt();
 
   Future<void> init(String url, {int offset = 0}) async {
     videoUrl = url;
@@ -189,10 +162,10 @@ abstract class _PlayerController with Store {
     playerSpeed =
         setting.get(SettingBoxKey.defaultPlaySpeed, defaultValue: 1.0);
     if (offset != 0) {
-      await mediaPlayer.seekTo(Duration(seconds: offset));
+      await mediaPlayer!.seekTo(Duration(seconds: offset));
     }
     if (autoPlay) {
-      await mediaPlayer.play();
+      await mediaPlayer!.play();
     }
     if (Utils.isDesktop()) {
       volume = volume != -1 ? volume : 100;
@@ -212,59 +185,6 @@ abstract class _PlayerController with Store {
     }
   }
 
-  Future<void> setupPlayerDebugInfoSubscription() async {
-    await playerLogSubscription?.cancel();
-    playerLogSubscription = mediaPlayer!.stream.log.listen((event) {
-      playerLog.add(event.toString());
-      if (playerDebugMode) {
-        KazumiLogger().simpleLog(event.toString());
-      }
-    });
-    await playerWidthSubscription?.cancel();
-    playerWidthSubscription = mediaPlayer!.stream.width.listen((event) {
-      playerWidth = event ?? 0;
-    });
-    await playerHeightSubscription?.cancel();
-    playerHeightSubscription = mediaPlayer!.stream.height.listen((event) {
-      playerHeight = event ?? 0;
-    });
-    await playerVideoParamsSubscription?.cancel();
-    playerVideoParamsSubscription =
-        mediaPlayer!.stream.videoParams.listen((event) {
-      playerVideoParams = event.toString();
-    });
-    await playerAudioParamsSubscription?.cancel();
-    playerAudioParamsSubscription =
-        mediaPlayer!.stream.audioParams.listen((event) {
-      playerAudioParams = event.toString();
-    });
-    await playerPlaylistSubscription?.cancel();
-    playerPlaylistSubscription = mediaPlayer!.stream.playlist.listen((event) {
-      playerPlaylist = event.toString();
-    });
-    await playerTracksSubscription?.cancel();
-    playerTracksSubscription = mediaPlayer!.stream.track.listen((event) {
-      playerAudioTracks = event.audio.toString();
-      playerVideoTracks = event.video.toString();
-    });
-    await playerAudioBitrateSubscription?.cancel();
-    playerAudioBitrateSubscription =
-        mediaPlayer!.stream.audioBitrate.listen((event) {
-      playerAudioBitrate = event.toString();
-    });
-  }
-
-  Future<void> cancelPlayerDebugInfoSubscription() async {
-    await playerLogSubscription?.cancel();
-    await playerWidthSubscription?.cancel();
-    await playerHeightSubscription?.cancel();
-    await playerVideoParamsSubscription?.cancel();
-    await playerAudioParamsSubscription?.cancel();
-    await playerPlaylistSubscription?.cancel();
-    await playerTracksSubscription?.cancel();
-    await playerAudioBitrateSubscription?.cancel();
-  }
-
   Future<VideoPlayerController> createVideoController({int offset = 0}) async {
     String userAgent = '';
     playerDebugMode =
@@ -281,25 +201,22 @@ abstract class _PlayerController with Store {
     };
     mediaPlayer = VideoPlayerController.networkUrl(Uri.parse(videoUrl),
         httpHeaders: httpHeaders);
-    // 记录播放器内部日志
-    playerLog.clear();
-    setupPlayerDebugInfoSubscription();
 
     // error handle
     bool showPlayerError =
         setting.get(SettingBoxKey.showPlayerError, defaultValue: true);
     mediaPlayer!.addListener(() {
-      if (mediaPlayer.value.hasError &&
-          mediaPlayer.value.position < mediaPlayer.value.duration) {
+      if (mediaPlayer!.value.hasError &&
+          mediaPlayer!.value.position < mediaPlayer!.value.duration) {
         if (showPlayerError) {
           KazumiDialog.showToast(
               message:
-                  '播放器内部错误 ${mediaPlayer.value.errorDescription} $videoUrl',
+                  '播放器内部错误 ${mediaPlayer!.value.errorDescription} $videoUrl',
               duration: const Duration(seconds: 5),
               showActionButton: true);
         }
         KazumiLogger().log(Level.error,
-            'Player inent error. ${mediaPlayer.value.errorDescription} $videoUrl');
+            'Player inent error. ${mediaPlayer!.value.errorDescription} $videoUrl');
       }
     });
     await mediaPlayer!.initialize();
@@ -322,7 +239,7 @@ abstract class _PlayerController with Store {
       if (Utils.isDesktop()) {
         await mediaPlayer!.setVolume(value);
       } else {
-        await mediaPlayer.setVolume(volume / 100);
+        await mediaPlayer!.setVolume(volume / 100);
       }
     } catch (_) {}
   }
@@ -380,12 +297,8 @@ abstract class _PlayerController with Store {
         syncplayController = null;
       } catch (_) {}
     }
-    try {
-      await cancelPlayerDebugInfoSubscription();
-    } catch (_) {}
     await mediaPlayer?.dispose();
     mediaPlayer = null;
-    videoController = null;
   }
 
   Future<void> stop() async {
