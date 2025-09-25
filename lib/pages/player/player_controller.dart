@@ -89,7 +89,7 @@ abstract class _PlayerController with Store {
   int bangumiID = 0;
 
   // 播放器实体
-  late VideoPlayerController? mediaPlayer;
+  VideoPlayerController? mediaPlayer;
 
   // 播放器面板状态
   @observable
@@ -199,7 +199,7 @@ abstract class _PlayerController with Store {
       'user-agent': userAgent,
       if (referer.isNotEmpty) 'referer': referer,
     };
-    mediaPlayer = VideoPlayerController.networkUrl(Uri.parse(videoUrl),
+    mediaPlayer ??= VideoPlayerController.networkUrl(Uri.parse(videoUrl),
         httpHeaders: httpHeaders);
 
     // error handle
