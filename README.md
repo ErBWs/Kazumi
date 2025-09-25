@@ -11,7 +11,7 @@ ohos (HarmonyOS NEXT) 版本。
 
 - 目标 API 版本：5.1.1(19)
 - 兼容 API 版本：5.0.3(15)
-- Flutter 版本：3.22.0-ohos
+- Flutter 版本：3.32.4-ohos
 
 ## 功能适配情况
 
