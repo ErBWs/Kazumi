@@ -211,6 +211,7 @@ class SettingBoxKey {
       autoUpdate = 'autoUpdate',
       alwaysOntop = 'alwaysOntop',
       defaultPlaySpeed = 'defaultPlaySpeed',
+      defaultAspectRatioType = 'defaultAspectRatioType',
       danmakuEnhance = 'danmakuEnhance',
       danmakuBorder = 'danmakuBorder',
       danmakuOpacity = 'danmakuOpacity',
@@ -249,5 +250,8 @@ class SettingBoxKey {
       exitBehavior = 'exitBehavior',
       playerDebugMode = 'playerDebugMode',
       syncPlayEndPoint = 'syncPlayEndPoint',
-      defaultSuperResolutionType = 'defaultSuperResolutionType';
+      androidEnableOpenSLES = 'androidEnableOpenSLES',
+      defaultSuperResolutionType = 'defaultSuperResolutionType',
+      superResolutionWarn = 'superResolutionWarn',
+      playerDisableAnimations = 'playerDisableAnimations';
 }
