@@ -532,24 +532,21 @@ class _PlayerItemState extends State<PlayerItem>
           },
         ),
       ],);
-      }
-    );
+    });
   }
 
   Widget get videoDebugLogBody {
     return Scaffold(
       body: Padding(
         padding: const EdgeInsets.fromLTRB(8.0, 8.0, 8.0, 0),
-        child: Observer(
-          builder: (context) {
-            return ListView.builder(
-              itemCount: playerController.playerLog.length,
-              itemBuilder: (context, index) {
-                return Text(playerController.playerLog[index]);
-              },
-            );
-          }
-        ),
+        child: Observer(builder: (context) {
+          return ListView.builder(
+            itemCount: playerController.playerLog.length,
+            itemBuilder: (context, index) {
+              return Text(playerController.playerLog[index]);
+            },
+          );
+        }),
       ),
       floatingActionButton: FloatingActionButton(
           child: const Icon(Icons.copy),
@@ -975,7 +972,7 @@ class _PlayerItemState extends State<PlayerItem>
                                     LogicalKeyboardKey.arrowLeft) {
                                   int targetPosition = playerController
                                           .currentPosition.inSeconds -
-                                      10;
+                                      playerController.arrowKeySkipTime;
                                   if (targetPosition < 0) {
                                     targetPosition = 0;
                                   }
@@ -1052,7 +1049,8 @@ class _PlayerItemState extends State<PlayerItem>
                                       playerController.seek(Duration(
                                           seconds: playerController
                                                   .currentPosition.inSeconds +
-                                              10));
+                                              playerController
+                                                  .arrowKeySkipTime));
                                       playerTimer = getPlayerTimer();
                                     } catch (e) {
                                       KazumiLogger().log(Level.error,
@@ -1155,7 +1153,7 @@ class _PlayerItemState extends State<PlayerItem>
                             showSyncPlayRoomCreateDialog:
                                 showSyncPlayRoomCreateDialog,
                             showSyncPlayEndPointSwitchDialog:
-                                showSyncPlayEndPointSwitchDialog,                         
+                                showSyncPlayEndPointSwitchDialog,
                             disableAnimations: widget.disableAnimations,
                           )
                         : SmallestPlayerItemPanel(

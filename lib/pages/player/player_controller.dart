@@ -115,7 +115,8 @@ abstract class _PlayerController with Store {
   bool lowMemoryMode = false;
   bool autoPlay = true;
   bool playerDebugMode = false;
-  int forwardTime = 80;
+  int buttonSkipTime = 80;
+  int arrowKeySkipTime = 10;
 
   // 播放器实时状态
   bool get playerPlaying => mediaPlayer!.value.isPlaying;
@@ -167,6 +168,12 @@ abstract class _PlayerController with Store {
     if (autoPlay) {
       await mediaPlayer!.play();
     }
+
+    buttonSkipTime =
+        setting.get(SettingBoxKey.buttonSkipTime, defaultValue: 80);
+    arrowKeySkipTime =
+        setting.get(SettingBoxKey.arrowKeySkipTime, defaultValue: 10);
+
     if (Utils.isDesktop()) {
       volume = volume != -1 ? volume : 100;
     } else {
@@ -312,8 +319,14 @@ abstract class _PlayerController with Store {
   //   return await mediaPlayer!.screenshot(format: format);
   // }
 
-  void setForwardTime(int time) {
-    forwardTime = time;
+  void setButtonForwardTime(int time) {
+    buttonSkipTime = time;
+    setting.put(SettingBoxKey.buttonSkipTime, time);
+  }
+
+  void setArrowKeyForwardTime(int time) {
+    arrowKeySkipTime = time;
+    setting.put(SettingBoxKey.arrowKeySkipTime, time);
   }
 
   Future<void> getDanDanmakuByBgmBangumiID(
