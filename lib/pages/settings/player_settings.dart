@@ -5,13 +5,10 @@ import 'package:flutter_modular/flutter_modular.dart';
 import 'package:kazumi/bean/dialog/dialog_helper.dart';
 import 'package:hive/hive.dart';
 import 'package:kazumi/bean/appbar/sys_app_bar.dart';
-import 'package:kazumi/pages/player/player_controller.dart';
 import 'package:kazumi/utils/constants.dart';
-import 'package:kazumi/utils/logger.dart';
 import 'package:kazumi/utils/storage.dart';
 import 'package:kazumi/utils/utils.dart';
 import 'package:card_settings_ui/card_settings_ui.dart';
-import 'package:logger/logger.dart';
 
 class PlayerSettingsPage extends StatefulWidget {
   const PlayerSettingsPage({super.key});
@@ -244,7 +241,6 @@ class _PlayerSettingsPageState extends State<PlayerSettingsPage> {
                     },
                   ),
                   title: const Text('左右方向键的快进/快退秒数'),
-                  value: Text('$playerArrowKeySkipTime 秒'),
                 ),
                 SettingsTile.navigation(
                   onPressed: (_) async {
