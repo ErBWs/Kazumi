@@ -89,7 +89,7 @@ class _DanmakuSettingsSheetState extends State<DanmakuSettingsSheet> {
                 value: widget.danmakuController.option.area,
                 min: 0,
                 max: 1,
-                divisions: 4,
+                divisions: 8,
                 label:
                     '${(widget.danmakuController.option.area * 100).round()}%',
                 onChanged: (value) {
