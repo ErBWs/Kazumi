@@ -7,7 +7,6 @@ import 'package:hive/hive.dart';
 import 'package:kazumi/bean/appbar/sys_app_bar.dart';
 import 'package:kazumi/utils/constants.dart';
 import 'package:kazumi/utils/storage.dart';
-import 'package:kazumi/utils/utils.dart';
 import 'package:card_settings_ui/card_settings_ui.dart';
 
 class PlayerSettingsPage extends StatefulWidget {
@@ -20,7 +19,9 @@ class PlayerSettingsPage extends StatefulWidget {
 class _PlayerSettingsPageState extends State<PlayerSettingsPage> {
   Box setting = GStorage.setting;
   late double defaultPlaySpeed;
+  late int defaultAspectRatioType;
   late bool hAenable;
+  late bool androidEnableOpenSLES;
   late bool lowMemoryMode;
   late bool playResume;
   late bool showPlayerError;
@@ -29,14 +30,20 @@ class _PlayerSettingsPageState extends State<PlayerSettingsPage> {
   late bool playerDisableAnimations;
   late int playerButtonSkipTime;
   late int playerArrowKeySkipTime;
-  final MenuController menuController = MenuController();
+  late int playerLogLevel;
+  final MenuController playerAspectRatioMenuController = MenuController();
+  final MenuController playerLogLevelMenuController = MenuController();
 
   @override
   void initState() {
     super.initState();
     defaultPlaySpeed =
         setting.get(SettingBoxKey.defaultPlaySpeed, defaultValue: 1.0);
+    defaultAspectRatioType =
+        setting.get(SettingBoxKey.defaultAspectRatioType, defaultValue: 1);
     hAenable = setting.get(SettingBoxKey.hAenable, defaultValue: true);
+    androidEnableOpenSLES =
+        setting.get(SettingBoxKey.androidEnableOpenSLES, defaultValue: true);
     lowMemoryMode =
         setting.get(SettingBoxKey.lowMemoryMode, defaultValue: false);
     playResume = setting.get(SettingBoxKey.playResume, defaultValue: true);
@@ -47,6 +54,7 @@ class _PlayerSettingsPageState extends State<PlayerSettingsPage> {
         setting.get(SettingBoxKey.playerDebugMode, defaultValue: false);
     playerDisableAnimations =
         setting.get(SettingBoxKey.playerDisableAnimations, defaultValue: false);
+    playerLogLevel = setting.get(SettingBoxKey.playerLogLevel, defaultValue: 2);
 
     playerButtonSkipTime =
         setting.get(SettingBoxKey.buttonSkipTime, defaultValue: 80);
@@ -65,6 +73,20 @@ class _PlayerSettingsPageState extends State<PlayerSettingsPage> {
     setting.put(SettingBoxKey.defaultPlaySpeed, speed);
     setState(() {
       defaultPlaySpeed = speed;
+    });
+  }
+
+  void updatePlayerLogLevel(int level) {
+    setting.put(SettingBoxKey.playerLogLevel, level);
+    setState(() {
+      playerLogLevel = level;
+    });
+  }
+
+  void updateDefaultAspectRatioType(int type) {
+    setting.put(SettingBoxKey.defaultAspectRatioType, type);
+    setState(() {
+      defaultAspectRatioType = type;
     });
   }
 
@@ -151,6 +173,56 @@ class _PlayerSettingsPageState extends State<PlayerSettingsPage> {
               tiles: [
                 SettingsTile.switchTile(
                   onToggle: (value) async {
+                    hAenable = value ?? !hAenable;
+                    await setting.put(SettingBoxKey.hAenable, hAenable);
+                    setState(() {});
+                  },
+                  title: const Text('硬件解码'),
+                  initialValue: hAenable,
+                ),
+                SettingsTile.navigation(
+                  onPressed: (_) async {
+                    await Modular.to.pushNamed('/settings/player/decoder');
+                  },
+                  title: const Text('硬件解码器'),
+                  description: const Text('仅在硬件解码启用时生效'),
+                ),
+                SettingsTile.switchTile(
+                  onToggle: (value) async {
+                    lowMemoryMode = value ?? !lowMemoryMode;
+                    await setting.put(
+                        SettingBoxKey.lowMemoryMode, lowMemoryMode);
+                    setState(() {});
+                  },
+                  title: const Text('低内存模式'),
+                  description: const Text('禁用高级缓存以减少内存占用'),
+                  initialValue: lowMemoryMode,
+                ),
+                if (Platform.isAndroid) ...[
+                  SettingsTile.switchTile(
+                    onToggle: (value) async {
+                      androidEnableOpenSLES = value ?? !androidEnableOpenSLES;
+                      await setting.put(SettingBoxKey.androidEnableOpenSLES,
+                          androidEnableOpenSLES);
+                      setState(() {});
+                    },
+                    title: const Text('低延迟音频'),
+                    description: const Text('启用OpenSLES音频输出以降低延时'),
+                    initialValue: androidEnableOpenSLES,
+                  ),
+                ],
+                SettingsTile.navigation(
+                  onPressed: (_) async {
+                    Modular.to.pushNamed('/settings/player/super');
+                  },
+                  title: const Text('超分辨率'),
+                ),
+              ],
+            ),
+            SettingsSection(
+              tiles: [
+                SettingsTile.switchTile(
+                  onToggle: (value) async {
                     playResume = value ?? !playResume;
                     await setting.put(SettingBoxKey.playResume, playResume);
                     setState(() {});
@@ -170,6 +242,20 @@ class _PlayerSettingsPageState extends State<PlayerSettingsPage> {
                   description: const Text('禁用播放器内的过渡动画'),
                   initialValue: playerDisableAnimations,
                 ),
+                SettingsTile.switchTile(
+                  onToggle: (value) async {
+                    privateMode = value ?? !privateMode;
+                    await setting.put(SettingBoxKey.privateMode, privateMode);
+                    setState(() {});
+                  },
+                  title: const Text('隐身模式'),
+                  description: const Text('不保留观看记录'),
+                  initialValue: privateMode,
+                ),
+              ],
+            ),
+            SettingsSection(
+              tiles: [
                 SettingsTile.switchTile(
                   onToggle: (value) async {
                     showPlayerError = value ?? !showPlayerError;
@@ -192,15 +278,47 @@ class _PlayerSettingsPageState extends State<PlayerSettingsPage> {
                   description: const Text('记录播放器内部日志'),
                   initialValue: playerDebugMode,
                 ),
-                SettingsTile.switchTile(
-                  onToggle: (value) async {
-                    privateMode = value ?? !privateMode;
-                    await setting.put(SettingBoxKey.privateMode, privateMode);
-                    setState(() {});
+                SettingsTile.navigation(
+                  onPressed: (_) async {
+                    if (playerLogLevelMenuController.isOpen) {
+                      playerLogLevelMenuController.close();
+                    } else {
+                      playerLogLevelMenuController.open();
+                    }
                   },
-                  title: const Text('隐身模式'),
-                  description: const Text('不保留观看记录'),
-                  initialValue: privateMode,
+                  title: const Text('日志等级'),
+                  description: const Text('播放器内部日志等级'),
+                  value: MenuAnchor(
+                    consumeOutsideTap: true,
+                    controller: playerLogLevelMenuController,
+                    builder: (_, __, ___) {
+                      return Text(
+                        playerLogLevelMap[playerLogLevel] ?? '???',
+                      );
+                    },
+                    menuChildren: [
+                      for (final entry in playerLogLevelMap.entries)
+                        MenuItemButton(
+                          requestFocusOnHover: false,
+                          onPressed: () => updatePlayerLogLevel(entry.key),
+                          child: Container(
+                            height: 48,
+                            constraints: BoxConstraints(minWidth: 112),
+                            child: Align(
+                              alignment: Alignment.centerLeft,
+                              child: Text(
+                                entry.value,
+                                style: TextStyle(
+                                  color: entry.key == playerLogLevel
+                                      ? Theme.of(context).colorScheme.primary
+                                      : null,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
                 ),
               ],
             ),
@@ -249,6 +367,48 @@ class _PlayerSettingsPageState extends State<PlayerSettingsPage> {
                   title: const Text('跳过时长'),
                   description: const Text('顶栏跳过按钮的秒数'),
                   value: Text('$playerButtonSkipTime 秒'),
+                ),
+                SettingsTile.navigation(
+                  onPressed: (_) async {
+                    if (playerAspectRatioMenuController.isOpen) {
+                      playerAspectRatioMenuController.close();
+                    } else {
+                      playerAspectRatioMenuController.open();
+                    }
+                  },
+                  title: const Text('默认视频比例'),
+                  value: MenuAnchor(
+                    consumeOutsideTap: true,
+                    controller: playerAspectRatioMenuController,
+                    builder: (_, __, ___) {
+                      return Text(
+                        aspectRatioTypeMap[defaultAspectRatioType] ?? '自动',
+                      );
+                    },
+                    menuChildren: [
+                      for (final entry in aspectRatioTypeMap.entries)
+                        MenuItemButton(
+                          requestFocusOnHover: false,
+                          onPressed: () =>
+                              updateDefaultAspectRatioType(entry.key),
+                          child: Container(
+                            height: 48,
+                            constraints: BoxConstraints(minWidth: 112),
+                            child: Align(
+                              alignment: Alignment.centerLeft,
+                              child: Text(
+                                entry.value,
+                                style: TextStyle(
+                                  color: entry.key == defaultAspectRatioType
+                                      ? Theme.of(context).colorScheme.primary
+                                      : null,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
                 ),
               ],
             ),

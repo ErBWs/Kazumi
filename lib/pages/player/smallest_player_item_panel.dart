@@ -26,6 +26,7 @@ class SmallestPlayerItemPanel extends StatefulWidget {
     required this.handleFullscreen,
     required this.handleProgressBarDragStart,
     required this.handleProgressBarDragEnd,
+    required this.handleSuperResolutionChange,
     required this.animationController,
     required this.keyboardFocus,
     required this.handleHove,
@@ -45,6 +46,7 @@ class SmallestPlayerItemPanel extends StatefulWidget {
   final void Function() handleFullscreen;
   final void Function(ThumbDragDetails details) handleProgressBarDragStart;
   final void Function() handleProgressBarDragEnd;
+  final Future<void> Function(int shaderIndex) handleSuperResolutionChange;
   final void Function() handleHove;
   final AnimationController animationController;
   final FocusNode keyboardFocus;
@@ -562,39 +564,109 @@ class _SmallestPlayerItemPanelState extends State<SmallestPlayerItemPanel> {
               },
               menuChildren: [
                 SubmenuButton(
+                  menuChildren: List<MenuItemButton>.generate(
+                    3,
+                    (int index) => MenuItemButton(
+                      onPressed: () =>
+                          playerController.aspectRatioType = index + 1,
+                      child: Container(
+                        height: 48,
+                        constraints: BoxConstraints(minWidth: 112),
+                        child: Align(
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            index + 1 == 1
+                                ? '自动'
+                                : index + 1 == 2
+                                    ? '裁切填充'
+                                    : '拉伸填充',
+                            style: TextStyle(
+                                color: index + 1 ==
+                                        playerController.aspectRatioType
+                                    ? Theme.of(context).colorScheme.primary
+                                    : null),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  child: Container(
+                    height: 48,
+                    constraints: BoxConstraints(minWidth: 112),
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text("视频比例"),
+                    ),
+                  ),
+                ),
+                SubmenuButton(
                   menuChildren: [
-                              for (final double i
-                                  in defaultPlaySpeedList) ...<MenuItemButton>[
-                                MenuItemButton(
-                                  onPressed: () async {
-                                    await widget.setPlaybackSpeed(i);
-                                  },
-                                  child: Container(
-                                    height: 48,
-                                    constraints: BoxConstraints(minWidth: 112),
-                                    child: Align(
-                                      alignment: Alignment.centerLeft,
-                                      child: Text(
-                                        '${i}x',
-                                        style: TextStyle(
-                                            color: i ==
-                                                    playerController.playerSpeed
-                                                ? Theme.of(context)
-                                                    .colorScheme
-                                                    .primary
-                                                : null),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ],
-                            child: Container(
-                              height: 48,
-                              constraints: BoxConstraints(minWidth: 112),
-                              child: Align(
-                                alignment: Alignment.centerLeft,
-                                child: Text("倍速"),
+                    for (final double i
+                        in defaultPlaySpeedList) ...<MenuItemButton>[
+                      MenuItemButton(
+                        onPressed: () async {
+                          await widget.setPlaybackSpeed(i);
+                        },
+                        child: Container(
+                          height: 48,
+                          constraints: BoxConstraints(minWidth: 112),
+                          child: Align(
+                            alignment: Alignment.centerLeft,
+                            child: Text(
+                              '${i}x',
+                              style: TextStyle(
+                                  color: i == playerController.playerSpeed
+                                      ? Theme.of(context).colorScheme.primary
+                                      : null),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ],
+                  child: Container(
+                    height: 48,
+                    constraints: BoxConstraints(minWidth: 112),
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text("倍速"),
+                    ),
+                  ),
+                ),
+                SubmenuButton(
+                  menuChildren: List<MenuItemButton>.generate(
+                    3,
+                    (int index) => MenuItemButton(
+                      onPressed: () =>
+                          widget.handleSuperResolutionChange(index + 1),
+                      child: Container(
+                        height: 48,
+                        constraints: BoxConstraints(minWidth: 112),
+                        child: Align(
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            index + 1 == 1
+                                ? '关闭'
+                                : index + 1 == 2
+                                    ? '效率档'
+                                    : '质量档',
+                            style: TextStyle(
+                              color: playerController.superResolutionType ==
+                                      index + 1
+                                  ? Theme.of(context).colorScheme.primary
+                                  : null,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  child: Container(
+                    height: 48,
+                    constraints: BoxConstraints(minWidth: 112),
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text("超分辨率"),
                     ),
                   ),
                 ),

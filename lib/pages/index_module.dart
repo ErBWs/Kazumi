@@ -13,6 +13,7 @@ import 'package:kazumi/pages/history/history_controller.dart';
 import 'package:kazumi/pages/video/video_module.dart';
 import 'package:kazumi/pages/info/info_module.dart';
 import 'package:kazumi/pages/settings/settings_module.dart';
+import 'package:kazumi/shaders/shaders_controller.dart';
 import 'package:kazumi/pages/search/search_module.dart';
 import 'package:kazumi/repositories/collect_repository.dart';
 import 'package:kazumi/repositories/search_history_repository.dart';
@@ -39,6 +40,7 @@ class IndexModule extends Module {
     i.addSingleton(CollectController.new);
     i.addSingleton(HistoryController.new);
     i.addSingleton(MyController.new);
+    i.addSingleton(ShadersController.new);
   }
 
   @override

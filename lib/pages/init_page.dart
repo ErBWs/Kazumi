@@ -13,6 +13,7 @@ import 'package:flutter/services.dart' show rootBundle;
 import 'package:kazumi/utils/logger.dart';
 import 'package:provider/provider.dart';
 import 'package:kazumi/bean/settings/theme_provider.dart';
+import 'package:kazumi/shaders/shaders_controller.dart';
 
 class InitPage extends StatefulWidget {
   const InitPage({super.key});
@@ -24,6 +25,7 @@ class InitPage extends StatefulWidget {
 class _InitPageState extends State<InitPage> {
   final PluginsController pluginsController = Modular.get<PluginsController>();
   final CollectController collectController = Modular.get<CollectController>();
+  final ShadersController shadersController = Modular.get<ShadersController>();
   final MyController myController = Modular.get<MyController>();
   Box setting = GStorage.setting;
   late final ThemeProvider themeProvider;
@@ -33,6 +35,7 @@ class _InitPageState extends State<InitPage> {
     _pluginInit();
     _webDavInit();
     _migrateStorage();
+    _loadShaders();
     _loadDanmakuShield();
     _update();
     themeProvider = Provider.of<ThemeProvider>(context, listen: false);
@@ -42,6 +45,10 @@ class _InitPageState extends State<InitPage> {
   // migrate collect from old version (favorites)
   Future<void> _migrateStorage() async {
     await collectController.migrateCollect();
+  }
+
+  Future<void> _loadShaders() async {
+    await shadersController.copyShadersToExternalDirectory();
   }
 
   Future<void> _loadDanmakuShield() async {

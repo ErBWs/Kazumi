@@ -6,11 +6,14 @@ list(APPEND FLUTTER_PLUGIN_LIST
   connectivity_plus
   dynamic_color
   flutter_volume_controller
+  media_kit_libs_windows_video
+  media_kit_video
   screen_brightness_windows
   screen_pixel
   screen_retriever_windows
   tray_manager
   url_launcher_windows
+  volume_controller
   webview_windows
   window_manager
 )

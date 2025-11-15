@@ -43,6 +43,17 @@ class _DanmakuSettingsSheetState extends State<DanmakuSettingsSheet> {
     return SettingsList(
       sections: [
         SettingsSection(
+          title: const Text('弹幕屏蔽'),
+          tiles: [
+            SettingsTile.navigation(
+              onPressed: (_) {
+                showDanmakuShieldSheet();
+              },
+              title: const Text('关键词屏蔽'),
+            ),
+          ],
+        ),
+        SettingsSection(
           title: const Text('弹幕样式'),
           tiles: [
             SettingsTile(
@@ -174,17 +185,6 @@ class _DanmakuSettingsSheetState extends State<DanmakuSettingsSheet> {
               title: const Text('跟随视频倍速'),
               description: const Text('弹幕速度随视频倍速变化'),
               initialValue: setting.get(SettingBoxKey.danmakuFollowSpeed, defaultValue: true),
-            ),
-          ],
-        ),
-        SettingsSection(
-          title: const Text('弹幕屏蔽'),
-          tiles: [
-            SettingsTile.navigation(
-              onPressed: (_) {
-                showDanmakuShieldSheet();
-              },
-              title: const Text('关键词屏蔽'),
             ),
           ],
         ),
