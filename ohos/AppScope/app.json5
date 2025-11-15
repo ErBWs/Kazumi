@@ -2,8 +2,8 @@
   "app": {
     "bundleName": "com.predidit.kazumi",
     "vendor": "example",
-    "versionCode": 10807,
-    "versionName": "1.8.7",
+    "versionCode": 10808,
+    "versionName": "1.8.8",
     "icon": "$media:app_icon",
     "label": "$string:app_name"
   }
