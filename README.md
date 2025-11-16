@@ -10,7 +10,7 @@ ohos (HarmonyOS NEXT) 版本。
 ## 支持情况
 
 - 目标 API 版本：6.0.0(20)
-- 兼容 API 版本：5.0.3(15)
+- 兼容 API 版本：5.0.5(17)
 - Flutter 版本：3.32.4-ohos
 
 ## 功能适配情况
@@ -21,8 +21,8 @@ ohos (HarmonyOS NEXT) 版本。
 - [x] 智慧多窗
 - [x] 鸿蒙 PC (见[关于鸿蒙PC](#关于鸿蒙-PC))
 - [x] ~~外部播放器~~(目前没有软件支持外部网络视频链接拉起)
-- [ ] 基于 mpv 的视频播放器 (见 https://github.com/ErBWs/Kazumi/issues/13)
-- [ ] ~~手势系统音量调节~~(架构不支持)
+- [x] 基于 mpv 的视频播放器 (见 https://github.com/ErBWs/Kazumi/issues/13)
+- [ ] 手势系统音量调节
 
 ## 下载与安装
 
