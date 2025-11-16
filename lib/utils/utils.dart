@@ -369,6 +369,22 @@ class Utils {
     return false;
   }
 
+  /// 判定是否运行在X11环境下 (Linux only)
+  static Future<bool> isRunningOnX11() async {
+    if (Platform.isLinux) {
+      const platform = MethodChannel('com.predidit.kazumi/intent');
+      try {
+        final bool result =
+            await platform.invokeMethod('isRunningOnX11');
+        return result;
+      } on PlatformException catch (e) {
+        print("Failed to check X11 environment: '${e.message}'.");
+        return false;
+      }
+    }
+    return false;
+  }
+
   static Future<void> enterWindowsFullscreen(bool needSet) async {
     const platform = MethodChannel('com.predidit.kazumi/intent');
     try {
