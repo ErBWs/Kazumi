@@ -8,6 +8,7 @@ import MediaKitLibsOhosPlugin from 'media_kit_libs_ohos';
 import MediaKitVideoPlugin from 'media_kit_video';
 import SaverGalleryPlugin from 'saver_gallery';
 import ScreenBrightnessOhosPlugin from 'screen_brightness_ohos';
+import WakelockPlugin from 'wakelock_plus_ohos';
 
 /**
  * Generated file. Do not edit.
@@ -30,6 +31,7 @@ export class GeneratedPluginRegistrant {
       flutterEngine.getPlugins()?.add(new MediaKitVideoPlugin());
       flutterEngine.getPlugins()?.add(new SaverGalleryPlugin());
       flutterEngine.getPlugins()?.add(new ScreenBrightnessOhosPlugin());
+      flutterEngine.getPlugins()?.add(new WakelockPlugin());
     } catch (e) {
       Log.e(
         TAG,

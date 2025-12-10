@@ -137,31 +137,6 @@ dependency_overrides:
       url: https://github.com/ErBWs/media-kit.git
       ref: feat-ohos
       path: ./media_kit
-#  media_kit_libs_linux:
-#    git:
-#      url: https://github.com/Predidit/media-kit.git
-#      ref: 263aae1413fc5afad9cc5198a0d3e172cc24e418
-#      path: ./libs/linux/media_kit_libs_linux
-#  media_kit_libs_ios_video:
-#    git:
-#      url: https://github.com/Predidit/media-kit.git
-#      ref: 263aae1413fc5afad9cc5198a0d3e172cc24e418
-#      path: ./libs/ios/media_kit_libs_ios_video
-#  media_kit_libs_android_video:
-#    git:
-#      url: https://github.com/Predidit/media-kit.git
-#      ref: 263aae1413fc5afad9cc5198a0d3e172cc24e418
-#      path: ./libs/android/media_kit_libs_android_video
-#  media_kit_libs_windows_video:
-#    git:
-#      url: https://github.com/Predidit/media-kit.git
-#      ref: 263aae1413fc5afad9cc5198a0d3e172cc24e418
-#      path: ./libs/windows/media_kit_libs_windows_video
-#  media_kit_libs_macos_video:
-#    git:
-#      url: https://github.com/Predidit/media-kit.git
-#      ref: 263aae1413fc5afad9cc5198a0d3e172cc24e418
-#      path: ./libs/macos/media_kit_libs_macos_video
   media_kit_libs_ohos:
     git:
       url: https://github.com/ErBWs/media-kit.git
