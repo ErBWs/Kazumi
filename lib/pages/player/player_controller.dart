@@ -297,7 +297,7 @@ abstract class _PlayerController with Store {
       if (referer.isNotEmpty) 'referer': referer,
     };
 
-    // Ad blocker is intentionally disabled here; plugin flag is kept for potential future use.
+    // Ad blocker is intentionally disabled here; currentPlugin.adBlocker remains available for future re-enabling.
     mediaPlayer = Player(
       configuration: PlayerConfiguration(
         bufferSize: lowMemoryMode ? 15 * 1024 * 1024 : 1500 * 1024 * 1024,
