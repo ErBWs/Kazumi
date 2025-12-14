@@ -302,7 +302,6 @@ abstract class _PlayerController with Store {
         bufferSize: lowMemoryMode ? 15 * 1024 * 1024 : 1500 * 1024 * 1024,
         osc: false,
         logLevel: MPVLogLevel.values[playerLogLevel],
-        // adBlocker: adBlockerEnabled,
       ),
     );
 
