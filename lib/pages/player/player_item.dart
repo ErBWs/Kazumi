@@ -106,6 +106,7 @@ class _PlayerItemState extends State<PlayerItem>
 
   // 硬件解码
   late bool haEnable;
+  late bool autoPlayNext;
 
   Timer? hideTimer;
   Timer? playerTimer;
@@ -702,7 +703,7 @@ class _PlayerItemState extends State<PlayerItem>
           videoPageController.currentEpisode <
               videoPageController
                   .roadList[videoPageController.currentRoad].data.length &&
-          !videoPageController.loading) {
+          !videoPageController.loading && autoPlayNext) {
         KazumiDialog.showToast(
             message:
                 '正在加载${videoPageController.roadList[videoPageController.currentRoad].identifier[videoPageController.currentEpisode]}');
@@ -737,53 +738,61 @@ class _PlayerItemState extends State<PlayerItem>
     }
     await KazumiDialog.show(builder: (context) {
       return Dialog(
-        child: ListView(
-          shrinkWrap: true,
-          children: danmakuSearchResponse.animes.map((danmakuInfo) {
-            return ListTile(
-              title: Text(danmakuInfo.animeTitle),
-              onTap: () async {
-                KazumiDialog.dismiss();
-                KazumiDialog.showLoading(msg: '弹幕检索中');
-                try {
-                  danmakuEpisodeResponse =
-                      await DanmakuRequest.getDanDanEpisodesByDanDanBangumiID(
-                          danmakuInfo.animeId);
-                } catch (e) {
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 560),
+          child: ListView(
+            shrinkWrap: true,
+            children: danmakuSearchResponse.animes.map((danmakuInfo) {
+              return ListTile(
+                title: Text(danmakuInfo.animeTitle),
+                onTap: () async {
                   KazumiDialog.dismiss();
-                  KazumiDialog.showToast(message: '弹幕检索错误: ${e.toString()}');
-                  return;
-                }
-                KazumiDialog.dismiss();
-                if (danmakuEpisodeResponse.episodes.isEmpty) {
-                  KazumiDialog.showToast(message: '未找到匹配结果');
-                  return;
-                }
-                KazumiDialog.show(builder: (context) {
-                  return Dialog(
-                    child: ListView(
-                      shrinkWrap: true,
-                      children: danmakuEpisodeResponse.episodes.map((episode) {
-                        return ListTile(
-                          title: Text(episode.episodeTitle),
-                          onTap: () async {
-                            KazumiDialog.dismiss();
-                            try {
-                              await playerController
-                                  .getDanDanmakuByEpisodeID(episode.episodeId);
-                              KazumiDialog.showToast(message: '弹幕切换成功');
-                            } catch (e) {
-                              KazumiDialog.showToast(message: '弹幕切换失败');
-                            }
-                          },
-                        );
-                      }).toList(),
-                    ),
-                  );
-                });
-              },
-            );
-          }).toList(),
+                  KazumiDialog.showLoading(msg: '弹幕检索中');
+                  try {
+                    danmakuEpisodeResponse =
+                        await DanmakuRequest.getDanDanEpisodesByDanDanBangumiID(
+                            danmakuInfo.animeId);
+                  } catch (e) {
+                    KazumiDialog.dismiss();
+                    KazumiDialog.showToast(message: '弹幕检索错误: ${e.toString()}');
+                    return;
+                  }
+                  KazumiDialog.dismiss();
+                  if (danmakuEpisodeResponse.episodes.isEmpty) {
+                    KazumiDialog.showToast(message: '未找到匹配结果');
+                    return;
+                  }
+                  KazumiDialog.show(builder: (context) {
+                    return Dialog(
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 560),
+                        child: ListView(
+                          shrinkWrap: true,
+                          children:
+                              danmakuEpisodeResponse.episodes.map((episode) {
+                            return ListTile(
+                              title: Text(episode.episodeTitle),
+                              onTap: () async {
+                                KazumiDialog.dismiss();
+                                try {
+                                  await playerController
+                                      .getDanDanmakuByEpisodeID(
+                                          episode.episodeId);
+                                  KazumiDialog.showToast(message: '弹幕切换成功');
+                                } catch (e) {
+                                  KazumiDialog.showToast(message: '弹幕切换失败');
+                                }
+                              },
+                            );
+                          }).toList(),
+                        ),
+                      ),
+                    );
+                  });
+                },
+              );
+            }).toList(),
+          ),
         ),
       );
     });
@@ -1288,6 +1297,7 @@ class _PlayerItemState extends State<PlayerItem>
     _danmakuUseSystemFont =
         setting.get(SettingBoxKey.useSystemFont, defaultValue: false);
     haEnable = setting.get(SettingBoxKey.hAenable, defaultValue: true);
+    autoPlayNext = setting.get(SettingBoxKey.autoPlayNext, defaultValue: true);
     playerTimer = getPlayerTimer();
     windowManager.addListener(this);
     displayVideoController();
