@@ -286,6 +286,9 @@ abstract class _PlayerController with Store {
         setting.get(SettingBoxKey.lowMemoryMode, defaultValue: false);
     playerDebugMode =
         setting.get(SettingBoxKey.playerDebugMode, defaultValue: false);
+    bool forceAdBlocker =
+        setting.get(SettingBoxKey.forceAdBlocker, defaultValue: false);
+    bool adBlockerEnabled = forceAdBlocker || videoPageController.currentPlugin.adBlocker;
     if (videoPageController.currentPlugin.userAgent == '') {
       userAgent = Utils.getRandomUA();
     } else {
@@ -297,12 +300,12 @@ abstract class _PlayerController with Store {
       if (referer.isNotEmpty) 'referer': referer,
     };
 
-    // Ad blocker is intentionally disabled here; currentPlugin.adBlocker remains available for future re-enabling.
     mediaPlayer = Player(
       configuration: PlayerConfiguration(
         bufferSize: lowMemoryMode ? 15 * 1024 * 1024 : 1500 * 1024 * 1024,
         osc: false,
         logLevel: MPVLogLevel.values[playerLogLevel],
+        // adBlocker: adBlockerEnabled,
       ),
     );
 
