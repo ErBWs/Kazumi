@@ -74,31 +74,21 @@ export default class MethodCallPlugin implements FlutterPlugin, AbilityAware {
 
   private enterFullScreen(needSet: boolean): void {
     window.getLastWindow(this.context).then((lastWindow) => {
-      if (this.deviceType == '2in1') {
-        lastWindow.maximize();
-        return;
-      }
+      lastWindow.setSpecificSystemBarEnabled("status", false, true);
+      lastWindow.setSpecificSystemBarEnabled("navigationIndicator", false, true);
+      lastWindow.setPreferredOrientation(window.Orientation.AUTO_ROTATION_LANDSCAPE);
       lastWindow.enableLandscapeMultiWindow();
-      if (needSet) {
-        lastWindow.setPreferredOrientation(window.Orientation.USER_ROTATION_LANDSCAPE);
-      } else {
-        lastWindow.setPreferredOrientation(window.Orientation.AUTO_ROTATION_UNSPECIFIED);
-      }
-      lastWindow.setWindowSystemBarEnable([]);
+      lastWindow.maximize();
     })
   }
 
   private exitFullScreen(): void {
     window.getLastWindow(this.context).then((lastWindow) => {
-      if (this.deviceType == '2in1') {
-        lastWindow.recover();
-        return;
-      }
+      lastWindow.setSpecificSystemBarEnabled("status", true, true);
+      lastWindow.setSpecificSystemBarEnabled("navigationIndicator", true, true);
+      lastWindow.setPreferredOrientation(window.Orientation.USER_ROTATION_PORTRAIT);
       lastWindow.disableLandscapeMultiWindow();
-      if (this.deviceType == 'phone') {
-        lastWindow.setPreferredOrientation(window.Orientation.USER_ROTATION_PORTRAIT);
-      }
-      lastWindow.setWindowSystemBarEnable(['status']);
+      lastWindow.recover();
     })
   }
 
@@ -125,7 +115,8 @@ export default class MethodCallPlugin implements FlutterPlugin, AbilityAware {
     return "MethodCallPlugin"
   }
 
-  onDetachedFromAbility(): void {}
+  onDetachedFromAbility(): void {
+  }
 
   onDetachedFromEngine(): void {
     this.channel?.setMethodCallHandler(null);
