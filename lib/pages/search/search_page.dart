@@ -218,8 +218,7 @@ class _SearchPageState extends State<SearchPage> {
                   },
                   icon: Icon(Icons.arrow_back),
                 ),
-                isFullScreen: MediaQuery.sizeOf(context).width <
-                    LayoutBreakpoint.compact['width']!,
+                isFullScreen: true,
                 suggestionsBuilder: (context, controller) => [
                   Observer(
                     builder: (context) {
