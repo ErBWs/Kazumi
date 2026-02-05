@@ -1,10 +1,16 @@
 import 'dart:async';
 import 'package:kazumi/utils/utils.dart';
-import 'package:kazumi/pages/webview/webview_controller.dart';
+import 'package:kazumi/utils/storage.dart';
+import 'package:kazumi/utils/proxy_utils.dart';
+import 'package:kazumi/utils/logger.dart';
+import 'package:kazumi/webview/webview_controller.dart';
 import 'package:flutter_inappwebview_platform_interface/flutter_inappwebview_platform_interface.dart';
+import 'package:flutter_inappwebview_android/flutter_inappwebview_android.dart'
+    as android_webview;
 
-class WebviewOhosItemControllerImpel
+class WebviewAndroidItemControllerImpel
     extends WebviewItemController<PlatformInAppWebViewController> {
+  PlatformHeadlessInAppWebView? headlessWebView;
   Timer? loadingMonitorTimer;
   bool hasInjectedScripts = false;
   bool shouldInjectIframeRedirect = false;
@@ -12,14 +18,43 @@ class WebviewOhosItemControllerImpel
 
   @override
   Future<void> init() async {
-    initEventController.add(true);
+    await _setupProxy();
+    headlessWebView ??= PlatformHeadlessInAppWebView(
+      PlatformHeadlessInAppWebViewCreationParams(
+        initialSettings: InAppWebViewSettings(
+          userAgent: Utils.getRandomUA(),
+          mediaPlaybackRequiresUserGesture: true,
+          cacheEnabled: false,
+          blockNetworkImage: true,
+          loadsImagesAutomatically: false,
+          upgradeKnownHostsToHTTPS: false,
+          safeBrowsingEnabled: false,
+          mixedContentMode: MixedContentMode.MIXED_CONTENT_COMPATIBILITY_MODE,
+          geolocationEnabled: false,
+        ),
+        onWebViewCreated: (controller) {
+          print('[WebView] Created');
+          webviewController = controller;
+          initEventController.add(true);
+        },
+        onLoadStart: (controller, url) async {
+          logEventController.add('started loading: $url');
+          if (url.toString() != 'about:blank') {
+            await onLoadStart();
+          }
+        },
+        onLoadStop: (controller, url) {
+          logEventController.add('loading completed: $url');
+        },
+      ),
+    );
+    await headlessWebView?.run();
   }
 
   @override
   Future<void> loadUrl(String url, bool useNativePlayer, bool useLegacyParser,
       {int offset = 0}) async {
-    // Do not unloadPage here or reload will throw error because webview is not
-    // yet initialized here.
+    await unloadPage();
     if (!hasInjectedScripts) {
       addJavaScriptHandlers(useNativePlayer, useLegacyParser);
       await addUserScripts(useNativePlayer, useLegacyParser);
@@ -54,15 +89,14 @@ class WebviewOhosItemControllerImpel
   void addJavaScriptHandlers(bool useNativePlayer, bool useLegacyParser) {
     logEventController.add('Adding LogBridge handler');
     webviewController?.addJavaScriptHandler(
-      handlerName: 'LogBridge',
-      callback: (args) {
-        String message = args[0].toString();
-        if (message.contains('about:blank')) {
-          return;
-        }
-        logEventController.add(message);
-      },
-    );
+        handlerName: 'LogBridge',
+        callback: (args) {
+          String message = args[0].toString();
+          if (message.contains('about:blank')) {
+            return;
+          }
+          logEventController.add(message);
+        });
 
     if (!useNativePlayer) {
       logEventController.add('Adding IframeRedirectBridge handler');
@@ -134,6 +168,7 @@ class WebviewOhosItemControllerImpel
     if (useLegacyParser) {
       logEventController.add('Adding JSBridgeDebug UserScript');
       const String jsBridgeDebugScript = """
+        window.flutter_inappwebview.callHandler('LogBridge', 'JSBridgeDebug script loaded: ' + window.location.href);
         function processIframeElement(iframe) {
           window.flutter_inappwebview.callHandler('LogBridge', 'Processing iframe element');
           let src = iframe.getAttribute('src');
@@ -172,6 +207,7 @@ class WebviewOhosItemControllerImpel
     } else {
       logEventController.add('Adding VideoBridgeDebug UserScripts');
       const String blobParserScript = """
+        window.flutter_inappwebview.callHandler('LogBridge', 'BlobParser script loaded: ' + window.location.href);
         const _r_text = window.Response.prototype.text;
         window.Response.prototype.text = function () {
             return new Promise((resolve, reject) => {
@@ -201,6 +237,7 @@ class WebviewOhosItemControllerImpel
       """;
 
       const String videoTagParserScript = """
+        window.flutter_inappwebview.callHandler('LogBridge', 'VideoTagParser script loaded: ' + window.location.href);
         const _observer = new MutationObserver((mutations) => {
           window.flutter_inappwebview.callHandler('LogBridge', 'Scanning for video elements...');
           for (const mutation of mutations) {
@@ -278,6 +315,7 @@ class WebviewOhosItemControllerImpel
       logEventController.add('Adding IframeRedirectBridge UserScript');
       shouldInjectIframeRedirect = false;
       await webviewController?.evaluateJavascript(source: """
+        window.flutter_inappwebview.callHandler('LogBridge', 'IframeRedirectBridge script loaded: ' + window.location.href);
         const _observer = new MutationObserver((mutations) => {
           window.flutter_inappwebview.callHandler('LogBridge', 'Scanning for iframes...');
           for (const mutation of mutations) {
@@ -333,7 +371,6 @@ class WebviewOhosItemControllerImpel
   @override
   Future<void> unloadPage() async {
     loadingMonitorTimer?.cancel();
-    await webviewController!.clearAllCache();
     await webviewController!
         .loadUrl(urlRequest: URLRequest(url: WebUri("about:blank")));
   }
@@ -341,6 +378,47 @@ class WebviewOhosItemControllerImpel
   @override
   void dispose() {
     loadingMonitorTimer?.cancel();
-    unloadPage();
+    headlessWebView?.dispose();
+    headlessWebView = null;
+    webviewController = null;
+  }
+
+  Future<void> _setupProxy() async {
+    final setting = GStorage.setting;
+    final bool proxyEnable =
+        setting.get(SettingBoxKey.proxyEnable, defaultValue: false);
+    if (!proxyEnable) {
+      return;
+    }
+
+    final String proxyUrl =
+        setting.get(SettingBoxKey.proxyUrl, defaultValue: '');
+    final formattedProxy = ProxyUtils.getFormattedProxyUrl(proxyUrl);
+    if (formattedProxy == null) {
+      return;
+    }
+
+    try {
+      final proxyAvailable =
+          await android_webview.AndroidWebViewFeature.instance()
+              .isFeatureSupported(WebViewFeature.PROXY_OVERRIDE);
+      if (!proxyAvailable) {
+        KazumiLogger().w('WebView: 当前 Android 版本不支持代理');
+        return;
+      }
+
+      final proxyController = android_webview.AndroidProxyController.instance();
+      await proxyController.clearProxyOverride();
+      await proxyController.setProxyOverride(
+        settings: ProxySettings(
+          proxyRules: [
+            ProxyRule(url: formattedProxy),
+          ],
+        ),
+      );
+      KazumiLogger().i('WebView: 代理设置成功 $formattedProxy');
+    } catch (e) {
+      KazumiLogger().e('WebView: 设置代理失败 $e');
+    }
   }
 }

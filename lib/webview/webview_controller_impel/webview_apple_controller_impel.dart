@@ -1,50 +1,121 @@
 import 'dart:async';
-import 'package:kazumi/utils/utils.dart';
-import 'package:kazumi/utils/storage.dart';
-import 'package:kazumi/utils/proxy_utils.dart';
+import 'dart:collection';
 import 'package:kazumi/utils/logger.dart';
-import 'package:kazumi/pages/webview/webview_controller.dart';
+import 'package:kazumi/utils/utils.dart';
+import 'package:kazumi/webview/webview_controller.dart';
 import 'package:flutter_inappwebview_platform_interface/flutter_inappwebview_platform_interface.dart';
-import 'package:flutter_inappwebview_android/flutter_inappwebview_android.dart'
-    as android_webview;
 
-class WebviewAndroidItemControllerImpel
+class WebviewAppleItemControllerImpel
     extends WebviewItemController<PlatformInAppWebViewController> {
   PlatformHeadlessInAppWebView? headlessWebView;
   Timer? loadingMonitorTimer;
   bool hasInjectedScripts = false;
-  bool shouldInjectIframeRedirect = false;
-  bool useNativePlayer = false;
 
   @override
   Future<void> init() async {
-    await _setupProxy();
     headlessWebView ??= PlatformHeadlessInAppWebView(
       PlatformHeadlessInAppWebViewCreationParams(
+        initialUserScripts: UnmodifiableListView<UserScript>([
+          UserScript(
+            source: '''
+            function removeLazyLoading() {
+              document.querySelectorAll('iframe[loading="lazy"]').forEach(iframe => {
+                console.log('Removing lazy loading from:', iframe.src);
+                iframe.removeAttribute('loading');
+              });
+            }
+            if (document.readyState === 'loading') {
+              document.addEventListener('DOMContentLoaded', removeLazyLoading);
+            } else {
+              removeLazyLoading();
+            }
+          ''',
+            injectionTime: UserScriptInjectionTime.AT_DOCUMENT_END,
+          ),
+        ]),
         initialSettings: InAppWebViewSettings(
           userAgent: Utils.getRandomUA(),
           mediaPlaybackRequiresUserGesture: true,
+          useOnLoadResource: false,
           cacheEnabled: false,
-          blockNetworkImage: true,
-          loadsImagesAutomatically: false,
-          upgradeKnownHostsToHTTPS: false,
-          safeBrowsingEnabled: false,
-          mixedContentMode: MixedContentMode.MIXED_CONTENT_COMPATIBILITY_MODE,
-          geolocationEnabled: false,
+          isInspectable: false,
+          contentBlockers: [
+            ContentBlocker(
+              trigger: ContentBlockerTrigger(
+                  urlFilter: r"^https?://.+?devtools-detector\.js",
+                  resourceType: [
+                    ContentBlockerTriggerResourceType.SCRIPT,
+                  ]),
+              action:
+                  ContentBlockerAction(type: ContentBlockerActionType.BLOCK),
+            ),
+            ContentBlocker(
+              trigger: ContentBlockerTrigger(urlFilter: '.*', resourceType: [
+                ContentBlockerTriggerResourceType.IMAGE,
+              ]),
+              action:
+                  ContentBlockerAction(type: ContentBlockerActionType.BLOCK),
+            ),
+            ContentBlocker(
+              trigger: ContentBlockerTrigger(
+                  urlFilter: r"^https?://.+?googleads",
+                  resourceType: [
+                    ContentBlockerTriggerResourceType.DOCUMENT,
+                  ]),
+              action:
+                  ContentBlockerAction(type: ContentBlockerActionType.BLOCK),
+            ),
+            ContentBlocker(
+              trigger: ContentBlockerTrigger(
+                  urlFilter: r"^https?://.+?googlesyndication\.com",
+                  resourceType: [
+                    ContentBlockerTriggerResourceType.DOCUMENT,
+                  ]),
+              action:
+                  ContentBlockerAction(type: ContentBlockerActionType.BLOCK),
+            ),
+            ContentBlocker(
+              trigger: ContentBlockerTrigger(
+                  urlFilter: r"^https?://.+?prestrain\.html",
+                  resourceType: [
+                    ContentBlockerTriggerResourceType.DOCUMENT,
+                  ]),
+              action:
+                  ContentBlockerAction(type: ContentBlockerActionType.BLOCK),
+            ),
+            ContentBlocker(
+              trigger: ContentBlockerTrigger(
+                  urlFilter: r"^https?://.+?prestrain%2Ehtml",
+                  resourceType: [
+                    ContentBlockerTriggerResourceType.DOCUMENT,
+                  ]),
+              action:
+                  ContentBlockerAction(type: ContentBlockerActionType.BLOCK),
+            ),
+            ContentBlocker(
+              trigger: ContentBlockerTrigger(
+                  urlFilter: r"^https?://.+?adtrafficquality",
+                  resourceType: [
+                    ContentBlockerTriggerResourceType.DOCUMENT,
+                  ]),
+              action:
+                  ContentBlockerAction(type: ContentBlockerActionType.BLOCK),
+            ),
+          ],
         ),
         onWebViewCreated: (controller) {
-          print('[WebView] Created');
+          KazumiLogger().i('WebView: created');
           webviewController = controller;
           initEventController.add(true);
         },
-        onLoadStart: (controller, url) async {
+        onLoadStart: (controller, url) {
           logEventController.add('started loading: $url');
-          if (url.toString() != 'about:blank') {
-            await onLoadStart();
-          }
         },
         onLoadStop: (controller, url) {
           logEventController.add('loading completed: $url');
+        },
+        onReceivedError: (controller, request, error) {
+          KazumiLogger().e('WebView: error: ${error.toString()} - Request: ${request.url}');
         },
       ),
     );
@@ -64,11 +135,10 @@ class WebviewAndroidItemControllerImpel
     this.offset = offset;
     isIframeLoaded = false;
     isVideoSourceLoaded = false;
-    shouldInjectIframeRedirect = true;
-    this.useNativePlayer = useNativePlayer;
     videoLoadingEventController.add(true);
 
     await webviewController?.loadUrl(urlRequest: URLRequest(url: WebUri(url)));
+
     loadingMonitorTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (isVideoSourceLoaded || isIframeLoaded) {
         timer.cancel();
@@ -160,49 +230,46 @@ class WebviewAndroidItemControllerImpel
 
   Future<void> addUserScripts(
       bool useNativePlayer, bool useLegacyParser) async {
-    if (!useNativePlayer) {
-      return;
-    }
     final List<UserScript> scripts = [];
 
-    if (useLegacyParser) {
+    if (!useNativePlayer) {
+      logEventController.add('Adding IframeRedirectBridge UserScript');
+      const String iframeRedirectScript = """
+        window.flutter_inappwebview.callHandler('LogBridge', 'IframeRedirectBridge script loaded: ' + window.location.href);
+        var iframes = document.getElementsByTagName('iframe');
+        for (var i = 0; i < iframes.length; i++) {
+              var iframe = iframes[i];
+              var src = iframe.getAttribute('src');
+              if (src && src.trim() !== '' && (src.startsWith('http') || src.startsWith('//')) && !src.includes('googleads') && !src.includes('adtrafficquality') && !src.includes('googlesyndication.com') && !src.includes('google.com') && !src.includes('prestrain.html') && !src.includes('prestrain%2Ehtml')) {
+                  window.flutter_inappwebview.callHandler('IframeRedirectBridge', src);
+                  window.location.href = src;
+                  break; 
+              }
+          }
+      """;
+      scripts.add(UserScript(
+        source: iframeRedirectScript,
+        injectionTime: UserScriptInjectionTime.AT_DOCUMENT_END,
+        forMainFrameOnly: true,
+      ));
+    } else if (useLegacyParser) {
       logEventController.add('Adding JSBridgeDebug UserScript');
       const String jsBridgeDebugScript = """
         window.flutter_inappwebview.callHandler('LogBridge', 'JSBridgeDebug script loaded: ' + window.location.href);
-        function processIframeElement(iframe) {
-          window.flutter_inappwebview.callHandler('LogBridge', 'Processing iframe element');
-          let src = iframe.getAttribute('src');
-          if (src) {
-            window.flutter_inappwebview.callHandler('JSBridgeDebug', src);
-          }
-        }
-
-        const _observer = new MutationObserver((mutations) => {
-          window.flutter_inappwebview.callHandler('LogBridge', 'Scanning for iframes...');
-          mutations.forEach(mutation => {
-            if (mutation.type === 'attributes' && mutation.target.nodeName === 'IFRAME') {
-              processIframeElement(mutation.target);
-            } else {
-              mutation.addedNodes.forEach(node => {
-                if (node.nodeName === 'IFRAME') processIframeElement(node);
-                if (node.querySelectorAll) {
-                  node.querySelectorAll('iframe').forEach(processIframeElement);
-                }
-              });
+        var iframes = document.getElementsByTagName('iframe');
+        window.flutter_inappwebview.callHandler('LogBridge', 'The number of iframe tags is ' + iframes.length);
+        for (var i = 0; i < iframes.length; i++) {
+            var iframe = iframes[i];
+            var src = iframe.getAttribute('src');
+            if (src) {
+              window.flutter_inappwebview.callHandler('JSBridgeDebug', src);
             }
-          });  
-        });
-
-        _observer.observe(document.documentElement, {
-          childList: true,
-          subtree: true,
-          attributes: true,
-          attributeFilter: ['src']
-        });
+        }
       """;
       scripts.add(UserScript(
         source: jsBridgeDebugScript,
-        injectionTime: UserScriptInjectionTime.AT_DOCUMENT_START,
+        injectionTime: UserScriptInjectionTime.AT_DOCUMENT_END,
+        forMainFrameOnly: false,
       ));
     } else {
       logEventController.add('Adding VideoBridgeDebug UserScripts');
@@ -238,134 +305,64 @@ class WebviewAndroidItemControllerImpel
 
       const String videoTagParserScript = """
         window.flutter_inappwebview.callHandler('LogBridge', 'VideoTagParser script loaded: ' + window.location.href);
-        const _observer = new MutationObserver((mutations) => {
-          window.flutter_inappwebview.callHandler('LogBridge', 'Scanning for video elements...');
-          for (const mutation of mutations) {
-            if (mutation.type === "attributes" && mutation.target.nodeName === "VIDEO") {
-              if (processVideoElement(mutation.target)) return;
-              continue;
-            }
-            for (const node of mutation.addedNodes) {
-              if (node.nodeName === "VIDEO") {
-                if (processVideoElement(node)) return;
-              }
-              if (node.querySelectorAll) {
-                for (const video of node.querySelectorAll("video")) {
-                  if (processVideoElement(video)) return;
-                }
-              }
-            }
-          }
-        });
         function processVideoElement(video) {
           window.flutter_inappwebview.callHandler('LogBridge', 'Scanning video element for source URL');
           let src = video.getAttribute('src');
           if (src && src.trim() !== '' && !src.startsWith('blob:') && !src.includes('googleads')) {
-            _observer.disconnect();
             window.flutter_inappwebview.callHandler('LogBridge', 'VIDEO source found: ' + src);
             window.flutter_inappwebview.callHandler('VideoBridgeDebug', src);
-            return true;
+            return;
           }
           const sources = video.getElementsByTagName('source');
           for (let source of sources) {
             src = source.getAttribute('src');
             if (src && src.trim() !== '' && !src.startsWith('blob:') && !src.includes('googleads')) {
-              _observer.disconnect();
               window.flutter_inappwebview.callHandler('LogBridge', 'VIDEO source found (source tag): ' + src);
               window.flutter_inappwebview.callHandler('VideoBridgeDebug', src);
-              return true;
+              return;
             }
           }
         }
 
-        function setupVideoProcessing() {
-          for (const video of document.querySelectorAll("video")) {
-            if (processVideoElement(video)) return;
-          }
-          _observer.observe(document.body, {
-            childList: true,
-            subtree: true,
-            attributes: true,
-            attributeFilter: ['src']
-          });
-        }
-        if (document.readyState === 'loading') {
-          document.addEventListener('DOMContentLoaded', setupVideoProcessing);
-        } else {
-          setupVideoProcessing();
-        }
+        document.querySelectorAll('video').forEach(processVideoElement);
+
+        const _observer = new MutationObserver((mutations) => {
+          window.flutter_inappwebview.callHandler('LogBridge', 'Scanning for video elements...');
+          mutations.forEach(mutation => {
+            if (mutation.type === 'attributes' && mutation.target.nodeName === 'VIDEO') {
+              processVideoElement(mutation.target);
+            }
+            mutation.addedNodes.forEach(node => {
+              if (node.nodeName === 'VIDEO') processVideoElement(node);
+              if (node.querySelectorAll) {
+                node.querySelectorAll('video').forEach(processVideoElement);
+              }
+            });
+          });  
+        });
+
+        _observer.observe(document.body, {
+          childList: true,
+          subtree: true,
+          attributes: true,
+          attributeFilter: ['src']
+        });
     """;
       scripts.add(UserScript(
         source: blobParserScript,
         injectionTime: UserScriptInjectionTime.AT_DOCUMENT_START,
+        forMainFrameOnly: false,
       ));
       scripts.add(UserScript(
         source: videoTagParserScript,
-        injectionTime: UserScriptInjectionTime.AT_DOCUMENT_START,
+        injectionTime: UserScriptInjectionTime.AT_DOCUMENT_END,
+        forMainFrameOnly: false,
       ));
     }
 
     await webviewController?.addUserScripts(
       userScripts: scripts,
     );
-  }
-
-  Future<void> onLoadStart() async {
-    if (!useNativePlayer && shouldInjectIframeRedirect) {
-      logEventController.add('Adding IframeRedirectBridge UserScript');
-      shouldInjectIframeRedirect = false;
-      await webviewController?.evaluateJavascript(source: """
-        window.flutter_inappwebview.callHandler('LogBridge', 'IframeRedirectBridge script loaded: ' + window.location.href);
-        const _observer = new MutationObserver((mutations) => {
-          window.flutter_inappwebview.callHandler('LogBridge', 'Scanning for iframes...');
-          for (const mutation of mutations) {
-            if (mutation.type === "attributes" && mutation.target.nodeName === "IFRAME") {
-              if (processIframeElement(mutation.target)) return;
-              continue;
-            }
-            for (const node of mutation.addedNodes) {
-              if (node.nodeName === "IFRAME") {
-                if (processIframeElement(node)) return;
-              }
-              if (node.querySelectorAll) {
-                for (const iframe of node.querySelectorAll("iframe")) {
-                  if (processIframeElement(iframe)) return;
-                }
-              }
-            }
-          }
-        });
-
-        function processIframeElement(iframe) {
-          window.flutter_inappwebview.callHandler('LogBridge', 'Processing iframe element');
-          let src = iframe.getAttribute("src");
-          if (src && src.trim() !== '' && (src.startsWith('http') || src.startsWith('//')) && !src.includes('googleads') && !src.includes('adtrafficquality') && !src.includes('googlesyndication.com') && !src.includes('google.com') && !src.includes('prestrain.html') && !src.includes('prestrain%2Ehtml')) {
-            _observer.disconnect();
-            window.flutter_inappwebview.callHandler("IframeRedirectBridge", src);
-            window.location.href = src;
-            return true;
-          }
-        }
-
-        function setupIframeProcessing() {
-          for (const iframe of document.querySelectorAll("iframe")) {
-            if (processIframeElement(iframe)) return;
-          }
-          _observer.observe(document.body, {
-            childList: true,
-            subtree: true,
-            attributes: true,
-            attributeFilter: ["src"],
-          });
-        }
-        
-        if (document.readyState === 'loading') {
-          document.addEventListener('DOMContentLoaded', setupIframeProcessing);
-        } else {
-          setupIframeProcessing();
-        }
-      """);
-    }
   }
 
   @override
@@ -381,44 +378,5 @@ class WebviewAndroidItemControllerImpel
     headlessWebView?.dispose();
     headlessWebView = null;
     webviewController = null;
-  }
-
-  Future<void> _setupProxy() async {
-    final setting = GStorage.setting;
-    final bool proxyEnable =
-        setting.get(SettingBoxKey.proxyEnable, defaultValue: false);
-    if (!proxyEnable) {
-      return;
-    }
-
-    final String proxyUrl =
-        setting.get(SettingBoxKey.proxyUrl, defaultValue: '');
-    final formattedProxy = ProxyUtils.getFormattedProxyUrl(proxyUrl);
-    if (formattedProxy == null) {
-      return;
-    }
-
-    try {
-      final proxyAvailable =
-          await android_webview.AndroidWebViewFeature.instance()
-              .isFeatureSupported(WebViewFeature.PROXY_OVERRIDE);
-      if (!proxyAvailable) {
-        KazumiLogger().w('WebView: 当前 Android 版本不支持代理');
-        return;
-      }
-
-      final proxyController = android_webview.AndroidProxyController.instance();
-      await proxyController.clearProxyOverride();
-      await proxyController.setProxyOverride(
-        settings: ProxySettings(
-          proxyRules: [
-            ProxyRule(url: formattedProxy),
-          ],
-        ),
-      );
-      KazumiLogger().i('WebView: 代理设置成功 $formattedProxy');
-    } catch (e) {
-      KazumiLogger().e('WebView: 设置代理失败 $e');
-    }
   }
 }
