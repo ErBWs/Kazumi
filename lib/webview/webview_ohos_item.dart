@@ -1,18 +1,18 @@
 import 'package:flutter/material.dart';
-import 'package:kazumi/pages/webview/webview_controller.dart';
+import 'package:kazumi/webview/webview_controller.dart';
 import 'package:flutter_modular/flutter_modular.dart';
-import 'package:kazumi/pages/webview/webview_controller_impel/webview_ohos_controller_impel.dart';
+import 'package:kazumi/webview/webview_controller_impel/webview_ohos_controller_impel.dart';
 import 'package:kazumi/utils/utils.dart';
 import 'package:flutter_inappwebview_platform_interface/flutter_inappwebview_platform_interface.dart';
 
-class WebviewOhosItemImpel extends StatefulWidget {
-  const WebviewOhosItemImpel({super.key});
+class WebviewOhosItem extends StatefulWidget {
+  const WebviewOhosItem({super.key});
 
   @override
-  State<WebviewOhosItemImpel> createState() => _WebviewOhosItemImpelState();
+  State<WebviewOhosItem> createState() => _WebviewOhosItemState();
 }
 
-class _WebviewOhosItemImpelState extends State<WebviewOhosItemImpel> {
+class _WebviewOhosItemState extends State<WebviewOhosItem> {
   final webviewOhosItemController =
       Modular.get<WebviewItemController>() as WebviewOhosItemControllerImpel;
 

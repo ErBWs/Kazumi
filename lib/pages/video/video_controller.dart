@@ -98,9 +98,9 @@ abstract class _VideoPageController with Store {
   WebViewVideoSourceProvider? _videoSourceProvider;
 
   /// 视频提供者日志流控制器
-  final StreamController<String> _logStreamController = 
+  final StreamController<String> _logStreamController =
       StreamController<String>.broadcast();
-  
+
   Stream<String> get logStream => _logStreamController.stream;
 
   StreamSubscription<String>? _logSubscription;
@@ -250,8 +250,8 @@ abstract class _VideoPageController with Store {
   Future<void> _resolveWithProvider(String url, int offset) async {
     _videoSourceProvider?.cancel();
 
-    loading = true;
     _videoSourceProvider ??= WebViewVideoSourceProvider();
+    loading = true;
 
     await _logSubscription?.cancel();
     _logSubscription = _videoSourceProvider!.onLog.listen((log) {
@@ -271,7 +271,7 @@ abstract class _VideoPageController with Store {
       KazumiLogger().i('VideoPageController: resolved video URL: ${source.url}');
 
       final bool forceAdBlocker = setting.get(SettingBoxKey.forceAdBlocker, defaultValue: false);
-      
+
       final params = PlaybackInitParams(
         videoUrl: source.url,
         offset: source.offset,
