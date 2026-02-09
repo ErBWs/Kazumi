@@ -221,19 +221,19 @@ packages:
     dependency: "direct main"
     description:
       path: "packages/connectivity_plus/connectivity_plus"
-      ref: HEAD
-      resolved-ref: "0eb41c70f961f124a987b8de59c9a26ca919af17"
+      ref: "br_connectivity_plus-v6.1.0_ohos"
+      resolved-ref: "0ebb54f8c46f384f36ad7e4b7f2786fce09b839a"
       url: "https://gitcode.com/openharmony-sig/flutter_plus_plugins.git"
     source: git
-    version: "5.0.1"
+    version: "6.1.0"
   connectivity_plus_platform_interface:
     dependency: transitive
     description:
       name: connectivity_plus_platform_interface
-      sha256: cf1d1c28f4416f8c654d7dc3cd638ec586076255d407cef3ddbdaf178272a71a
+      sha256: "42657c1715d48b167930d5f34d00222ac100475f73d10162ddf43e714932f204"
       url: "https://pub.dev"
     source: hosted
-    version: "1.2.4"
+    version: "2.0.1"
   console:
     dependency: transitive
     description:
@@ -294,8 +294,8 @@ packages:
     dependency: "direct main"
     description:
       path: "."
-      ref: "5a07358"
-      resolved-ref: "5a07358d2f52a0cd01a767ba6d998f5e32170426"
+      ref: "297b39532c426263d2fa9fde4d70d2b5bdfc8059"
+      resolved-ref: "297b39532c426263d2fa9fde4d70d2b5bdfc8059"
       url: "https://github.com/Predidit/linux_webview_window.git"
     source: git
     version: "0.2.4"
@@ -690,10 +690,10 @@ packages:
     dependency: transitive
     description:
       name: js
-      sha256: f2c445dce49627136094980615a031419f7f3eb393237e4ecd97ac15dea343f3
+      sha256: "53385261521cc4a0c4658fd0ad07a7d14591cf8fc33abbceae306ddb974888dc"
       url: "https://pub.dev"
     source: hosted
-    version: "0.6.7"
+    version: "0.7.2"
   json_annotation:
     dependency: transitive
     description:
@@ -770,78 +770,83 @@ packages:
     dependency: "direct main"
     description:
       path: media_kit
-      ref: feat-ohos
-      resolved-ref: "7e3354c4a36f0908ef065e5dd5e87bf1ee3a5ca9"
-      url: "https://github.com/ErBWs/media-kit.git"
+      ref: "7d1e3f8116abce740bdf83dc5e85f37e89436db5"
+      resolved-ref: "7d1e3f8116abce740bdf83dc5e85f37e89436db5"
+      url: "https://github.com/Predidit/media-kit.git"
     source: git
-    version: "1.2.3"
+    version: "1.1.11"
   media_kit_libs_android_video:
     dependency: transitive
     description:
-      name: media_kit_libs_android_video
-      sha256: "3f6274e5ab2de512c286a25c327288601ee445ed8ac319e0ef0b66148bd8f76c"
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.3.8"
+      path: "libs/android/media_kit_libs_android_video"
+      ref: "7d1e3f8116abce740bdf83dc5e85f37e89436db5"
+      resolved-ref: "7d1e3f8116abce740bdf83dc5e85f37e89436db5"
+      url: "https://github.com/Predidit/media-kit.git"
+    source: git
+    version: "1.3.6"
   media_kit_libs_ios_video:
     dependency: transitive
     description:
-      name: media_kit_libs_ios_video
-      sha256: b5382994eb37a4564c368386c154ad70ba0cc78dacdd3fb0cd9f30db6d837991
-      url: "https://pub.dev"
-    source: hosted
+      path: "libs/ios/media_kit_libs_ios_video"
+      ref: "7d1e3f8116abce740bdf83dc5e85f37e89436db5"
+      resolved-ref: "7d1e3f8116abce740bdf83dc5e85f37e89436db5"
+      url: "https://github.com/Predidit/media-kit.git"
+    source: git
     version: "1.1.4"
   media_kit_libs_linux:
     dependency: transitive
     description:
-      name: media_kit_libs_linux
-      sha256: "2b473399a49ec94452c4d4ae51cfc0f6585074398d74216092bf3d54aac37ecf"
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.2.1"
+      path: "libs/linux/media_kit_libs_linux"
+      ref: "7d1e3f8116abce740bdf83dc5e85f37e89436db5"
+      resolved-ref: "7d1e3f8116abce740bdf83dc5e85f37e89436db5"
+      url: "https://github.com/Predidit/media-kit.git"
+    source: git
+    version: "1.1.3"
   media_kit_libs_macos_video:
     dependency: transitive
     description:
-      name: media_kit_libs_macos_video
-      sha256: f26aa1452b665df288e360393758f84b911f70ffb3878032e1aabba23aa1032d
-      url: "https://pub.dev"
-    source: hosted
+      path: "libs/macos/media_kit_libs_macos_video"
+      ref: "7d1e3f8116abce740bdf83dc5e85f37e89436db5"
+      resolved-ref: "7d1e3f8116abce740bdf83dc5e85f37e89436db5"
+      url: "https://github.com/Predidit/media-kit.git"
+    source: git
     version: "1.1.4"
   media_kit_libs_ohos:
-    dependency: "direct overridden"
+    dependency: transitive
     description:
       path: "libs/ohos/media_kit_libs_ohos"
-      ref: feat-ohos
-      resolved-ref: "7e3354c4a36f0908ef065e5dd5e87bf1ee3a5ca9"
-      url: "https://github.com/ErBWs/media-kit.git"
+      ref: "7d1e3f8116abce740bdf83dc5e85f37e89436db5"
+      resolved-ref: "7d1e3f8116abce740bdf83dc5e85f37e89436db5"
+      url: "https://github.com/Predidit/media-kit.git"
     source: git
     version: "1.0.0"
   media_kit_libs_video:
     dependency: "direct main"
     description:
       path: "libs/universal/media_kit_libs_video"
-      ref: feat-ohos
-      resolved-ref: "7e3354c4a36f0908ef065e5dd5e87bf1ee3a5ca9"
-      url: "https://github.com/ErBWs/media-kit.git"
+      ref: "7d1e3f8116abce740bdf83dc5e85f37e89436db5"
+      resolved-ref: "7d1e3f8116abce740bdf83dc5e85f37e89436db5"
+      url: "https://github.com/Predidit/media-kit.git"
     source: git
-    version: "1.0.7"
+    version: "1.0.5"
   media_kit_libs_windows_video:
     dependency: transitive
     description:
-      name: media_kit_libs_windows_video
-      sha256: dff76da2778729ab650229e6b4ec6ec111eb5151431002cbd7ea304ff1f112ab
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.0.11"
+      path: "libs/windows/media_kit_libs_windows_video"
+      ref: "7d1e3f8116abce740bdf83dc5e85f37e89436db5"
+      resolved-ref: "7d1e3f8116abce740bdf83dc5e85f37e89436db5"
+      url: "https://github.com/Predidit/media-kit.git"
+    source: git
+    version: "1.0.10"
   media_kit_video:
     dependency: "direct main"
     description:
       path: media_kit_video
-      ref: feat-ohos
-      resolved-ref: "7e3354c4a36f0908ef065e5dd5e87bf1ee3a5ca9"
-      url: "https://github.com/ErBWs/media-kit.git"
+      ref: "7d1e3f8116abce740bdf83dc5e85f37e89436db5"
+      resolved-ref: "7d1e3f8116abce740bdf83dc5e85f37e89436db5"
+      url: "https://github.com/Predidit/media-kit.git"
     source: git
-    version: "2.0.1"
+    version: "1.2.5"
   menu_base:
     dependency: transitive
     description:
@@ -950,10 +955,10 @@ packages:
     dependency: transitive
     description:
       name: package_info_plus
-      sha256: f69da0d3189a4b4ceaeb1a3defb0f329b3b352517f52bed4290f83d4f06bc08d
+      sha256: "16eee997588c60225bda0488b6dcfac69280a6b7a3cf02c741895dd370a02968"
       url: "https://pub.dev"
     source: hosted
-    version: "9.0.0"
+    version: "8.3.1"
   package_info_plus_platform_interface:
     dependency: transitive
     description:
@@ -1639,10 +1644,10 @@ packages:
     dependency: transitive
     description:
       name: wakelock_plus
-      sha256: "9296d40c9adbedaba95d1e704f4e0b434be446e2792948d0e4aa977048104228"
+      sha256: "61713aa82b7f85c21c9f4cd0a148abd75f38a74ec645fcb1e446f882c82fd09b"
       url: "https://pub.dev"
     source: hosted
-    version: "1.4.0"
+    version: "1.3.3"
   wakelock_plus_ohos:
     dependency: transitive
     description:
@@ -1703,8 +1708,8 @@ packages:
     dependency: "direct main"
     description:
       path: "."
-      ref: "9962cb9416f867d9ce9f409ccd6784e78c5f72ca"
-      resolved-ref: "9962cb9416f867d9ce9f409ccd6784e78c5f72ca"
+      ref: "9b9aabb2452e53d8d32bf59d571520fdfbaa7c21"
+      resolved-ref: "9b9aabb2452e53d8d32bf59d571520fdfbaa7c21"
       url: "https://github.com/Predidit/flutter-webview-windows.git"
     source: git
     version: "0.4.0"
