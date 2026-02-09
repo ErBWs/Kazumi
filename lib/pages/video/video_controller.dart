@@ -250,8 +250,8 @@ abstract class _VideoPageController with Store {
   Future<void> _resolveWithProvider(String url, int offset) async {
     _videoSourceProvider?.cancel();
 
-    _videoSourceProvider ??= WebViewVideoSourceProvider();
     loading = true;
+    _videoSourceProvider ??= WebViewVideoSourceProvider();
 
     await _logSubscription?.cancel();
     _logSubscription = _videoSourceProvider!.onLog.listen((log) {

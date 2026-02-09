@@ -1,21 +1,17 @@
 import 'package:flutter/material.dart';
-import 'package:kazumi/webview/webview_controller.dart';
-import 'package:flutter_modular/flutter_modular.dart';
-import 'package:kazumi/webview/webview_controller_impel/webview_ohos_controller_impel.dart';
 import 'package:kazumi/utils/utils.dart';
 import 'package:flutter_inappwebview_platform_interface/flutter_inappwebview_platform_interface.dart';
+import 'package:kazumi/webview/webview_controller_impel/webview_ohos_controller_impel.dart';
 
 class WebviewOhosItem extends StatefulWidget {
-  const WebviewOhosItem({super.key});
+  final WebviewOhosItemControllerImpel webviewOhosItemController;
+  const WebviewOhosItem({super.key, required this.webviewOhosItemController});
 
   @override
   State<WebviewOhosItem> createState() => _WebviewOhosItemState();
 }
 
 class _WebviewOhosItemState extends State<WebviewOhosItem> {
-  final webviewOhosItemController =
-      Modular.get<WebviewItemController>() as WebviewOhosItemControllerImpel;
-
   @override
   void initState() {
     super.initState();
@@ -23,7 +19,7 @@ class _WebviewOhosItemState extends State<WebviewOhosItem> {
 
   @override
   void dispose() {
-    webviewOhosItemController.dispose();
+    widget.webviewOhosItemController.dispose();
     super.dispose();
   }
 
@@ -43,18 +39,15 @@ class _WebviewOhosItemState extends State<WebviewOhosItem> {
       ),
       onWebViewCreated: (controller) {
         debugPrint('[WebView] Created');
-        webviewOhosItemController.webviewController = controller;
-        webviewOhosItemController.init();
+        widget.webviewOhosItemController.webviewController = controller;
+        widget.webviewOhosItemController.initEventController.add(true);
       },
       onLoadStart: (controller, url) async {
-        webviewOhosItemController.logEventController
+        widget.webviewOhosItemController.logEventController
             .add('started loading: $url');
-        if (url.toString() != 'about:blank') {
-          await webviewOhosItemController.onLoadStart();
-        }
       },
       onLoadStop: (controller, url) {
-        webviewOhosItemController.logEventController
+        widget.webviewOhosItemController.logEventController
             .add('loading completed: $url');
       },
     )).build(context);

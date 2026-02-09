@@ -13,7 +13,6 @@ import 'package:kazumi/utils/storage.dart';
 import 'package:kazumi/utils/utils.dart';
 import 'package:kazumi/bean/appbar/drag_to_move_bar.dart' as dtb;
 import 'package:kazumi/bean/dialog/dialog_helper.dart';
-import 'package:kazumi/webview/webview_ohos_item.dart';
 import 'package:screen_brightness_platform_interface/screen_brightness_platform_interface.dart';
 import 'package:scrollview_observer/scrollview_observer.dart';
 import 'package:kazumi/pages/player/episode_comments_sheet.dart';
@@ -789,13 +788,6 @@ class _VideoPageState extends State<VideoPage>
                       showDanmakuDestinationPickerAndSend,
                   pauseForTimedShutdown: pauseForTimedShutdown,
                 ),
-        ),
-        Positioned(
-          child: SizedBox(
-            height: (videoPageController.loading) ? 1 : 0,
-            width: (videoPageController.loading) ? 1 : 0,
-            child: const WebviewOhosItem(),
-          ),
         ),
       ],
     );

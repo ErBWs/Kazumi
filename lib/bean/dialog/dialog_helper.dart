@@ -12,6 +12,53 @@ class KazumiDialog {
 
   KazumiDialog._internal();
 
+  static OverlayEntry? showGlobalOverlay({
+    required Widget child,
+    BuildContext? context,
+  }) {
+    final ctx = context ?? observer.currentContext;
+    if (ctx == null || !ctx.mounted) {
+      debugPrint('Kazumi Overlay Error: No context available to show overlay');
+      return null;
+    }
+
+    OverlayEntry? entry = OverlayEntry(
+      builder: (BuildContext _) {
+        return IgnorePointer(
+          child: Align(
+            alignment: Alignment.topLeft,
+            child: SizedBox(
+              width: 1,
+              height: 1,
+              child: child,
+            ),
+          ),
+        );
+      },
+    );
+
+    try {
+      final navOverlay = Navigator.maybeOf(ctx)?.overlay;
+      navOverlay?.insert(entry);
+    } catch (e) {
+      debugPrint('Kazumi Overlay Error: Failed to insert overlay: $e');
+      entry = null;
+    }
+
+    return entry;
+  }
+
+  static void hideGlobalOverlay(OverlayEntry? entry) {
+    if (entry == null) return;
+    try {
+      entry.remove();
+    } catch (e) {
+      debugPrint('Kazumi Overlay Error: Failed to remove overlay: $e');
+    } finally {
+      entry = null;
+    }
+  }
+
   static Future<T?> show<T>({
     BuildContext? context,
     bool? clickMaskDismiss,
