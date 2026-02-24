@@ -770,53 +770,53 @@ packages:
     dependency: "direct main"
     description:
       path: media_kit
-      ref: "7d1e3f8116abce740bdf83dc5e85f37e89436db5"
-      resolved-ref: "7d1e3f8116abce740bdf83dc5e85f37e89436db5"
+      ref: "204b5c7c56359ee7f81f6eeeb78a6194337397dd"
+      resolved-ref: "204b5c7c56359ee7f81f6eeeb78a6194337397dd"
       url: "https://github.com/Predidit/media-kit.git"
     source: git
     version: "1.1.11"
   media_kit_libs_android_video:
-    dependency: transitive
+    dependency: "direct overridden"
     description:
       path: "libs/android/media_kit_libs_android_video"
-      ref: "7d1e3f8116abce740bdf83dc5e85f37e89436db5"
-      resolved-ref: "7d1e3f8116abce740bdf83dc5e85f37e89436db5"
+      ref: "204b5c7c56359ee7f81f6eeeb78a6194337397dd"
+      resolved-ref: "204b5c7c56359ee7f81f6eeeb78a6194337397dd"
       url: "https://github.com/Predidit/media-kit.git"
     source: git
     version: "1.3.6"
   media_kit_libs_ios_video:
-    dependency: transitive
+    dependency: "direct overridden"
     description:
       path: "libs/ios/media_kit_libs_ios_video"
-      ref: "7d1e3f8116abce740bdf83dc5e85f37e89436db5"
-      resolved-ref: "7d1e3f8116abce740bdf83dc5e85f37e89436db5"
+      ref: "204b5c7c56359ee7f81f6eeeb78a6194337397dd"
+      resolved-ref: "204b5c7c56359ee7f81f6eeeb78a6194337397dd"
       url: "https://github.com/Predidit/media-kit.git"
     source: git
     version: "1.1.4"
   media_kit_libs_linux:
-    dependency: transitive
+    dependency: "direct overridden"
     description:
       path: "libs/linux/media_kit_libs_linux"
-      ref: "7d1e3f8116abce740bdf83dc5e85f37e89436db5"
-      resolved-ref: "7d1e3f8116abce740bdf83dc5e85f37e89436db5"
+      ref: "204b5c7c56359ee7f81f6eeeb78a6194337397dd"
+      resolved-ref: "204b5c7c56359ee7f81f6eeeb78a6194337397dd"
       url: "https://github.com/Predidit/media-kit.git"
     source: git
     version: "1.1.3"
   media_kit_libs_macos_video:
-    dependency: transitive
+    dependency: "direct overridden"
     description:
       path: "libs/macos/media_kit_libs_macos_video"
-      ref: "7d1e3f8116abce740bdf83dc5e85f37e89436db5"
-      resolved-ref: "7d1e3f8116abce740bdf83dc5e85f37e89436db5"
+      ref: "204b5c7c56359ee7f81f6eeeb78a6194337397dd"
+      resolved-ref: "204b5c7c56359ee7f81f6eeeb78a6194337397dd"
       url: "https://github.com/Predidit/media-kit.git"
     source: git
     version: "1.1.4"
   media_kit_libs_ohos:
-    dependency: transitive
+    dependency: "direct overridden"
     description:
       path: "libs/ohos/media_kit_libs_ohos"
-      ref: "7d1e3f8116abce740bdf83dc5e85f37e89436db5"
-      resolved-ref: "7d1e3f8116abce740bdf83dc5e85f37e89436db5"
+      ref: "204b5c7c56359ee7f81f6eeeb78a6194337397dd"
+      resolved-ref: "204b5c7c56359ee7f81f6eeeb78a6194337397dd"
       url: "https://github.com/Predidit/media-kit.git"
     source: git
     version: "1.0.0"
@@ -824,17 +824,17 @@ packages:
     dependency: "direct main"
     description:
       path: "libs/universal/media_kit_libs_video"
-      ref: "7d1e3f8116abce740bdf83dc5e85f37e89436db5"
-      resolved-ref: "7d1e3f8116abce740bdf83dc5e85f37e89436db5"
+      ref: "204b5c7c56359ee7f81f6eeeb78a6194337397dd"
+      resolved-ref: "204b5c7c56359ee7f81f6eeeb78a6194337397dd"
       url: "https://github.com/Predidit/media-kit.git"
     source: git
     version: "1.0.5"
   media_kit_libs_windows_video:
-    dependency: transitive
+    dependency: "direct overridden"
     description:
       path: "libs/windows/media_kit_libs_windows_video"
-      ref: "7d1e3f8116abce740bdf83dc5e85f37e89436db5"
-      resolved-ref: "7d1e3f8116abce740bdf83dc5e85f37e89436db5"
+      ref: "204b5c7c56359ee7f81f6eeeb78a6194337397dd"
+      resolved-ref: "204b5c7c56359ee7f81f6eeeb78a6194337397dd"
       url: "https://github.com/Predidit/media-kit.git"
     source: git
     version: "1.0.10"
@@ -842,8 +842,8 @@ packages:
     dependency: "direct main"
     description:
       path: media_kit_video
-      ref: "7d1e3f8116abce740bdf83dc5e85f37e89436db5"
-      resolved-ref: "7d1e3f8116abce740bdf83dc5e85f37e89436db5"
+      ref: "204b5c7c56359ee7f81f6eeeb78a6194337397dd"
+      resolved-ref: "204b5c7c56359ee7f81f6eeeb78a6194337397dd"
       url: "https://github.com/Predidit/media-kit.git"
     source: git
     version: "1.2.5"
