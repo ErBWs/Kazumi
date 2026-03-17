@@ -1,17 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:kazumi/utils/utils.dart';
 import 'package:flutter_inappwebview_platform_interface/flutter_inappwebview_platform_interface.dart';
-import 'package:kazumi/webview/webview_controller_impel/webview_ohos_controller_impel.dart';
+import 'package:kazumi/webview/video/video_webview_controller.dart';
 
-class WebviewOhosItem extends StatefulWidget {
-  final WebviewOhosItemControllerImpel webviewOhosItemController;
-  const WebviewOhosItem({super.key, required this.webviewOhosItemController});
+class VideoWebviewItem extends StatefulWidget {
+  final VideoWebviewController videoWebviewController;
+
+  const VideoWebviewItem({super.key, required this.videoWebviewController});
 
   @override
-  State<WebviewOhosItem> createState() => _WebviewOhosItemState();
+  State<VideoWebviewItem> createState() => _VideoWebviewItemState();
 }
 
-class _WebviewOhosItemState extends State<WebviewOhosItem> {
+class _VideoWebviewItemState extends State<VideoWebviewItem> {
   @override
   void initState() {
     super.initState();
@@ -19,7 +20,7 @@ class _WebviewOhosItemState extends State<WebviewOhosItem> {
 
   @override
   void dispose() {
-    widget.webviewOhosItemController.dispose();
+    widget.videoWebviewController.dispose();
     super.dispose();
   }
 
@@ -39,15 +40,15 @@ class _WebviewOhosItemState extends State<WebviewOhosItem> {
       ),
       onWebViewCreated: (controller) {
         debugPrint('[WebView] Created');
-        widget.webviewOhosItemController.webviewController = controller;
-        widget.webviewOhosItemController.initEventController.add(true);
+        widget.videoWebviewController.webviewController = controller;
+        widget.videoWebviewController.initEventController.add(true);
       },
       onLoadStart: (controller, url) async {
-        widget.webviewOhosItemController.logEventController
+        widget.videoWebviewController.logEventController
             .add('started loading: $url');
       },
       onLoadStop: (controller, url) {
-        widget.webviewOhosItemController.logEventController
+        widget.videoWebviewController.logEventController
             .add('loading completed: $url');
       },
     )).build(context);

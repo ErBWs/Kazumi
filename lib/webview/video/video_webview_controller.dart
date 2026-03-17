@@ -3,6 +3,7 @@ import 'dart:async';
 
 import 'package:kazumi/webview/video/impl/video_webview_android_impl.dart';
 import 'package:kazumi/webview/video/impl/video_webview_impl.dart';
+import 'package:kazumi/webview/video/impl/video_webview_ohos_impl.dart';
 import 'package:kazumi/webview/video/impl/video_webview_windows_impl.dart';
 import 'package:kazumi/webview/video/impl/video_webview_linux_impl.dart';
 import 'package:kazumi/webview/video/impl/video_webview_apple_impl.dart';
@@ -71,6 +72,9 @@ class VideoWebviewControllerFactory {
     }
     if (Platform.isAndroid && Utils.isDocumentStartScriptSupported) {
       return VideoWebviewAndroidImpl();
+    }
+    if (Platform.isOhos) {
+      return VideoWebviewOhosImpl();
     }
     return VideoWebviewImpl();
   }

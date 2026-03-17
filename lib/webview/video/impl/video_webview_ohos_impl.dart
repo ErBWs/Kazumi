@@ -2,12 +2,12 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:kazumi/bean/dialog/dialog_helper.dart';
 import 'package:kazumi/utils/utils.dart';
-import 'package:kazumi/webview/webview_controller.dart';
+import 'package:kazumi/webview/video/video_webview_controller.dart';
 import 'package:flutter_inappwebview_platform_interface/flutter_inappwebview_platform_interface.dart';
-import 'package:kazumi/webview/webview_ohos_item.dart';
+import 'package:kazumi/webview/video/video_webview_item.dart';
 
-class WebviewOhosItemControllerImpel
-    extends WebviewItemController<PlatformInAppWebViewController> {
+class VideoWebviewOhosImpl
+    extends VideoWebviewController<PlatformInAppWebViewController> {
   bool hasInjectedScripts = false;
   bool shouldWaitForInit = true;
   StreamSubscription? webviewSubscription;
@@ -17,7 +17,7 @@ class WebviewOhosItemControllerImpel
   Future<void> init() async {
     shouldWaitForInit = true;
     entry = KazumiDialog.showGlobalOverlay(
-      child: WebviewOhosItem(webviewOhosItemController: this),
+      child: VideoWebviewItem(videoWebviewController: this),
     );
   }
 
