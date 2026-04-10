@@ -52,14 +52,14 @@ jobs:
           distribution: 'temurin'
       - name: Setup flutter-ohos
         run: |
-          GIT_LFS_SKIP_SMUDGE=1 git clone -b oh-3.35.7-dev https://gitcode.com/openharmony-tpc/flutter_flutter.git $GITHUB_WORKSPACE/flutter
+          git clone -b oh-3.35.7-dev https://gitcode.com/openharmony-tpc/flutter_flutter.git $GITHUB_WORKSPACE/flutter
           echo "$GITHUB_WORKSPACE/flutter/bin" >> $GITHUB_PATH
         shell: bash
       - name: Print Flutter version
         run: flutter doctor -v
         shell: bash
       - name: Get Flutter dependencies
-        run: flutter pub get
+        run: GIT_LFS_SKIP_SMUDGE=1 flutter pub get
         shell: bash
       - name: Inject DanDan API Credentials
         run: |
