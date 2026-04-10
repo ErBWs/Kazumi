@@ -70,7 +70,7 @@ class AudioController {
         _handleInterruptionEvent,
       );
 
-      if (Platform.isAndroid || Platform.isIOS) {
+      if (Platform.isAndroid || Platform.isIOS || Platform.isOhos) {
         _becomingNoisySubscription?.cancel();
         _becomingNoisySubscription =
             _audioSession!.becomingNoisyEventStream.listen((_) {

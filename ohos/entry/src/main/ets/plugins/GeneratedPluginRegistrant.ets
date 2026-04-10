@@ -8,6 +8,8 @@ import WakelockPlugin from 'wakelock_plus_ohos';
 import MediaKitLibsOhosPlugin from 'media_kit_libs_ohos';
 import InAppWebViewFlutterPlugin from 'flutter_inappwebview_ohos';
 import ConnectivityPlugin from 'connectivity_plus';
+import AudioSessionPlugin from 'audio_session';
+import AudioServicePlugin from 'audio_service';
 
 /**
  * Generated file. Do not edit.
@@ -30,6 +32,8 @@ export class GeneratedPluginRegistrant {
       flutterEngine.getPlugins()?.add(new MediaKitLibsOhosPlugin());
       flutterEngine.getPlugins()?.add(new InAppWebViewFlutterPlugin());
       flutterEngine.getPlugins()?.add(new ConnectivityPlugin());
+      flutterEngine.getPlugins()?.add(new AudioSessionPlugin());
+      flutterEngine.getPlugins()?.add(new AudioServicePlugin());
     } catch (e) {
       Log.e(
         TAG,

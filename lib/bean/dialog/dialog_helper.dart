@@ -110,7 +110,7 @@ class KazumiDialog {
                   ? 600
                   : null,
               duration: duration,
-              persist: false,
+              // persist: false,
               action: showActionButton
                   ? SnackBarAction(
                       label: actionLabel ?? 'Dismiss',

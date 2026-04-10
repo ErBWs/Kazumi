@@ -44,6 +44,9 @@
         "exported": true,
         "orientation": "auto_rotation_unspecified",
         "preferMultiWindowOrientation": "landscape_auto",
+        "backgroundModes": [
+          "audioPlayback"
+        ],
         "skills": [
           {
             "entities": [
@@ -59,6 +62,9 @@
     "requestPermissions": [
       {
         "name": "ohos.permission.INTERNET"
+      },
+      {
+        "name": "ohos.permission.KEEP_BACKGROUND_RUNNING"
       },
     ]
   }
