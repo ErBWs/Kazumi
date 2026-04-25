@@ -66,7 +66,7 @@ jobs:
           sed -i "s/kvpx7qkqjh/${{ secrets.DANDANAPI_APPID }}/g" lib/utils/mortis.dart
           sed -i "s/rABUaBLqdz7aCSi3fe88ZDj2gwga9Vax/${{ secrets.DANDANAPI_KEY }}/g" lib/utils/mortis.dart
       - name: Build Flutter for ohos
-        run: flutter build hap --release
+        run: flutter build hap --release --dart-define=ENABLE_FLEX_OVERFLOW=false
         shell: bash
         continue-on-error: true
       - name: Package ohos build output

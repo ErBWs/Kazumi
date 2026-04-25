@@ -59,7 +59,7 @@ jobs:
         run: GIT_LFS_SKIP_SMUDGE=1 flutter pub get
         shell: bash
       - name: Build Flutter for ohos
-        run: flutter build hap --release
+        run: flutter build hap --release --dart-define=ENABLE_FLEX_OVERFLOW=false
         shell: bash
         continue-on-error: true
       - name: Package ohos build output
