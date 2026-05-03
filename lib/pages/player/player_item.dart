@@ -112,6 +112,7 @@ class _PlayerItemState extends State<PlayerItem>
   late bool haEnable;
   late bool autoPlayNext;
   late bool backgroundPlayback;
+  late bool brightnessVolumeGesture;
 
   Timer? hideTimer;
   Timer? playerTimer;
@@ -1546,6 +1547,8 @@ class _PlayerItemState extends State<PlayerItem>
     autoPlayNext = setting.get(SettingBoxKey.autoPlayNext, defaultValue: true);
     backgroundPlayback =
         setting.get(SettingBoxKey.backgroundPlayback, defaultValue: false);
+    brightnessVolumeGesture =
+        setting.get(SettingBoxKey.brightnessVolumeGesture, defaultValue: true);
     unawaited(_bindAudioService());
     playerTimer = getPlayerTimer();
     windowManager.addListener(this);
@@ -1843,6 +1846,9 @@ class _PlayerItemState extends State<PlayerItem>
                               },
                               onVerticalDragUpdate:
                                   (DragUpdateDetails details) async {
+                                if (!brightnessVolumeGesture) {
+                                  return;
+                                }
                                 final double totalWidth =
                                     MediaQuery.sizeOf(context).width;
                                 final double totalHeight =
@@ -1875,6 +1881,9 @@ class _PlayerItemState extends State<PlayerItem>
                                 }
                               },
                               onVerticalDragEnd: (_) {
+                                if (!brightnessVolumeGesture) {
+                                  return;
+                                }
                                 if (playerController.volumeSeeking) {
                                   playerController.volumeSeeking = false;
                                   Future.delayed(const Duration(seconds: 1),
