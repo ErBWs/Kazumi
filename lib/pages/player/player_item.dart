@@ -24,7 +24,7 @@ import 'package:kazumi/pages/history/history_controller.dart';
 import 'package:kazumi/pages/collect/collect_controller.dart';
 import 'package:hive_ce/hive.dart';
 import 'package:kazumi/utils/storage.dart';
-import 'package:kazumi/request/damaku.dart';
+import 'package:kazumi/request/apis/danmaku_api.dart';
 import 'package:kazumi/modules/danmaku/danmaku_search_response.dart';
 import 'package:kazumi/modules/danmaku/danmaku_episode_response.dart';
 import 'package:kazumi/pages/player/player_item_surface.dart';
@@ -495,8 +495,7 @@ class _PlayerItemState extends State<PlayerItem>
       );
       _syncAudioServiceState();
     } catch (e) {
-      KazumiLogger()
-          .w('AudioController: failed to bind callbacks', error: e);
+      KazumiLogger().w('AudioController: failed to bind callbacks', error: e);
     }
   }
 
@@ -934,7 +933,7 @@ class _PlayerItemState extends State<PlayerItem>
     DanmakuEpisodeResponse danmakuEpisodeResponse;
     try {
       danmakuSearchResponse =
-          await DanmakuRequest.getDanmakuSearchResponse(keyword);
+          await DanmakuApi.getDanmakuSearchResponse(keyword);
     } catch (e) {
       KazumiDialog.dismiss();
       KazumiDialog.showToast(message: '弹幕检索错误: ${e.toString()}');
@@ -959,7 +958,7 @@ class _PlayerItemState extends State<PlayerItem>
                   KazumiDialog.showLoading(msg: '弹幕检索中');
                   try {
                     danmakuEpisodeResponse =
-                        await DanmakuRequest.getDanDanEpisodesByDanDanBangumiID(
+                        await DanmakuApi.getDanDanEpisodesByDanDanBangumiID(
                             danmakuInfo.animeId);
                   } catch (e) {
                     KazumiDialog.dismiss();
@@ -1631,7 +1630,8 @@ class _PlayerItemState extends State<PlayerItem>
                   }
                 },
                 child: SizedBox(
-                  height: videoPageController.isFullscreen || videoPageController.isPip
+                  height: videoPageController.isFullscreen ||
+                          videoPageController.isPip
                       ? (MediaQuery.of(context).size.height)
                       : (MediaQuery.of(context).size.width * 9.0 / (16.0)),
                   width: MediaQuery.of(context).size.width,
@@ -1709,7 +1709,8 @@ class _PlayerItemState extends State<PlayerItem>
                       top: 0,
                       left: 0,
                       right: 0,
-                      height: videoPageController.isFullscreen || videoPageController.isPip
+                      height: videoPageController.isFullscreen ||
+                              videoPageController.isPip
                           ? MediaQuery.sizeOf(context).height
                           : (MediaQuery.sizeOf(context).width * 9 / 16),
                       child: DanmakuScreen(
