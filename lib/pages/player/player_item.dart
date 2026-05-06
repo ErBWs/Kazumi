@@ -475,12 +475,14 @@ class _PlayerItemState extends State<PlayerItem>
     unawaited(_updateAndroidPIPActions(force: true));
   }
 
-  Future<void> _uploadHistoryToWebDav() async {
+  Future<void> _syncHistoryWithWebDav() async {
     if (webDavEnable && webDavEnableHistory) {
       try {
         var webDav = WebDav();
-        await webDav.updateHistory();
-      } catch (_) {}
+        await webDav.syncHistory();
+      } catch (e) {
+        KazumiLogger().w('WebDav: auto history sync failed', error: e);
+      }
     }
   }
 
@@ -559,7 +561,7 @@ class _PlayerItemState extends State<PlayerItem>
     playerController.lockPanel = false;
     playerController.danmakuController.clear();
 
-    await _uploadHistoryToWebDav();
+    await _syncHistoryWithWebDav();
   }
 
   void handleProgressBarDragStart(ThumbDragDetails details) {
@@ -890,20 +892,18 @@ class _PlayerItemState extends State<PlayerItem>
       if (playerController.playerPlaying &&
           !videoPageController.loading &&
           !videoPageController.isOfflineMode) {
-        if (!WebDav().isHistorySyncing) {
-          final pluginName = videoPageController.isOfflineMode
-              ? videoPageController.offlinePluginName
-              : videoPageController.currentPlugin.name;
-          historyController.updateHistory(
-              videoPageController.actualEpisodeNumber,
-              videoPageController.currentRoad,
-              pluginName,
-              videoPageController.bangumiItem,
-              playerController.playerPosition,
-              videoPageController.src,
-              videoPageController.roadList[videoPageController.currentRoad]
-                  .identifier[videoPageController.currentEpisode - 1]);
-        }
+        final pluginName = videoPageController.isOfflineMode
+            ? videoPageController.offlinePluginName
+            : videoPageController.currentPlugin.name;
+        historyController.updateHistory(
+            videoPageController.actualEpisodeNumber,
+            videoPageController.currentRoad,
+            pluginName,
+            videoPageController.bangumiItem,
+            playerController.playerPosition,
+            videoPageController.src,
+            videoPageController.roadList[videoPageController.currentRoad]
+                .identifier[videoPageController.currentEpisode - 1]);
       }
       // 自动播放下一集
       if (playerController.completed &&
