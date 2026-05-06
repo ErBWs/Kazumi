@@ -27,18 +27,20 @@ abstract class _DownloadController with Store {
 
   @observable
   ObservableList<DownloadRecord> records = ObservableList<DownloadRecord>();
+  final ObservableList<String> recordKeys = ObservableList<String>();
+  final ObservableMap<String, DownloadRecord> recordByKey =
+      ObservableMap<String, DownloadRecord>();
 
   final List<_ResolveRequest> _resolveQueue = [];
   bool _isResolving = false;
   bool _isBackgroundServiceInitialized = false;
 
   Future<void> init() async {
-    final temp = _repository.getAllRecords();
-    records.clear();
-    records.addAll(temp);
+    _replaceRecords(_repository.getAllRecords());
 
     // Reset any incomplete states to 'paused' on startup
     // This includes 'pending' because the in-memory queue is lost on restart
+    var resetIncompleteRecords = false;
     for (final record in records) {
       bool changed = false;
       for (final entry in record.episodes.entries) {
@@ -50,8 +52,12 @@ abstract class _DownloadController with Store {
         }
       }
       if (changed) {
-        _repository.putRecord(record);
+        resetIncompleteRecords = true;
+        await _repository.putRecord(record);
       }
+    }
+    if (resetIncompleteRecords) {
+      _replaceRecords(_repository.getAllRecords());
     }
 
     // 将旧 Hive danmakuData 迁移到独立文件，防止 Hive compact 时 OOM
@@ -140,7 +146,7 @@ abstract class _DownloadController with Store {
     if (isFinalState ||
         now.difference(_lastUiUpdateTime) >= _uiUpdateInterval) {
       _lastUiUpdateTime = now;
-      refreshRecords();
+      _refreshRecord(recordKey);
       _updateBackgroundNotification();
     }
   }
@@ -183,7 +189,7 @@ abstract class _DownloadController with Store {
     int totalCount = 0;
     double totalProgress = 0;
 
-    for (final record in records) {
+    for (final record in recordByKey.values) {
       for (final episode in record.episodes.values) {
         if (episode.status == DownloadStatus.downloading) {
           activeCount++;
@@ -213,9 +219,90 @@ abstract class _DownloadController with Store {
 
   @action
   void refreshRecords() {
-    final temp = _repository.getAllRecords();
-    records.clear();
-    records.addAll(temp);
+    _replaceRecords(_repository.getAllRecords());
+  }
+
+  void _replaceRecords(List<DownloadRecord> nextRecords) {
+    runInAction(() {
+      records
+        ..clear()
+        ..addAll(nextRecords.map(_cloneRecord));
+
+      recordKeys
+        ..clear()
+        ..addAll(nextRecords.map((record) => record.key));
+
+      recordByKey
+        ..clear()
+        ..addEntries(nextRecords.map(
+          (record) => MapEntry(record.key, _cloneRecord(record)),
+        ));
+    });
+  }
+
+  void _refreshRecord(String recordKey) {
+    final record = _repository.getRecord(recordKey);
+    runInAction(() {
+      if (record == null || record.episodes.isEmpty) {
+        recordByKey.remove(recordKey);
+        recordKeys.remove(recordKey);
+        records.removeWhere((item) => item.key == recordKey);
+        return;
+      }
+
+      final snapshot = _cloneRecord(record);
+      recordByKey[recordKey] = snapshot;
+      final keyIndex = recordKeys.indexOf(recordKey);
+      if (keyIndex == -1) {
+        recordKeys.add(recordKey);
+      }
+
+      final recordIndex = records.indexWhere((item) => item.key == recordKey);
+      if (recordIndex == -1) {
+        records.add(_cloneRecord(record));
+      } else {
+        records[recordIndex] = _cloneRecord(record);
+      }
+    });
+  }
+
+  DownloadRecord? getRecordSnapshot(String recordKey) => recordByKey[recordKey];
+
+  DownloadRecord _cloneRecord(DownloadRecord record) {
+    return DownloadRecord(
+      record.bangumiId,
+      record.bangumiName,
+      record.bangumiCover,
+      record.pluginName,
+      record.episodes.map(
+        (episodeNumber, episode) => MapEntry(
+          episodeNumber,
+          _cloneEpisode(episode),
+        ),
+      ),
+      record.createdAt,
+    );
+  }
+
+  DownloadEpisode _cloneEpisode(DownloadEpisode episode) {
+    return DownloadEpisode(
+      episode.episodeNumber,
+      episode.episodeName,
+      episode.road,
+      episode.status,
+      episode.progressPercent,
+      episode.totalSegments,
+      episode.downloadedSegments,
+      episode.localM3u8Path,
+      episode.downloadDirectory,
+      episode.networkM3u8Url,
+      episode.completedAt,
+      episode.errorMessage,
+      episode.totalBytes,
+      episode.episodePageUrl,
+      danmakuData: episode.danmakuData,
+      danDanBangumiID: episode.danDanBangumiID,
+    );
   }
 
   Plugin? _findPlugin(String pluginName) {
@@ -478,7 +565,7 @@ abstract class _DownloadController with Store {
     freshEpisode.status = DownloadStatus.downloading;
     await _repository.updateEpisode(
         request.recordKey, request.episodeNumber, freshEpisode);
-    refreshRecords();
+    _refreshRecord(request.recordKey);
 
     await _startBackgroundServiceIfNeeded();
 
@@ -576,7 +663,7 @@ abstract class _DownloadController with Store {
     episode.status = DownloadStatus.failed;
     episode.errorMessage = message;
     _repository.updateEpisode(recordKey, episodeNumber, episode);
-    refreshRecords();
+    _refreshRecord(recordKey);
     KazumiLogger()
         .w('DownloadController: episode $episodeNumber failed: $message');
   }
@@ -595,7 +682,7 @@ abstract class _DownloadController with Store {
       if (episode != null) {
         episode.status = DownloadStatus.paused;
         await _repository.updateEpisode(recordKey, episodeNumber, episode);
-        refreshRecords();
+        _refreshRecord(recordKey);
         _updateBackgroundNotification();
       }
     }
@@ -649,7 +736,7 @@ abstract class _DownloadController with Store {
       episode.progressPercent = 0.0;
       episode.downloadedSegments = 0;
       await _repository.updateEpisode(recordKey, episodeNumber, episode);
-      refreshRecords();
+      _refreshRecord(recordKey);
 
       await _startBackgroundServiceIfNeeded();
 
@@ -673,7 +760,7 @@ abstract class _DownloadController with Store {
       episode.progressPercent = 0.0;
       episode.downloadedSegments = 0;
       await _repository.updateEpisode(recordKey, episodeNumber, episode);
-      refreshRecords();
+      _refreshRecord(recordKey);
 
       _resolveQueue.add(_ResolveRequest(
         recordKey: recordKey,
@@ -695,7 +782,7 @@ abstract class _DownloadController with Store {
     await _downloadManager.deleteEpisodeFiles(
         bangumiId, pluginName, episodeNumber);
     await _repository.deleteEpisode(recordKey, episodeNumber);
-    refreshRecords();
+    _refreshRecord(recordKey);
     _updateBackgroundNotification();
   }
 
@@ -711,7 +798,7 @@ abstract class _DownloadController with Store {
     _resolveQueue.removeWhere((r) => r.recordKey == recordKey);
     await _downloadManager.deleteRecordFiles(bangumiId, pluginName);
     await _repository.deleteRecord(recordKey);
-    refreshRecords();
+    _refreshRecord(recordKey);
     _updateBackgroundNotification();
   }
 
@@ -725,7 +812,7 @@ abstract class _DownloadController with Store {
     await _downloadManager.deleteEpisodeFiles(
         bangumiId, pluginName, episodeNumber);
     await _repository.deleteEpisode(recordKey, episodeNumber);
-    refreshRecords();
+    _refreshRecord(recordKey);
     _updateBackgroundNotification();
   }
 
@@ -753,7 +840,7 @@ abstract class _DownloadController with Store {
       episode.status = DownloadStatus.downloading;
       episode.errorMessage = '';
       await _repository.updateEpisode(recordKey, episodeNumber, episode);
-      refreshRecords();
+      _refreshRecord(recordKey);
 
       await _startBackgroundServiceIfNeeded();
 
@@ -775,7 +862,7 @@ abstract class _DownloadController with Store {
       episode.status = DownloadStatus.resolving;
       episode.errorMessage = '';
       await _repository.updateEpisode(recordKey, episodeNumber, episode);
-      refreshRecords();
+      _refreshRecord(recordKey);
 
       _resolveQueue.insert(
           0,

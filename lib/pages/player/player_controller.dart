@@ -549,6 +549,32 @@ abstract class _PlayerController with Store {
     } catch (_) {}
   }
 
+  @action
+  void syncPlaybackState() {
+    final player = mediaPlayer;
+    if (player == null) return;
+
+    final state = player.state;
+    if (playing != state.playing) {
+      playing = state.playing;
+    }
+    if (isBuffering != state.buffering) {
+      isBuffering = state.buffering;
+    }
+    if (currentPosition != state.position) {
+      currentPosition = state.position;
+    }
+    if (buffer != state.buffer) {
+      buffer = state.buffer;
+    }
+    if (duration != state.duration) {
+      duration = state.duration;
+    }
+    if (completed != state.completed) {
+      completed = state.completed;
+    }
+  }
+
   Future<void> playOrPause() async {
     if (mediaPlayer!.state.playing) {
       await pause();

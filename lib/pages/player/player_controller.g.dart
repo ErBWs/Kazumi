@@ -569,6 +569,20 @@ mixin _$PlayerController on _PlayerController, Store {
     });
   }
 
+  late final _$_PlayerControllerActionController =
+      ActionController(name: '_PlayerController', context: context);
+
+  @override
+  void syncPlaybackState() {
+    final _$actionInfo = _$_PlayerControllerActionController.startAction(
+        name: '_PlayerController.syncPlaybackState');
+    try {
+      return super.syncPlaybackState();
+    } finally {
+      _$_PlayerControllerActionController.endAction(_$actionInfo);
+    }
+  }
+
   @override
   String toString() {
     return '''
