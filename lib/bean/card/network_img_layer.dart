@@ -32,6 +32,30 @@ class NetworkImgLayer extends StatelessWidget {
   final Color? color;
   final BlendMode? colorBlendMode;
 
+  static Widget heroFlightShuttleBuilder(
+    BuildContext flightContext,
+    Animation<double> animation,
+    HeroFlightDirection flightDirection,
+    BuildContext fromHeroContext,
+    BuildContext toHeroContext,
+  ) {
+    final fromHero = fromHeroContext.widget as Hero;
+    final toHero = toHeroContext.widget as Hero;
+    final heroContext = flightDirection == HeroFlightDirection.push
+        ? fromHeroContext
+        : toHeroContext;
+    final hero =
+        flightDirection == HeroFlightDirection.push ? fromHero : toHero;
+
+    return InheritedTheme.captureAll(
+      heroContext,
+      Material(
+        type: MaterialType.transparency,
+        child: hero.child,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final String imageUrl = src ?? '';
