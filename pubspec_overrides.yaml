@@ -45,3 +45,8 @@ dependency_overrides:
     git:
       url: https://gitcode.com/openharmony-sig/flutter_audio_session.git
       ref: br_v0.2.2_ohos_dev
+  image_picker:
+    git:
+      url: https://gitcode.com/openharmony-tpc/flutter_packages.git
+      ref: br_image_picker-v1.2.1_ohos
+      path: packages/image_picker/image_picker

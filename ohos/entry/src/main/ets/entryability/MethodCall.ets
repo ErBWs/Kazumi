@@ -9,7 +9,7 @@ import {
 } from "@ohos/flutter_ohos";
 import { common, Want, wantConstant } from "@kit.AbilityKit";
 import { BusinessError } from "@kit.BasicServicesKit";
-import { window } from "@kit.ArkUI";
+import { window, display } from "@kit.ArkUI";
 import { fileUri } from '@kit.CoreFileKit';
 import { deviceInfo } from '@kit.BasicServicesKit';
 
@@ -76,7 +76,11 @@ export default class MethodCallPlugin implements FlutterPlugin, AbilityAware {
     window.getLastWindow(this.context).then((lastWindow) => {
       lastWindow.setSpecificSystemBarEnabled("status", false, true);
       lastWindow.setSpecificSystemBarEnabled("navigationIndicator", false, true);
-      lastWindow.setPreferredOrientation(window.Orientation.AUTO_ROTATION_LANDSCAPE);
+      if (needSet) {
+        lastWindow.setPreferredOrientation(window.Orientation.AUTO_ROTATION_LANDSCAPE);
+      } else {
+        lastWindow.setPreferredOrientation(window.Orientation.AUTO_ROTATION_UNSPECIFIED);
+      }
       lastWindow.enableLandscapeMultiWindow();
       lastWindow.maximize();
     })
@@ -86,7 +90,9 @@ export default class MethodCallPlugin implements FlutterPlugin, AbilityAware {
     window.getLastWindow(this.context).then((lastWindow) => {
       lastWindow.setSpecificSystemBarEnabled("status", true, true);
       lastWindow.setSpecificSystemBarEnabled("navigationIndicator", true, true);
-      lastWindow.setPreferredOrientation(window.Orientation.USER_ROTATION_PORTRAIT);
+      if (this.deviceType == "phone" || display.getFoldDisplayMode() != 1) {
+        lastWindow.setPreferredOrientation(window.Orientation.USER_ROTATION_PORTRAIT);
+      }
       lastWindow.disableLandscapeMultiWindow();
       lastWindow.recover();
     })
