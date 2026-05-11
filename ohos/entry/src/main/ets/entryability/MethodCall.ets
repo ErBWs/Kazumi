@@ -90,7 +90,7 @@ export default class MethodCallPlugin implements FlutterPlugin, AbilityAware {
     window.getLastWindow(this.context).then((lastWindow) => {
       lastWindow.setSpecificSystemBarEnabled("status", true, true);
       lastWindow.setSpecificSystemBarEnabled("navigationIndicator", true, true);
-      if (this.deviceType == "phone" || display.getFoldDisplayMode() != 1) {
+      if (this.deviceType == "phone" && display.getFoldDisplayMode() != 1) {
         lastWindow.setPreferredOrientation(window.Orientation.USER_ROTATION_PORTRAIT);
       }
       lastWindow.disableLandscapeMultiWindow();
