@@ -7,6 +7,7 @@ import MediaKitVideoPlugin from 'media_kit_video';
 import WakelockPlugin from 'wakelock_plus_ohos';
 import MediaKitLibsOhosPlugin from 'media_kit_libs_ohos';
 import ImagePickerPlugin from 'image_picker_ohos';
+import FlutterVolumeControllerPlugin from 'flutter_volume_controller';
 import InAppWebViewFlutterPlugin from 'flutter_inappwebview_ohos';
 import ConnectivityPlugin from 'connectivity_plus';
 import AudioSessionPlugin from 'audio_session';
@@ -32,6 +33,7 @@ export class GeneratedPluginRegistrant {
       flutterEngine.getPlugins()?.add(new WakelockPlugin());
       flutterEngine.getPlugins()?.add(new MediaKitLibsOhosPlugin());
       flutterEngine.getPlugins()?.add(new ImagePickerPlugin());
+      flutterEngine.getPlugins()?.add(new FlutterVolumeControllerPlugin());
       flutterEngine.getPlugins()?.add(new InAppWebViewFlutterPlugin());
       flutterEngine.getPlugins()?.add(new ConnectivityPlugin());
       flutterEngine.getPlugins()?.add(new AudioSessionPlugin());

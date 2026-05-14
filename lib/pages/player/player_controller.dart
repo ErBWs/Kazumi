@@ -280,10 +280,14 @@ abstract class _PlayerController with Store {
 
     if (Utils.isDesktop()) {
       volume = volume != -1 ? volume : 100;
+      await setVolume(volume);
     } else {
-      volume = volume != -1 ? volume : 100;
+      // mobile is using system volume, don't setVolume here,
+      // or iOS will mute if system volume is too low (#732)
+      await FlutterVolumeController.getVolume().then((value) {
+        volume = (value ?? 0.0) * 100;
+      });
     }
-    await setVolume(volume);
     setPlaybackSpeed(playerSpeed);
     KazumiLogger().i('PlayerController: video initialized');
     loading = false;
@@ -544,7 +548,8 @@ abstract class _PlayerController with Store {
       if (Utils.isDesktop()) {
         await mediaPlayer!.setVolume(value);
       } else {
-        await mediaPlayer!.setVolume(volume);
+        await FlutterVolumeController.updateShowSystemUI(false);
+        await FlutterVolumeController.setVolume(value / 100);
       }
     } catch (_) {}
   }

@@ -663,10 +663,11 @@ packages:
   flutter_volume_controller:
     dependency: "direct main"
     description:
-      name: flutter_volume_controller
-      sha256: "22edb0993ad03ecbc8d1164daeb5b39d798d409625db692675a86889403b1532"
-      url: "https://pub.dev"
-    source: hosted
+      path: "."
+      ref: feat-ohos
+      resolved-ref: f8c1bc059c963e4ca2bd8520ffcc41608e42c416
+      url: "https://github.com/ErBWs/flutter_volume_controller.git"
+    source: git
     version: "1.3.4"
   flutter_web_plugins:
     dependency: transitive

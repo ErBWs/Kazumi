@@ -871,7 +871,10 @@ class _PlayerItemState extends State<PlayerItem>
         if (Utils.isDesktop()) {
           playerController.volume = playerController.playerVolume;
         } else {
-          playerController.volume = playerController.playerVolume;
+          FlutterVolumeController.getVolume().then((value) {
+            final volume = value ?? 0.0;
+            playerController.volume = volume * 100;
+          });
         }
       }
       // 亮度相关

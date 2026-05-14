@@ -50,3 +50,7 @@ dependency_overrides:
       url: https://gitcode.com/openharmony-tpc/flutter_packages.git
       ref: br_image_picker-v1.2.1_ohos
       path: packages/image_picker/image_picker
+  flutter_volume_controller:
+    git:
+      url: https://github.com/ErBWs/flutter_volume_controller.git
+      ref: feat-ohos
