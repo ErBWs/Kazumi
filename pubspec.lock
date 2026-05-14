@@ -94,10 +94,11 @@ packages:
   audio_service_win:
     dependency: "direct main"
     description:
-      name: audio_service_win
-      sha256: "677e25f447d3d49f537ea6f4fd36e9511acdc0badc6534c9cb92a205566ba12a"
-      url: "https://pub.dev"
-    source: hosted
+      path: "."
+      ref: "8ad650c6eb487208b9861d44755c8e58db061c88"
+      resolved-ref: "8ad650c6eb487208b9861d44755c8e58db061c88"
+      url: "https://github.com/Predidit/audio_service_win.git"
+    source: git
     version: "0.0.3"
   audio_session:
     dependency: "direct main"
@@ -224,10 +225,10 @@ packages:
     dependency: transitive
     description:
       name: characters
-      sha256: f71061c654a3380576a52b451dd5532377954cf9dbd272a78fc8479606670803
+      sha256: faf38497bda5ead2a8c7615f4f7939df04333478bf32e4173fcb06d428b5716b
       url: "https://pub.dev"
     source: hosted
-    version: "1.4.0"
+    version: "1.4.1"
   checked_yaml:
     dependency: transitive
     description:
@@ -928,18 +929,18 @@ packages:
     dependency: transitive
     description:
       name: matcher
-      sha256: dc58c723c3c24bf8d3e2d3ad3f2f9d7bd9cf43ec6feaa64181775e60190153f2
+      sha256: dc0b7dc7651697ea4ff3e69ef44b0407ea32c487a39fff6a4004fa585e901861
       url: "https://pub.dev"
     source: hosted
-    version: "0.12.17"
+    version: "0.12.19"
   material_color_utilities:
     dependency: "direct main"
     description:
       name: material_color_utilities
-      sha256: f7142bb1154231d7ea5f96bc7bde4bda2a0945d2806bb11670e30b850d56bdec
+      sha256: "9c337007e82b1889149c82ed242ed1cb24a66044e30979c44912381e9be4c48b"
       url: "https://pub.dev"
     source: hosted
-    version: "0.11.1"
+    version: "0.13.0"
   media_kit:
     dependency: "direct main"
     description:
@@ -1033,10 +1034,10 @@ packages:
     dependency: transitive
     description:
       name: meta
-      sha256: e3641ec5d63ebf0d9b41bd43201a66e3fc79a65db5f61fc181f04cd27aab950c
+      sha256: "23f08335362185a5ea2ad3a4e597f1375e78bce8a040df5c600c8d3552ef2394"
       url: "https://pub.dev"
     source: hosted
-    version: "1.16.0"
+    version: "1.17.0"
   mime:
     dependency: transitive
     description:
@@ -1616,10 +1617,10 @@ packages:
     dependency: transitive
     description:
       name: test_api
-      sha256: "522f00f556e73044315fa4585ec3270f1808a4b186c936e612cab0b565ff1e00"
+      sha256: "8161c84903fd860b26bfdefb7963b3f0b68fee7adea0f59ef805ecca346f0c7a"
       url: "https://pub.dev"
     source: hosted
-    version: "0.7.6"
+    version: "0.7.10"
   tray_manager:
     dependency: "direct main"
     description:
@@ -1866,8 +1867,8 @@ packages:
     dependency: "direct main"
     description:
       path: "."
-      ref: d9bbeabe51562e727850fe3f60407cf0f6239a8e
-      resolved-ref: d9bbeabe51562e727850fe3f60407cf0f6239a8e
+      ref: "8e3578e6032c93f1723f58db930d480b7828d796"
+      resolved-ref: "8e3578e6032c93f1723f58db930d480b7828d796"
       url: "https://github.com/Predidit/flutter-webview-windows.git"
     source: git
     version: "0.4.0"
@@ -1945,4 +1946,4 @@ packages:
     version: "2.1.0"
 sdks:
   dart: ">=3.9.0 <4.0.0"
-  flutter: ">=3.35.0"
+  flutter: ">=3.41.9"
