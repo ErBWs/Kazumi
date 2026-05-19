@@ -536,9 +536,14 @@ class Utils {
       await windowManager.setFullScreen(true);
       return;
     }
-    await SystemChrome.setEnabledSystemUIMode(
-      SystemUiMode.immersiveSticky,
-    );
+    if (Platform.isAndroid) {
+      const platform = MethodChannel('com.predidit.kazumi/intent');
+      await platform.invokeMethod('enterFullscreen');
+    } else {
+      await SystemChrome.setEnabledSystemUIMode(
+        SystemUiMode.immersiveSticky,
+      );
+    }
     if (!lockOrientation) {
       return;
     }
@@ -575,26 +580,14 @@ class Utils {
     if (Platform.isLinux || Platform.isMacOS) {
       await windowManager.setFullScreen(false);
     }
-    late SystemUiMode mode = SystemUiMode.edgeToEdge;
     try {
       if (Platform.isAndroid || Platform.isIOS || Platform.isOhos) {
         if (Platform.isAndroid) {
           const platform = MethodChannel('com.predidit.kazumi/intent');
-          try {
-            final int sdkVersion =
-                await platform.invokeMethod('getAndroidSdkVersion');
-            if (sdkVersion < 29) {
-              mode = SystemUiMode.manual;
-            }
-          } on PlatformException catch (e) {
-            KazumiLogger()
-                .e("Failed to get Android SDK version: '${e.message}'.");
-          }
+          await platform.invokeMethod('exitFullscreen');
+        } else {
+          await SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
         }
-        await SystemChrome.setEnabledSystemUIMode(
-          mode,
-          overlays: SystemUiOverlay.values,
-        );
         if (Utils.isCompact() && lockOrientation) {
           if (Platform.isAndroid) {
             bool isInMultiWindowMode = await Utils.isInMultiWindowMode();
