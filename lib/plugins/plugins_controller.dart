@@ -150,6 +150,9 @@ abstract class _PluginsController with Store {
   }
 
   void onReorder(int oldIndex, int newIndex) {
+    if (oldIndex < newIndex) {
+      newIndex -= 1;
+    }
     final plugin = pluginList.removeAt(oldIndex);
     pluginList.insert(newIndex, plugin);
     savePlugins();

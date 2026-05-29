@@ -1,6 +1,9 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+
+bool isOhosDesktop = false;
 
 Future<bool> isLowResolution() async {
   if (Platform.isMacOS) {
@@ -24,7 +27,20 @@ Future<Map<String, double>> getScreenInfo() async {
 }
 
 bool isDesktop() {
-  return Platform.isWindows || Platform.isMacOS || Platform.isLinux;
+  return Platform.isWindows || Platform.isMacOS || Platform.isLinux || isOhosDesktop;
+}
+
+Future<void> checkOhosDesktop() async {
+  if (Platform.isOhos) {
+    const platform = MethodChannel('com.predidit.kazumi/intent');
+    try {
+      isOhosDesktop = await platform.invokeMethod('checkOhosIsDesktop');
+    } on PlatformException catch (e) {
+      debugPrint("Failed to check device type: '${e.message}'.");
+      isOhosDesktop = false;
+    }
+    debugPrint("ohos 桌面: $isOhosDesktop");
+  }
 }
 
 bool isWideScreen() {

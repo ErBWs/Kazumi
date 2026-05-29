@@ -17,6 +17,11 @@ class DisplayModeService {
       await windowManager.setFullScreen(true);
       return;
     }
+    if (Platform.isOhos) {
+      await _intentChannel.invokeMethod(
+          'enterFullscreen', <String, bool>{'needSet': lockOrientation});
+      return;
+    }
     if (Platform.isAndroid) {
       await _intentChannel.invokeMethod('enterFullscreen');
     } else {
@@ -35,6 +40,10 @@ class DisplayModeService {
   static Future<void> exitFullScreen({bool lockOrientation = true}) async {
     if (Platform.isLinux || Platform.isMacOS || Platform.isWindows) {
       await windowManager.setFullScreen(false);
+    }
+    if (Platform.isOhos) {
+      await _intentChannel.invokeMethod('exitFullscreen');
+      return;
     }
     try {
       if (Platform.isAndroid || Platform.isIOS) {

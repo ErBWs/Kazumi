@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:kazumi/bean/dialog/dialog_helper.dart';
-import 'package:kazumi/utils/utils.dart';
+import 'package:kazumi/utils/media.dart';
 import 'package:kazumi/webview/video/video_webview_controller.dart';
 import 'package:flutter_inappwebview_platform_interface/flutter_inappwebview_platform_interface.dart';
 import 'package:kazumi/webview/video/video_webview_item.dart';
@@ -84,15 +84,15 @@ class VideoWebviewOhosImpl
                 !message.contains('adtrafficquality')) {
               logEventController.add('Parsing video source $message');
               String encodedUrl = Uri.encodeFull(message);
-              if (Utils.decodeVideoSource(encodedUrl) != encodedUrl) {
+              if (decodeVideoSource(encodedUrl) != encodedUrl) {
                 isIframeLoaded = true;
                 isVideoSourceLoaded = true;
                 videoLoadingEventController.add(false);
                 logEventController.add(
-                    'Loading video source ${Utils.decodeVideoSource(encodedUrl)}');
+                    'Loading video source ${decodeVideoSource(encodedUrl)}');
                 unloadPage();
                 videoParserEventController
-                    .add((Utils.decodeVideoSource(encodedUrl), offset));
+                    .add((decodeVideoSource(encodedUrl), offset));
               }
             }
           });

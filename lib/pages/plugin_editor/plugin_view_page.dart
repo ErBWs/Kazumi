@@ -236,7 +236,7 @@ class _PluginViewPageState extends State<PluginViewPage> {
                           child: child,
                         );
                       },
-                      onReorderItem: (int oldIndex, int newIndex) {
+                      onReorder: (int oldIndex, int newIndex) {
                         pluginsController.onReorder(oldIndex, newIndex);
                       },
                       itemCount: pluginsController.pluginList.length,
