@@ -52,11 +52,22 @@ jobs:
           git clone -b oh-3.35.7-dev https://gitcode.com/openharmony-tpc/flutter_flutter.git $GITHUB_WORKSPACE/flutter
           echo "$GITHUB_WORKSPACE/flutter/bin" >> $GITHUB_PATH
         shell: bash
-      - name: Print Flutter version
-        run: flutter doctor -v
-        shell: bash
       - name: Get Flutter dependencies
         run: GIT_LFS_SKIP_SMUDGE=1 flutter pub get
+        shell: bash
+      - name: Inject DanDan API Credentials
+        env:
+          DANDANAPI_APPID: ${{ secrets.DANDANAPI_APPID }}
+          DANDANAPI_KEY: ${{ secrets.DANDANAPI_KEY }}
+        run: |
+          perl -0pi -e 's/kvpx7qkqjh/$ENV{DANDANAPI_APPID}/g; s/rABUaBLqdz7aCSi3fe88ZDj2gwga9Vax/$ENV{DANDANAPI_KEY}/g' lib/utils/dandan_credentials.dart
+        shell: bash
+      - name: Inject Bangumi mirror credentials
+        env:
+          KAZUMI_APPID: ${{ secrets.KAZUMI_APPID }}
+          KAZUMI_KEY: ${{ secrets.KAZUMI_KEY }}
+        run: |
+          perl -0pi -e 's/KAZUMI_APPID/$ENV{KAZUMI_APPID}/g; s/KAZUMI_KEY/$ENV{KAZUMI_KEY}/g' lib/utils/bangumi_mirror_credentials.dart
         shell: bash
       - name: Build Flutter for ohos
         run: flutter build hap --release --dart-define=ENABLE_FLEX_OVERFLOW=false
