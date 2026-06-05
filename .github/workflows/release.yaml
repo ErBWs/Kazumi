@@ -21,6 +21,12 @@ on:
         type: boolean
         default: false
 
+env:
+  DANDANAPI_APPID: ${{ secrets.DANDANAPI_APPID }}
+  DANDANAPI_KEY: ${{ secrets.DANDANAPI_KEY }}
+  KAZUMI_APPID: ${{ secrets.KAZUMI_APPID }}
+  KAZUMI_KEY: ${{ secrets.KAZUMI_KEY }}
+
 jobs:
   flutter_build_ohos:
     name: Release for ohos
@@ -58,22 +64,14 @@ jobs:
       - name: Get Flutter dependencies
         run: GIT_LFS_SKIP_SMUDGE=1 flutter pub get
         shell: bash
-      - name: Inject DanDan API Credentials
-        env:
-          DANDANAPI_APPID: ${{ secrets.DANDANAPI_APPID }}
-          DANDANAPI_KEY: ${{ secrets.DANDANAPI_KEY }}
-        run: |
-          perl -0pi -e 's/kvpx7qkqjh/$ENV{DANDANAPI_APPID}/g; s/rABUaBLqdz7aCSi3fe88ZDj2gwga9Vax/$ENV{DANDANAPI_KEY}/g' lib/utils/dandan_credentials.dart
-        shell: bash
-      - name: Inject Bangumi mirror credentials
-        env:
-          KAZUMI_APPID: ${{ secrets.KAZUMI_APPID }}
-          KAZUMI_KEY: ${{ secrets.KAZUMI_KEY }}
-        run: |
-          perl -0pi -e 's/KAZUMI_APPID/$ENV{KAZUMI_APPID}/g; s/KAZUMI_KEY/$ENV{KAZUMI_KEY}/g' lib/utils/bangumi_mirror_credentials.dart
-        shell: bash
       - name: Build Flutter for ohos
-        run: flutter build hap --release --no-codesign --dart-define=ENABLE_FLEX_OVERFLOW=false
+        run: >-
+          flutter build hap --release --no-codesign
+          --dart-define=ENABLE_FLEX_OVERFLOW=false
+          --dart-define=DANDANAPI_APPID=$DANDANAPI_APPID
+          --dart-define=DANDANAPI_KEY=$DANDANAPI_KEY
+          --dart-define=KAZUMI_APPID=$KAZUMI_APPID
+          --dart-define=KAZUMI_KEY=$KAZUMI_KEY
         shell: bash
       - name: Package ohos build output
         run: cp ./ohos/entry/build/default/outputs/default/entry-default-unsigned.hap Kazumi_ohos_${{ env.tag }}_unsigned.hap
