@@ -28,7 +28,7 @@ class ApiEndpoints {
 
   /// Kazumi 镜像后端应用更新
   static const String latestAppMirror =
-      '$bangumiMirrorDomain/kazumi/v1/app/latest';
+      '$bangumiMirrorDomain/kazumi/v1/app/latest?channel=ohos';
 
   /// 弹弹官网
   static const String dandanIndex = 'https://www.dandanplay.com/';
