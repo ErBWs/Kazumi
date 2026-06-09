@@ -2,7 +2,7 @@
   "string": [
     {
       "name": "enable_impeller",
-      "value": "false"
+      "value": "true"
     }
   ]
 }
