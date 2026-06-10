@@ -71,7 +71,7 @@ abstract class VideoWebviewController<T> {
   Future<void> unloadPage();
 
   /// WebView dispose method.
-  void dispose();
+  Future<void> dispose();
 }
 
 class VideoWebviewControllerFactory {
