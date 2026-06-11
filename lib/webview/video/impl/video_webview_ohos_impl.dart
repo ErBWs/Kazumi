@@ -270,7 +270,7 @@ class VideoWebviewOhosImpl
   }
 
   @override
-  void dispose() {
+  Future<void> dispose() async {
     unloadPage();
     KazumiDialog.hideGlobalOverlay(entry);
   }
