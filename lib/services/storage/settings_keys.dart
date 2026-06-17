@@ -361,16 +361,6 @@ class SettingsKeys {
     2,
     group: SettingGroup.player,
   );
-  static const searchNotShowWatchedBangumis = SettingKey<bool>(
-    _SettingBoxKey.searchNotShowWatchedBangumis,
-    false,
-    group: SettingGroup.collect,
-  );
-  static const searchNotShowAbandonedBangumis = SettingKey<bool>(
-    _SettingBoxKey.searchNotShowAbandonedBangumis,
-    false,
-    group: SettingGroup.collect,
-  );
   static const timelineNotShowAbandonedBangumis = SettingKey<bool>(
     _SettingBoxKey.timelineNotShowAbandonedBangumis,
     false,
@@ -572,8 +562,6 @@ class SettingsKeys {
     disableSuperResolutionWarning,
     playerDisableAnimations,
     playerLogLevel,
-    searchNotShowWatchedBangumis,
-    searchNotShowAbandonedBangumis,
     timelineNotShowAbandonedBangumis,
     timelineNotShowWatchedBangumis,
     timelineOnlyShowWatchingBangumis,
@@ -612,6 +600,7 @@ class SettingsKeys {
 
   SettingsKeys._();
 }
+
 // Historical Hive key names used by settings created before the typed registry.
 // Keep these strings stable so existing users keep their saved settings.
 // New settings do not need to be added here unless they intentionally reuse an
@@ -683,8 +672,6 @@ class _SettingBoxKey {
       disableSuperResolutionWarning = 'superResolutionWarn',
       playerDisableAnimations = 'playerDisableAnimations',
       playerLogLevel = 'playerLogLevel',
-      searchNotShowWatchedBangumis = 'searchNotShowWatchedBangumis',
-      searchNotShowAbandonedBangumis = 'searchNotShowAbandonedBangumis',
       timelineNotShowAbandonedBangumis = 'timelineNotShowAbandonedBangumis',
       timelineNotShowWatchedBangumis = 'timelineNotShowWatchedBangumis',
       timelineOnlyShowWatchingBangumis = 'timelineOnlyShowWatchingBangumis',
