@@ -431,7 +431,8 @@ class BangumiApi {
     try {
       final jsonData = await _client.get(
         ApiEndpoints.formatUrl(
-            ApiEndpoints.bangumiAPIDomain + ApiEndpoints.bangumiUsernameByToken,
+            ApiEndpoints.bangumiAuthAPIMirrorDomain +
+                ApiEndpoints.bangumiUsernameByToken,
             []),
         requiresAuth: true,
       );
@@ -489,7 +490,7 @@ class BangumiApi {
           dynamic jsonData;
           try {
             final url = ApiEndpoints.formatUrl(
-                ApiEndpoints.bangumiAPIDomain +
+                ApiEndpoints.bangumiAuthAPIMirrorDomain +
                     ApiEndpoints.bangumiGetCollection,
                 [resolvedUsername, limit, offset, collectionType.value]);
             jsonData = await _client.get(
@@ -557,7 +558,8 @@ class BangumiApi {
     try {
       await _client.post(
         ApiEndpoints.formatUrl(
-            ApiEndpoints.bangumiAPIDomain + ApiEndpoints.bangumiSetCollection,
+            ApiEndpoints.bangumiAuthAPIMirrorDomain +
+                ApiEndpoints.bangumiSetCollection,
             [id]),
         data: data,
         requiresAuth: true,
