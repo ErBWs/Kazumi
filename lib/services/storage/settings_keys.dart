@@ -341,13 +341,13 @@ class SettingsKeys {
     false,
     group: SettingGroup.player,
   );
-  static const defaultSuperResolutionType = SettingKey<int>(
-    _SettingBoxKey.defaultSuperResolutionType,
+  static const defaultSuperResolutionMode = SettingKey<int>(
+    _SettingBoxKey.defaultSuperResolutionMode,
     1,
     group: SettingGroup.player,
   );
-  static const superResolutionWarn = SettingKey<bool>(
-    _SettingBoxKey.superResolutionWarn,
+  static const disableSuperResolutionWarning = SettingKey<bool>(
+    _SettingBoxKey.disableSuperResolutionWarning,
     false,
     group: SettingGroup.player,
   );
@@ -568,8 +568,8 @@ class SettingsKeys {
     androidEnableOpenSLES,
     androidVideoRenderer,
     androidAutoEnterPIP,
-    defaultSuperResolutionType,
-    superResolutionWarn,
+    defaultSuperResolutionMode,
+    disableSuperResolutionWarning,
     playerDisableAnimations,
     playerLogLevel,
     searchNotShowWatchedBangumis,
@@ -679,8 +679,8 @@ class _SettingBoxKey {
       androidEnableOpenSLES = 'androidEnableOpenSLES',
       androidVideoRenderer = 'androidVideoRenderer',
       androidAutoEnterPIP = 'androidAutoEnterPIP',
-      defaultSuperResolutionType = 'defaultSuperResolutionType',
-      superResolutionWarn = 'superResolutionWarn',
+      defaultSuperResolutionMode = 'defaultSuperResolutionType',
+      disableSuperResolutionWarning = 'superResolutionWarn',
       playerDisableAnimations = 'playerDisableAnimations',
       playerLogLevel = 'playerLogLevel',
       searchNotShowWatchedBangumis = 'searchNotShowWatchedBangumis',
