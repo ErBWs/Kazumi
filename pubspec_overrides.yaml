@@ -6,12 +6,12 @@ dependency_overrides:
       path: packages/connectivity_plus/connectivity_plus
   path_provider:
     git:
-      url: https://gitcode.com/openharmony-tpc/flutter_packages.git
+      url: https://gitcode.com/CPF-Flutter/flutter_packages.git
       ref: br_path_provider-v2.1.5_ohos
       path: packages/path_provider/path_provider
   url_launcher:
     git:
-      url: https://gitcode.com/openharmony-tpc/flutter_packages.git
+      url: https://gitcode.com/CPF-Flutter/flutter_packages.git
       ref: br_url_launcher-v6.3.0_ohos
       path: packages/url_launcher/url_launcher
   flutter_inappwebview_platform_interface:
@@ -50,6 +50,6 @@ dependency_overrides:
       ref: br_v0.2.2_ohos_dev
   image_picker:
     git:
-      url: https://gitcode.com/openharmony-tpc/flutter_packages.git
+      url: https://gitcode.com/CPF-Flutter/flutter_packages.git
       ref: br_image_picker-v1.2.1_ohos
       path: packages/image_picker/image_picker

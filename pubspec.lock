@@ -758,8 +758,8 @@ packages:
     description:
       path: "packages/image_picker/image_picker"
       ref: "br_image_picker-v1.2.1_ohos"
-      resolved-ref: ad03ca2cf32ec7b7b21dea1cb774e3f7f1f6847b
-      url: "https://gitcode.com/openharmony-tpc/flutter_packages.git"
+      resolved-ref: e2756aca2878738fee33905cc67e262592e28fba
+      url: "https://gitcode.com/CPF-Flutter/flutter_packages.git"
     source: git
     version: "1.2.1"
   image_picker_android:
@@ -1178,7 +1178,7 @@ packages:
       path: "packages/path_provider/path_provider"
       ref: "br_path_provider-v2.1.5_ohos"
       resolved-ref: a32bc5c0d1be4411cd026bcf8bc0d9d85a491592
-      url: "https://gitcode.com/openharmony-tpc/flutter_packages.git"
+      url: "https://gitcode.com/CPF-Flutter/flutter_packages.git"
     source: git
     version: "2.1.5"
   path_provider_android:
@@ -1697,7 +1697,7 @@ packages:
       path: "packages/url_launcher/url_launcher"
       ref: "br_url_launcher-v6.3.0_ohos"
       resolved-ref: a8d4e3d26d33fdb085bf5da185a5c0486a9e8a12
-      url: "https://gitcode.com/openharmony-tpc/flutter_packages.git"
+      url: "https://gitcode.com/CPF-Flutter/flutter_packages.git"
     source: git
     version: "6.3.0"
   url_launcher_android:
