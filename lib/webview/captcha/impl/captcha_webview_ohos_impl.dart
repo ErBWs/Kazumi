@@ -1,10 +1,8 @@
 import 'dart:async';
-import 'package:flutter/material.dart';
 import 'package:kazumi/services/logging/logger.dart';
-import 'package:kazumi/bean/dialog/dialog_helper.dart';
 import 'package:kazumi/webview/captcha/captcha_webview_controller.dart';
 import 'package:flutter_inappwebview_platform_interface/flutter_inappwebview_platform_interface.dart';
-import 'package:kazumi/webview/captcha/captcha_webview_item.dart';
+import 'package:kazumi/utils/http_headers.dart';
 
 class CaptchaWebviewOhosImpl
     extends CaptchaWebviewController<PlatformInAppWebViewController> {
@@ -12,13 +10,44 @@ class CaptchaWebviewOhosImpl
   bool _handlersRegistered = false;
   String _currentCaptchaImageXpath = '';
   String _currentInputXpath = '';
-  OverlayEntry? entry;
 
   @override
   Future<void> init() async {
-    entry = KazumiDialog.showGlobalOverlay(
-      child: CaptchaWebviewItem(captchaWebviewController: this),
+    _headlessWebView ??= PlatformHeadlessInAppWebView(
+      PlatformHeadlessInAppWebViewCreationParams(
+        initialSettings: InAppWebViewSettings(
+          userAgent: getRandomUA(),
+          mediaPlaybackRequiresUserGesture: true,
+          cacheEnabled: true,
+          blockNetworkImage: false,
+          loadsImagesAutomatically: true,
+          upgradeKnownHostsToHTTPS: false,
+          safeBrowsingEnabled: false,
+        ),
+        onWebViewCreated: (controller) {
+          logEventController.add('[Captcha WebView] Created');
+          webviewController = controller;
+          initEventController.add(true);
+        },
+        onLoadStart: (controller, url) {
+          logEventController.add('[Captcha WebView] Load start: $url');
+        },
+        onLoadStop: (controller, url) {
+          logEventController.add('[Captcha WebView] Load stop: $url');
+          if (buttonWasClicked && !captchaDisappearedController.isClosed) {
+            KazumiLogger().i(
+                '[Captcha WebView] Button click → page navigated, verification done');
+            buttonWasClicked = false;
+            captchaDisappearedController.add(null);
+          }
+        },
+        onReceivedError: (controller, request, error) {
+          logEventController
+              .add('[Captcha WebView] Error: ${error.description}');
+        },
+      ),
     );
+    await _headlessWebView!.run();
   }
 
   void _registerHandlers() {
@@ -455,7 +484,6 @@ if (!_checkAndClick()) {
 
   @override
   void dispose() {
-    KazumiDialog.hideGlobalOverlay(entry);
     _currentCaptchaImageXpath = '';
     _currentInputXpath = '';
     captchaWasFound = false;

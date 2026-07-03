@@ -521,17 +521,17 @@ packages:
     description:
       path: flutter_inappwebview_android
       ref: "br_v6.1.5_ohos_dev"
-      resolved-ref: "112506c03eb517d03cf1ceb53dedd9bd29b81380"
-      url: "https://gitcode.com/CPF-Flutter/flutter_inappwebview.git"
+      resolved-ref: "96ea27044655a4c701f34b53a973565fbe422a94"
+      url: "https://gitcode.com/ErBW_s/flutter_inappwebview.git"
     source: git
     version: "1.1.3"
   flutter_inappwebview_internal_annotations:
     dependency: transitive
     description:
       path: "dev_packages/flutter_inappwebview_internal_annotations"
-      ref: "112506c03eb517d03cf1ceb53dedd9bd29b81380"
-      resolved-ref: "112506c03eb517d03cf1ceb53dedd9bd29b81380"
-      url: "https://gitcode.com/CPF-Flutter/flutter_inappwebview.git"
+      ref: "96ea27044655a4c701f34b53a973565fbe422a94"
+      resolved-ref: "96ea27044655a4c701f34b53a973565fbe422a94"
+      url: "https://gitcode.com/ErBW_s/flutter_inappwebview.git"
     source: git
     version: "1.1.1"
   flutter_inappwebview_ios:
@@ -539,8 +539,8 @@ packages:
     description:
       path: flutter_inappwebview_ios
       ref: "br_v6.1.5_ohos_dev"
-      resolved-ref: "112506c03eb517d03cf1ceb53dedd9bd29b81380"
-      url: "https://gitcode.com/CPF-Flutter/flutter_inappwebview.git"
+      resolved-ref: "96ea27044655a4c701f34b53a973565fbe422a94"
+      url: "https://gitcode.com/ErBW_s/flutter_inappwebview.git"
     source: git
     version: "1.1.2"
   flutter_inappwebview_macos:
@@ -548,8 +548,8 @@ packages:
     description:
       path: flutter_inappwebview_macos
       ref: "br_v6.1.5_ohos_dev"
-      resolved-ref: "112506c03eb517d03cf1ceb53dedd9bd29b81380"
-      url: "https://gitcode.com/CPF-Flutter/flutter_inappwebview.git"
+      resolved-ref: "96ea27044655a4c701f34b53a973565fbe422a94"
+      url: "https://gitcode.com/ErBW_s/flutter_inappwebview.git"
     source: git
     version: "1.1.2"
   flutter_inappwebview_ohos:
@@ -557,8 +557,8 @@ packages:
     description:
       path: flutter_inappwebview_ohos
       ref: "br_v6.1.5_ohos_dev"
-      resolved-ref: "112506c03eb517d03cf1ceb53dedd9bd29b81380"
-      url: "https://gitcode.com/CPF-Flutter/flutter_inappwebview.git"
+      resolved-ref: "96ea27044655a4c701f34b53a973565fbe422a94"
+      url: "https://gitcode.com/ErBW_s/flutter_inappwebview.git"
     source: git
     version: "1.1.3"
   flutter_inappwebview_platform_interface:
@@ -566,8 +566,8 @@ packages:
     description:
       path: flutter_inappwebview_platform_interface
       ref: "br_v6.1.5_ohos_dev"
-      resolved-ref: "112506c03eb517d03cf1ceb53dedd9bd29b81380"
-      url: "https://gitcode.com/CPF-Flutter/flutter_inappwebview.git"
+      resolved-ref: "96ea27044655a4c701f34b53a973565fbe422a94"
+      url: "https://gitcode.com/ErBW_s/flutter_inappwebview.git"
     source: git
     version: "1.3.0+1"
   flutter_launcher_icons:

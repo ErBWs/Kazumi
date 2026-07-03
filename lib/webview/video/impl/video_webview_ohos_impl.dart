@@ -1,35 +1,65 @@
 import 'dart:async';
-import 'package:flutter/material.dart';
-import 'package:kazumi/bean/dialog/dialog_helper.dart';
+import 'dart:collection';
+import 'dart:ui';
+import 'package:flutter/foundation.dart';
+import 'package:kazumi/utils/http_headers.dart';
 import 'package:kazumi/utils/media.dart';
 import 'package:kazumi/webview/video/video_webview_controller.dart';
 import 'package:flutter_inappwebview_platform_interface/flutter_inappwebview_platform_interface.dart';
-import 'package:kazumi/webview/video/video_webview_item.dart';
 
 class VideoWebviewOhosImpl
     extends VideoWebviewController<PlatformInAppWebViewController> {
+  PlatformHeadlessInAppWebView? headlessWebView;
   bool hasInjectedScripts = false;
   bool shouldWaitForInit = true;
   StreamSubscription? webviewSubscription;
-  OverlayEntry? entry;
 
   @override
   Future<void> init() async {
     shouldWaitForInit = true;
-    entry = KazumiDialog.showGlobalOverlay(
-      child: VideoWebviewItem(videoWebviewController: this),
+  }
+
+  Future<void> _createHeadlessWebView(bool useLegacyParser) async {
+    final List<UserScript> scripts = buildUserScripts(useLegacyParser);
+    headlessWebView ??= PlatformHeadlessInAppWebView(
+      PlatformHeadlessInAppWebViewCreationParams(
+        initialSize: const Size(1, 1),
+        initialUserScripts: UnmodifiableListView<UserScript>(scripts),
+        initialSettings: InAppWebViewSettings(
+          userAgent: getRandomUA(),
+          mediaPlaybackRequiresUserGesture: true,
+          cacheEnabled: false,
+          blockNetworkImage: true,
+          loadsImagesAutomatically: false,
+          upgradeKnownHostsToHTTPS: false,
+          safeBrowsingEnabled: false,
+          mixedContentMode: MixedContentMode.MIXED_CONTENT_COMPATIBILITY_MODE,
+          geolocationEnabled: false,
+        ),
+        onWebViewCreated: (controller) {
+          debugPrint('[WebView] Created');
+          webviewController = controller;
+          if (!hasInjectedScripts) {
+            addJavaScriptHandlers(useLegacyParser);
+            hasInjectedScripts = true;
+          }
+          initEventController.add(true);
+        },
+        onLoadStart: (controller, url) async {
+          logEventController.add('started loading: $url');
+        },
+        onLoadStop: (controller, url) {
+          logEventController.add('loading completed: $url');
+        },
+      ),
     );
+    await headlessWebView?.run();
   }
 
   Future<void> _loadUrl(String url, bool useLegacyParser,
       {int offset = 0}) async {
     // Do not unloadPage here or reload will throw error because webview is not
     // yet initialized here.
-    if (!hasInjectedScripts) {
-      addJavaScriptHandlers(useLegacyParser);
-      await addUserScripts(useLegacyParser);
-      hasInjectedScripts = true;
-    }
     count = 0;
     this.offset = offset;
     isIframeLoaded = false;
@@ -49,6 +79,7 @@ class VideoWebviewOhosImpl
           await _loadUrl(url, useLegacyParser, offset: offset);
         }
       });
+      await _createHeadlessWebView(useLegacyParser);
     } else {
       await _loadUrl(url, useLegacyParser, offset: offset);
     }
@@ -115,7 +146,7 @@ class VideoWebviewOhosImpl
     }
   }
 
-  Future<void> addUserScripts(bool useLegacyParser) async {
+  List<UserScript> buildUserScripts(bool useLegacyParser) {
     final List<UserScript> scripts = [];
 
     if (useLegacyParser) {
@@ -255,9 +286,7 @@ class VideoWebviewOhosImpl
       ));
     }
 
-    await webviewController?.addUserScripts(
-      userScripts: scripts,
-    );
+    return scripts;
   }
 
   @override
@@ -271,7 +300,11 @@ class VideoWebviewOhosImpl
 
   @override
   Future<void> dispose() async {
-    unloadPage();
-    KazumiDialog.hideGlobalOverlay(entry);
+    await webviewSubscription?.cancel();
+    webviewSubscription = null;
+    await headlessWebView?.dispose();
+    headlessWebView = null;
+    webviewController = null;
+    disposeEventControllers();
   }
 }
