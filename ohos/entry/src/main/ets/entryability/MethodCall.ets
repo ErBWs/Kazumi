@@ -10,7 +10,7 @@ import {
 import { common, Want, wantConstant } from "@kit.AbilityKit";
 import { BusinessError } from "@kit.BasicServicesKit";
 import { window, display } from "@kit.ArkUI";
-import { fileUri } from '@kit.CoreFileKit';
+import { fileUri, fileIo as fs } from '@kit.CoreFileKit';
 import { deviceInfo } from '@kit.BasicServicesKit';
 
 export default class MethodCallPlugin implements FlutterPlugin, AbilityAware {
@@ -60,12 +60,32 @@ export default class MethodCallPlugin implements FlutterPlugin, AbilityAware {
   }
 
   private openWithMime(url: string, mimeType: string): void {
+    if (!this.context) {
+      return;
+    }
+
+    let path = this.context.getApplicationContext().tempDir + "/kazumi_external_video.m3u8";
+    try {
+      let playlist = fs.openSync(path,
+        fs.OpenMode.CREATE | fs.OpenMode.WRITE_ONLY | fs.OpenMode.TRUNC);
+      fs.writeSync(playlist.fd, "#EXTM3U\n" + url + "\n");
+      fs.closeSync(playlist);
+    } catch (e) {
+      let error = e as BusinessError;
+      console.error(`Failed to create external playback playlist. Code: ${error.code}, message: ${error.message}`);
+      return;
+    }
+
     let want: Want = {
       action: 'ohos.want.action.viewData',
-      uri: url,
+      uri: fileUri.getUriFromPath(path),
       type: mimeType,
+      parameters: {
+        'ohos.ability.params.showDefaultPicker': true
+      },
+      flags: wantConstant.Flags.FLAG_AUTH_READ_URI_PERMISSION
     };
-    this.context?.startAbility(want, (err: BusinessError) => {
+    this.context.startAbility(want, (err: BusinessError) => {
       if (err.code) {
         console.error(`Failed to startAbility. Code: ${err.code}, message: ${err.message}`);
       }

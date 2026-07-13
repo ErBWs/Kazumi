@@ -15,7 +15,7 @@ class ExternalPlaybackLauncher {
   Future<void> launch() async {
     final currentVideoUrl = videoUrl();
     final currentReferer = referer();
-    if ((Platform.isAndroid || Platform.isWindows) && currentReferer.isEmpty) {
+    if ((Platform.isAndroid || Platform.isWindows || Platform.isOhos) && currentReferer.isEmpty) {
       if (await ExternalPlayer.launchUrlWithMime(
           currentVideoUrl, 'video/mp4')) {
         KazumiDialog.dismiss();
