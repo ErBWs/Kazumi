@@ -265,6 +265,9 @@ abstract class _PluginsController with Store {
   }
 
   Future<void> onReorder(int oldIndex, int newIndex) {
+    if (oldIndex < newIndex) {
+      newIndex -= 1;
+    }
     final previous = List<Plugin>.from(pluginList);
     final plugin = pluginList.removeAt(oldIndex);
     pluginList.insert(newIndex, plugin);
