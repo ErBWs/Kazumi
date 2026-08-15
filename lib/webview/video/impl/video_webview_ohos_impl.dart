@@ -122,8 +122,8 @@ class VideoWebviewOhosImpl
                 logEventController.add(
                     'Loading video source ${decodeVideoSource(encodedUrl)}');
                 unloadPage();
-                videoParserEventController
-                    .add((decodeVideoSource(encodedUrl), offset));
+                final videoUrl = decodeVideoSource(encodedUrl);
+                notifyVideoSourceResolved(videoUrl);
               }
             }
           });
@@ -140,7 +140,7 @@ class VideoWebviewOhosImpl
               isVideoSourceLoaded = true;
               videoLoadingEventController.add(false);
               unloadPage();
-              videoParserEventController.add((message, offset));
+              notifyVideoSourceResolved(message);
             }
           });
     }
