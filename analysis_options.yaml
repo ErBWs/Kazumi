@@ -36,3 +36,10 @@ analyzer:
     - lib/bbcode/generated/**
     - "**/*.g.dart"
     - "**/*.freezed.dart"
+    - android/**
+    - ohos/**
+    - ios/**
+    - web/**
+    - windows/**
+    - macos/**
+    - linux/**

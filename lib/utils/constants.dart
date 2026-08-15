@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:kazumi/request/config/api_endpoints.dart';
 
 class StyleString {
@@ -13,14 +14,15 @@ const String customAppFontFamily = "MI_Sans_Regular";
 
 /// Opts into the newer Material progress indicator appearance while Flutter
 /// still exposes the compatibility flag.
-/// ignore: deprecated_member_use
 const ProgressIndicatorThemeData progressIndicatorTheme2024 =
+    // ignore: deprecated_member_use
     ProgressIndicatorThemeData(year2023: false);
 
 /// Opts into the newer Material slider appearance while Flutter still exposes
 /// the compatibility flag.
 /// ignore: deprecated_member_use
 const SliderThemeData sliderTheme2024 = SliderThemeData(
+  // ignore: deprecated_member_use
   year2023: false,
   showValueIndicator: ShowValueIndicator.onDrag,
 );

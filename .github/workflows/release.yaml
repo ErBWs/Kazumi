@@ -22,7 +22,7 @@ on:
         default: false
 
 env:
-  FLUTTER_VERSION: 3.41.10-ohos-0.0.2-beta
+  FLUTTER_VERSION: oh-3.41.9-release
   DANDANAPI_APPID: ${{ secrets.DANDANAPI_APPID }}
   DANDANAPI_KEY: ${{ secrets.DANDANAPI_KEY }}
   KAZUMI_APPID: ${{ secrets.KAZUMI_APPID }}
