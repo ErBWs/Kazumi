@@ -1,6 +1,6 @@
 class ApiEndpoints {
   /// 当前版本
-  static const String version = '2.2.8';
+  static const String version = String.fromEnvironment("KAZUMI_VERSION", defaultValue: "1145.1.4");
 
   /// 规则API级别
   static const int apiLevel = 8;
