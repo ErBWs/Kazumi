@@ -1,11 +1,13 @@
 import 'dart:async';
 import 'dart:io';
+import 'package:canvas_danmaku/models/danmaku_content_item.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_mobx/flutter_mobx.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:kazumi/bean/widget/play_pause_icon.dart';
 import 'package:kazumi/pages/player/player_adjustment_hud.dart';
+import 'package:kazumi/pages/player/danmaku_destination_sheet.dart';
 import 'package:kazumi/pages/player/controller/player_aspect_ratio.dart';
 import 'package:kazumi/pages/player/controller/player_super_resolution.dart';
 import 'package:kazumi/bean/widget/embedded_native_control_area.dart';
@@ -33,7 +35,6 @@ class PlayerItemPanel extends StatefulWidget {
     required this.onBackPressed,
     required this.setPlaybackSpeed,
     required this.showDanmakuSwitch,
-    required this.changeEpisode,
     required this.handleFullscreen,
     required this.enterAndroidPictureInPicture,
     required this.handleScreenShot,
@@ -44,14 +45,12 @@ class PlayerItemPanel extends StatefulWidget {
     required this.panelVisibilityController,
     required this.toggleMenu,
     required this.keyboardFocus,
-    required this.sendDanmaku,
     required this.acquirePlayerPanelHold,
     required this.onMenuVisibilityChanged,
     required this.handleDanmaku,
     required this.skipOP,
     required this.showVideoInfo,
     required this.showSyncPlayPanel,
-    required this.showDanmakuDestinationPickerAndSend,
     required this.pauseForTimedShutdown,
     this.disableAnimations = false,
   });
@@ -61,7 +60,6 @@ class PlayerItemPanel extends StatefulWidget {
   final void Function(BuildContext) onBackPressed;
   final Future<void> Function(double) setPlaybackSpeed;
   final void Function() showDanmakuSwitch;
-  final Future<void> Function(int, {int currentRoad, int offset}) changeEpisode;
   final void Function() toggleMenu;
   final void Function() handleFullscreen;
   final Future<void> Function() enterAndroidPictureInPicture;
@@ -77,10 +75,8 @@ class PlayerItemPanel extends StatefulWidget {
   final void Function() handleDanmaku;
   final void Function(String direction) handlePreNextEpisode;
   final void Function() skipOP;
-  final bool Function(String) sendDanmaku;
   final void Function() showVideoInfo;
   final void Function() showSyncPlayPanel;
-  final Future<bool> Function(String) showDanmakuDestinationPickerAndSend;
   final VoidCallback pauseForTimedShutdown;
   final bool disableAnimations;
 
@@ -132,13 +128,50 @@ class _PlayerItemPanelState extends State<PlayerItemPanel> {
     textFieldFocus.unfocus();
     _releaseDanmakuTextFieldPanel();
 
-    final sent = await widget.showDanmakuDestinationPickerAndSend(message);
-    if (!mounted) {
+    if (message.trim().isEmpty) {
+      KazumiDialog.showToast(message: '弹幕内容为空');
       return;
     }
-    if (sent) {
-      textController.clear();
+
+    final destination = await showDanmakuDestinationSheet(context);
+    if (!mounted || destination == null) {
+      return;
     }
+
+    widget.keyboardFocus.requestFocus();
+    if (playerController.danmaku.danDanmakus.isEmpty) {
+      KazumiDialog.showToast(message: '当前剧集不支持弹幕发送的说');
+      return;
+    }
+    if (message.length > 100) {
+      KazumiDialog.showToast(message: '弹幕内容过长');
+      return;
+    }
+
+    if (destination == DanmakuDestination.chatRoom) {
+      if (playerController.syncplay.syncplayRoom.isEmpty) {
+        KazumiDialog.showToast(message: '你还没有加入一起看，无法发送聊天室弹幕');
+        return;
+      }
+
+      final sender =
+          playerController.syncplay.syncplayController?.username ?? '我';
+      playerController.danmaku.canvasController.addDanmaku(
+        DanmakuContentItem(
+          '$sender：$message',
+          color: Colors.orange,
+          isColorful: true,
+          type: DanmakuItemType.bottom,
+          extra: DateTime.now().millisecondsSinceEpoch,
+        ),
+      );
+      unawaited(playerController.sendSyncPlayChatMessage(message));
+    } else {
+      // This provider has no send API; display a local echo.
+      playerController.danmaku.canvasController
+          .addDanmaku(DanmakuContentItem(message, selfSend: true));
+    }
+    textController.clear();
   }
 
   Widget get danmakuTextField {
@@ -208,58 +241,6 @@ class _PlayerItemPanelState extends State<PlayerItemPanel> {
             widget.keyboardFocus.requestFocus();
           },
         ),
-      );
-    });
-  }
-
-  void showSetSpeedSheet() {
-    final double currentSpeed = playerController.playback.playerSpeed;
-    KazumiDialog.show(builder: (context) {
-      return AlertDialog(
-        title: const Text('播放速度'),
-        content: StatefulBuilder(
-            builder: (BuildContext context, StateSetter setState) {
-          return Wrap(
-            spacing: 8,
-            runSpacing: isDesktop() ? 8 : 0,
-            children: [
-              for (final double i in defaultPlaySpeedList) ...<Widget>[
-                if (i == currentSpeed)
-                  FilledButton(
-                    onPressed: () async {
-                      await widget.setPlaybackSpeed(i);
-                      KazumiDialog.dismiss();
-                    },
-                    child: Text(i.toString()),
-                  )
-                else
-                  FilledButton.tonal(
-                    onPressed: () async {
-                      await widget.setPlaybackSpeed(i);
-                      KazumiDialog.dismiss();
-                    },
-                    child: Text(i.toString()),
-                  ),
-              ]
-            ],
-          );
-        }),
-        actions: <Widget>[
-          TextButton(
-            onPressed: () => KazumiDialog.dismiss(),
-            child: Text(
-              '取消',
-              style: TextStyle(color: Theme.of(context).colorScheme.outline),
-            ),
-          ),
-          TextButton(
-            onPressed: () async {
-              await widget.setPlaybackSpeed(1.0);
-              KazumiDialog.dismiss();
-            },
-            child: const Text('默认速度'),
-          ),
-        ],
       );
     });
   }
@@ -514,8 +495,7 @@ class _PlayerItemPanelState extends State<PlayerItemPanel> {
         Positioned(
           top: 25,
           child: Observer(builder: (context) {
-            // PlayerSeekHud latches values only while visible, so skipping the
-            // position reads when hidden keeps the 1s tick from rebuilding this.
+            // Hidden HUDs must not observe playback ticks.
             final visible = playerController.panel.showSeekTime;
             return PlayerSeekHud(
               visible: visible,
@@ -632,9 +612,7 @@ class _PlayerItemPanelState extends State<PlayerItemPanel> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Position reads stay inside these narrow Observers so the 1s
-            // progress tick rebuilds only the bar and time text, not the
-            // whole bottom bar.
+            // Keep playback ticks inside the progress and time observers.
             if (!isDesktop() && !isTablet())
               Container(
                 padding: const EdgeInsets.only(left: 10.0, bottom: 10),

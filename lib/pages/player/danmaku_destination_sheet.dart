@@ -3,7 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:kazumi/bean/dialog/adaptive_bottom_sheet.dart';
 import 'package:kazumi/bean/dialog/material_bottom_sheet.dart';
 import 'package:kazumi/bean/widget/split_list_row.dart';
-import 'package:kazumi/pages/player/controller/player_models.dart';
+
+enum DanmakuDestination {
+  chatRoom,
+  remoteDanmaku,
+}
 
 Future<DanmakuDestination?> showDanmakuDestinationSheet(BuildContext context) {
   return showAdaptiveBottomSheet<DanmakuDestination>(

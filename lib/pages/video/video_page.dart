@@ -21,8 +21,6 @@ import 'package:kazumi/pages/history/history_controller.dart';
 import 'package:kazumi/pages/player/episode_comments_sheet.dart';
 import 'package:kazumi/pages/player/player_controller.dart';
 import 'package:kazumi/pages/player/player_item.dart';
-import 'package:kazumi/pages/video/danmaku_destination_sheet.dart';
-import 'package:kazumi/pages/video/danmaku_send_sheet.dart';
 import 'package:kazumi/pages/video/episode_selection_panel.dart';
 import 'package:kazumi/pages/video/player_content_tabs.dart';
 import 'package:kazumi/pages/video/video_controller.dart';
@@ -447,80 +445,6 @@ class _VideoPageState extends State<VideoPage>
     }
   }
 
-  bool sendDanmaku(String msg) {
-    keyboardFocus.requestFocus();
-    if (playerController.danmaku.danDanmakus.isEmpty) {
-      KazumiDialog.showToast(
-        message: '当前剧集不支持弹幕发送的说',
-      );
-      return false;
-    }
-    if (msg.isEmpty) {
-      KazumiDialog.showToast(message: '弹幕内容为空');
-      return false;
-    } else if (msg.length > 100) {
-      KazumiDialog.showToast(message: '弹幕内容过长');
-      return false;
-    }
-
-    final destination = playerController.danmaku.danmakuDestination;
-
-    if (destination == DanmakuDestination.chatRoom) {
-      if (playerController.syncplay.syncplayRoom.isEmpty) {
-        KazumiDialog.showToast(message: '你还没有加入一起看，无法发送聊天室弹幕');
-        return false;
-      }
-
-      final sender =
-          playerController.syncplay.syncplayController?.username ?? '我';
-      final String displayText = '$sender：$msg';
-
-      playerController.danmaku.canvasController.addDanmaku(
-        DanmakuContentItem(
-          displayText,
-          color: Colors.orange,
-          isColorful: true,
-          type: DanmakuItemType.bottom,
-          extra: DateTime.now().millisecondsSinceEpoch,
-        ),
-      );
-
-      unawaited(playerController.sendSyncPlayChatMessage(msg));
-    } else {
-      // This provider has no send API; display a local echo.
-      playerController.danmaku.canvasController
-          .addDanmaku(DanmakuContentItem(msg, selfSend: true));
-    }
-
-    return true;
-  }
-
-  Future<void> showMobileDanmakuInput() async {
-    final message = await showMobileDanmakuInputSheet(context);
-
-    if (!mounted || message == null) {
-      return;
-    }
-    await showDanmakuDestinationPickerAndSend(message);
-  }
-
-  Future<bool> showDanmakuDestinationPickerAndSend(String msg) async {
-    if (msg.trim().isEmpty) {
-      KazumiDialog.showToast(message: '弹幕内容为空');
-      return false;
-    }
-
-    final result = await showDanmakuDestinationSheet(context);
-
-    if (result == null || !mounted) {
-      return false;
-    }
-
-    setState(() {});
-    playerController.danmaku.danmakuDestination = result;
-    return sendDanmaku(msg);
-  }
-
   @override
   Widget build(BuildContext context) {
     final bool isLandscape = _windowIsLandscape;
@@ -774,10 +698,7 @@ class _VideoPageState extends State<VideoPage>
                   changeEpisode: changeEpisode,
                   onBackPressed: onBackPressed,
                   keyboardFocus: keyboardFocus,
-                  sendDanmaku: sendDanmaku,
                   disableAnimations: disableAnimations,
-                  showDanmakuDestinationPickerAndSend:
-                      showDanmakuDestinationPickerAndSend,
                   pauseForTimedShutdown: pauseForTimedShutdown,
                 ),
         ),
@@ -840,7 +761,6 @@ class _VideoPageState extends State<VideoPage>
 
   Widget get tabBody {
     final colors = Theme.of(context).colorScheme;
-    final bool danmakuOn = playerController.danmaku.danmakuOn;
     final int episodeNum = videoPageController.commentsEpisode;
 
     return ColoredBox(
@@ -851,23 +771,6 @@ class _VideoPageState extends State<VideoPage>
           PlayerContentTabs(
             controller: tabController,
             onEpisodesSelected: _revealCurrentEpisode,
-            trailing: !_windowIsLandscape
-                ? IconButton.filledTonal(
-                    tooltip: danmakuOn ? '发送弹幕' : '弹幕已关闭',
-                    onPressed: () {
-                      if (danmakuOn && !videoPageController.loading) {
-                        showMobileDanmakuInput();
-                      } else if (videoPageController.loading) {
-                        KazumiDialog.showToast(message: '请等待视频加载完成');
-                      } else {
-                        KazumiDialog.showToast(message: '请先打开弹幕');
-                      }
-                    },
-                    icon: Icon(danmakuOn
-                        ? Icons.edit_note_rounded
-                        : Icons.comments_disabled_outlined),
-                  )
-                : null,
           ),
           Expanded(
             child: TabBarView(
