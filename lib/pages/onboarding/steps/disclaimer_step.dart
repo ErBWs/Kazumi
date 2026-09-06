@@ -14,7 +14,7 @@ class DisclaimerStep extends StatefulWidget {
 }
 
 class _DisclaimerStepState extends State<DisclaimerStep> {
-  String? statementsText;
+  String? _statementsText;
 
   @override
   void initState() {
@@ -38,7 +38,7 @@ class _DisclaimerStepState extends State<DisclaimerStep> {
       return;
     }
     setState(() {
-      statementsText = text;
+      _statementsText = text;
     });
   }
 
@@ -47,17 +47,35 @@ class _DisclaimerStepState extends State<DisclaimerStep> {
     final textTheme = Theme.of(context).textTheme;
     return OnboardingStepLayout(
       leading: const OnboardingStepIcon(icon: Icons.waving_hand_rounded),
-      title: '欢迎使用',
-      subtitle: '请阅读并同意免责声明',
+      title: '欢迎来到 Kazumi',
       child: TonalCard(
-        child: statementsText == null
-            ? const Center(child: LoadingIndicator())
-            : SingleChildScrollView(
-                padding: const EdgeInsets.all(20),
-                child: Text(
-                  statementsText!,
-                  style: textTheme.bodyMedium?.copyWith(height: 1.7),
-                ),
+        padding: const EdgeInsets.all(24),
+        child: _statementsText == null
+            ? const Padding(
+                padding: EdgeInsets.all(32),
+                child: Center(child: LoadingIndicator()),
+              )
+            : Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(children: [
+                    Icon(Icons.description_outlined,
+                        color: Theme.of(context).colorScheme.primary),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text('免责声明',
+                          style: textTheme.titleLarge
+                              ?.copyWith(fontWeight: FontWeight.w600)),
+                    ),
+                  ]),
+                  const SizedBox(height: 20),
+                  for (final paragraph in _statementsText!.trim().split('\n'))
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 12),
+                      child: Text(paragraph.trim(),
+                          style: textTheme.bodyMedium?.copyWith(height: 1.7)),
+                    ),
+                ],
               ),
       ),
     );

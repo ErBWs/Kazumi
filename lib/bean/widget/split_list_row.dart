@@ -55,7 +55,9 @@ class _SplitListRowState extends State<SplitListRow> {
           );
     // Animate color as well as shape; Material alone snaps color changes.
     return AnimatedContainer(
-      duration: splitListMotionDuration,
+      duration: MediaQuery.disableAnimationsOf(context)
+          ? Duration.zero
+          : splitListMotionDuration,
       curve: splitListMotionCurve,
       clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(

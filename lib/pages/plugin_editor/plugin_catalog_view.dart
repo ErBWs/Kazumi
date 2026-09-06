@@ -20,11 +20,20 @@ class PluginCatalogView extends StatefulWidget {
   const PluginCatalogView({
     super.key,
     required this.controller,
-    this.onboarding = false,
-  });
+  }) : _scrollViewBuilder = null;
+
+  const PluginCatalogView.onboarding({
+    super.key,
+    required this.controller,
+    required Widget Function(BuildContext context, List<Widget> slivers)
+        builder,
+  }) : _scrollViewBuilder = builder;
 
   final PluginsController controller;
-  final bool onboarding;
+  final Widget Function(BuildContext context, List<Widget> slivers)?
+      _scrollViewBuilder;
+
+  bool get _onboarding => _scrollViewBuilder != null;
 
   @override
   State<PluginCatalogView> createState() => _PluginCatalogViewState();
@@ -154,7 +163,7 @@ class _PluginCatalogViewState extends State<PluginCatalogView> {
   Widget _header(int total, int installed, int updates) {
     final theme = Theme.of(context);
     return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-      if (!widget.onboarding) ...[
+      if (!widget._onboarding) ...[
         const RulePageIntro(
           title: '发现更多来源',
           description: '浏览社区规则，为你的番剧搜索添加更多选择。',
@@ -193,8 +202,17 @@ class _PluginCatalogViewState extends State<PluginCatalogView> {
         ),
       ],
       Row(children: [
-        if (!widget.onboarding) _sortButton(),
-        const Spacer(),
+        if (widget._onboarding)
+          Expanded(
+            child: Text('规则仓库 · 已安装 $installed',
+                style: theme.textTheme.titleSmall?.copyWith(
+                    color: theme.colorScheme.primary,
+                    fontWeight: FontWeight.w600)),
+          )
+        else ...[
+          _sortButton(),
+          const Spacer(),
+        ],
         IconButton.filledTonal(
             tooltip: '刷新规则列表',
             onPressed: _loading ? null : _refresh,
@@ -256,57 +274,59 @@ class _PluginCatalogViewState extends State<PluginCatalogView> {
                 _controller.pluginStatus(p) == PluginCatalogItemStatus.update)
             .length;
         final items = _visibleItems();
-        return CustomScrollView(
-          keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-          slivers: [
-            SliverPadding(
-              padding: widget.onboarding
-                  ? EdgeInsets.zero
-                  : const EdgeInsets.fromLTRB(16, 12, 16, 24),
-              sliver: SliverMainAxisGroup(slivers: [
-                SliverToBoxAdapter(
-                    child: _header(catalog.length, installed, updates)),
-                if (items.isEmpty)
-                  SliverToBoxAdapter(child: _emptyBody())
-                else
-                  SliverList.builder(
-                    itemCount: items.length,
-                    itemBuilder: (context, index) {
-                      final item = items[index];
-                      final status = _controller.pluginStatus(item);
-                      final busy = _installing.contains(item.name);
-                      return RuleCard(
-                        key: ValueKey(item.name),
-                        title: item.name,
-                        installed: status == PluginCatalogItemStatus.installed,
-                        subtitle:
-                            item.author.isEmpty ? null : '作者 · ${item.author}',
-                        tags: [
+        final slivers = <Widget>[
+          SliverPadding(
+            padding: widget._onboarding
+                ? EdgeInsets.zero
+                : const EdgeInsets.fromLTRB(16, 12, 16, 24),
+            sliver: SliverMainAxisGroup(slivers: [
+              SliverToBoxAdapter(
+                  child: _header(catalog.length, installed, updates)),
+              if (items.isEmpty)
+                SliverToBoxAdapter(child: _emptyBody())
+              else
+                SliverList.builder(
+                  itemCount: items.length,
+                  itemBuilder: (context, index) {
+                    final item = items[index];
+                    final status = _controller.pluginStatus(item);
+                    final busy = _installing.contains(item.name);
+                    return RuleCard(
+                      key: ValueKey(item.name),
+                      title: item.name,
+                      installed: status == PluginCatalogItemStatus.installed,
+                      subtitle:
+                          item.author.isEmpty ? null : '作者 · ${item.author}',
+                      tags: [
+                        RuleTag(
+                            label: item.version,
+                            background: colors.surfaceContainerHighest,
+                            foreground: colors.onSurfaceVariant),
+                        if (item.antiCrawlerEnabled)
                           RuleTag(
-                              label: item.version,
-                              background: colors.surfaceContainerHighest,
-                              foreground: colors.onSurfaceVariant),
-                          if (item.antiCrawlerEnabled)
-                            RuleTag(
-                                label: '含验证支持',
-                                background: colors.tertiaryContainer,
-                                foreground: colors.onTertiaryContainer),
-                        ],
-                        caption: item.lastUpdate > 0
-                            ? '更新于 ${DateTime.fromMillisecondsSinceEpoch(item.lastUpdate).toString().split(' ').first}'
-                            : null,
-                        trailing: _CatalogRuleAction(
-                          status: status,
-                          busy: busy,
-                          onPressed: () => _install(item, status),
-                        ),
-                      );
-                    },
-                  ),
-              ]),
-            ),
-          ],
-        );
+                              label: '含验证支持',
+                              background: colors.tertiaryContainer,
+                              foreground: colors.onTertiaryContainer),
+                      ],
+                      caption: item.lastUpdate > 0
+                          ? '更新于 ${DateTime.fromMillisecondsSinceEpoch(item.lastUpdate).toString().split(' ').first}'
+                          : null,
+                      trailing: _CatalogRuleAction(
+                        status: status,
+                        busy: busy,
+                        onPressed: () => _install(item, status),
+                      ),
+                    );
+                  },
+                ),
+            ]),
+          ),
+        ];
+        return widget._scrollViewBuilder?.call(context, slivers) ??
+            CustomScrollView(
+              keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+              slivers: slivers,
+            );
       });
 }
 

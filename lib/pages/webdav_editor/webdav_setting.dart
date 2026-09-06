@@ -7,6 +7,7 @@ import 'package:kazumi/services/sync/webdav.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:kazumi/bean/settings/settings_detail_scaffold.dart';
 import 'package:kazumi/bean/settings/settings_list.dart';
+import 'package:kazumi/bean/settings/network_mirror_settings.dart';
 
 class WebDavSettingsPage extends StatefulWidget {
   const WebDavSettingsPage({super.key});
@@ -79,40 +80,22 @@ class _PlayerSettingsPageState extends State<WebDavSettingsPage> {
         title: const Text('同步设置'),
         body: SettingsList(
           sections: [
-            SettingsSection(
-              title: Text('规则仓库'),
-              tiles: [
-                SettingsTile.switchTile(
-                  leading: Icons.hub_rounded,
-                  onToggle: (value) async {
-                    enableGitProxy = value ?? !enableGitProxy;
-                    await GStorage.putSetting(
-                        SettingsKeys.enableGitProxy, enableGitProxy);
-                    setState(() {});
-                  },
-                  title: Text('规则仓库镜像'),
-                  description: Text('使用镜像访问规则更新和管理仓库'),
-                  initialValue: enableGitProxy,
-                ),
-              ],
+            NetworkMirrorSettings(
+              enableBangumiProxy: enableBangumiProxy,
+              enableGitProxy: enableGitProxy,
+              onBangumiChanged: (value) async {
+                setState(() => enableBangumiProxy = value);
+                await GStorage.putSetting(
+                    SettingsKeys.enableBangumiProxy, value);
+              },
+              onGitChanged: (value) async {
+                setState(() => enableGitProxy = value);
+                await GStorage.putSetting(SettingsKeys.enableGitProxy, value);
+              },
             ),
             SettingsSection(
               title: Text('Bangumi'),
               tiles: [
-                SettingsTile.switchTile(
-                  leading: Icons.cloud_rounded,
-                  onToggle: (value) async {
-                    enableBangumiProxy = value ?? !enableBangumiProxy;
-                    await GStorage.putSetting(
-                        SettingsKeys.enableBangumiProxy, enableBangumiProxy);
-                    if (mounted) {
-                      setState(() {});
-                    }
-                  },
-                  title: Text('Bangumi 镜像'),
-                  description: Text('使用缓存后端加载榜单'),
-                  initialValue: enableBangumiProxy,
-                ),
                 SettingsTile.switchTile(
                   leading: Icons.sync_rounded,
                   onToggle: (value) async {
