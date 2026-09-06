@@ -260,7 +260,11 @@ class _ImageSearchPageState extends State<ImageSearchPage> {
             },
             child: LayoutBuilder(
               builder: (context, constraints) => Observer(
-                builder: (context) => _buildContent(context, constraints),
+                builder: (context) => ScrollConfiguration(
+                  behavior: ScrollConfiguration.of(context)
+                      .copyWith(scrollbars: false),
+                  child: _buildContent(context, constraints),
+                ),
               ),
             )),
       ),
@@ -297,39 +301,38 @@ class _ImageSearchPageState extends State<ImageSearchPage> {
           )
         : null;
     if (splitLayout) {
+      final contentWidth = constraints.maxWidth.clamp(0.0, 1440.0);
+      final inset = (constraints.maxWidth - contentWidth) / 2 + padding;
+      // Keep the right gutter inside the viewport for edge scrolling.
       return Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 1440),
-          child: Padding(
-            padding: EdgeInsets.fromLTRB(padding, 0, padding, 16),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              spacing: 24,
-              children: [
-                SizedBox(
-                  width: showResults
-                      ? ((constraints.maxWidth - padding * 2 - 24) * .36)
-                          .clamp(264.0, 400.0)
-                      : (constraints.maxWidth - padding * 2).clamp(0.0, 520.0),
-                  child: _buildSourcePane(source,
-                      action:
-                          pinAction ? _buildPrimaryAction(searching) : null),
-                ),
-                if (resultContent != null)
-                  Expanded(
-                    child: Scrollbar(
+        child: Padding(
+          padding: EdgeInsets.fromLTRB(inset, 0, showResults ? 0 : inset, 16),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            spacing: 24,
+            children: [
+              SizedBox(
+                width: showResults
+                    ? ((constraints.maxWidth - padding * 2 - 24) * .36)
+                        .clamp(264.0, 400.0)
+                    : (constraints.maxWidth - padding * 2).clamp(0.0, 520.0),
+                child: _buildSourcePane(source,
+                    action: pinAction ? _buildPrimaryAction(searching) : null),
+              ),
+              if (resultContent != null)
+                Expanded(
+                  child: Scrollbar(
+                    controller: _resultScroll,
+                    child: SingleChildScrollView(
+                      key: const PageStorageKey('image-search-results'),
                       controller: _resultScroll,
-                      child: SingleChildScrollView(
-                        key: const PageStorageKey('image-search-results'),
-                        controller: _resultScroll,
-                        padding: const EdgeInsets.only(bottom: 8),
-                        child: resultContent,
-                      ),
+                      padding: EdgeInsets.only(right: inset, bottom: 8),
+                      child: resultContent,
                     ),
                   ),
-              ],
-            ),
+                ),
+            ],
           ),
         ),
       );
