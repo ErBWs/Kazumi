@@ -201,6 +201,12 @@ class _TimelinePageState extends State<TimelinePage> {
             top: false,
             child: LayoutBuilder(
                 builder: (context, viewport) => NestedScrollView(
+                      // Keep the outer viewport clamped and unstretched so tabs stay fixed.
+                      physics: const ClampingScrollPhysics(),
+                      scrollBehavior: ScrollConfiguration.of(context).copyWith(
+                        overscroll: false,
+                        scrollbars: false,
+                      ),
                       headerSliverBuilder: (context, innerBoxIsScrolled) => [
                         if (seasonHeader != null)
                           SliverToBoxAdapter(
