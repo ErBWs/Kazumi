@@ -3,20 +3,14 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
-import 'package:kazumi/bean/card/network_img_layer.dart';
 import 'package:kazumi/bean/card/user_comments_card.dart';
 import 'package:kazumi/bean/dialog/material_bottom_sheet.dart';
 import 'package:kazumi/bean/widget/connected_tabs.dart';
-import 'package:kazumi/bean/widget/content_section.dart';
 import 'package:kazumi/bean/widget/error_widget.dart';
-import 'package:kazumi/bean/widget/image_preview.dart';
-import 'package:kazumi/bean/widget/tonal_card.dart';
 import 'package:kazumi/modules/character/character_full_item.dart';
 import 'package:kazumi/modules/comments/comment_item.dart';
+import 'package:kazumi/pages/info/character_info_view.dart';
 import 'package:kazumi/request/apis/bangumi_api.dart';
-import 'package:kazumi/utils/constants.dart';
-
-const Set<String> _hiddenInfoKeys = {'引用来源'};
 
 class CharacterPage extends StatefulWidget {
   const CharacterPage({
@@ -24,56 +18,55 @@ class CharacterPage extends StatefulWidget {
     required this.characterID,
     required this.characterName,
     required this.characterRelation,
+    this.actorNames = const [],
   });
 
   final int characterID;
-
-  // Use the tapped name to keep the header height stable while loading.
   final String characterName;
   final String characterRelation;
+  final List<String> actorNames;
 
   @override
   State<CharacterPage> createState() => _CharacterPageState();
 }
 
 class _CharacterPageState extends State<CharacterPage> {
-  CharacterFullItem? characterFullItem;
-  List<CharacterCommentItem> commentsList = [];
-  bool loadingComments = true;
-  bool commentsError = false;
+  CharacterFullItem? _character;
+  List<CharacterCommentItem> _comments = [];
+  bool _loadingComments = true;
+  bool _commentsError = false;
 
-  Future<void> loadCharacter() async {
+  Future<void> _loadCharacter() async {
     setState(() {
-      characterFullItem = null;
+      _character = null;
     });
     final character =
         await BangumiApi.getCharacterByCharacterID(widget.characterID);
     if (mounted) {
       setState(() {
-        characterFullItem = character;
+        _character = character;
       });
     }
   }
 
-  Future<void> loadComments() async {
+  Future<void> _loadComments() async {
     setState(() {
-      loadingComments = true;
-      commentsError = false;
+      _loadingComments = true;
+      _commentsError = false;
     });
     try {
-      final value = await BangumiApi.getCharacterCommentsByCharacterID(
+      final response = await BangumiApi.getCharacterCommentsByCharacterID(
           widget.characterID);
-      commentsList = value.commentList;
-    } catch (e) {
-      if (mounted) {
-        setState(() {
-          commentsError = true;
-        });
-      }
-    }
-    if (mounted) {
+      if (!mounted) return;
       setState(() {
-        loadingComments = false;
+        _comments = response.commentList;
+        _loadingComments = false;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _commentsError = true;
+        _loadingComments = false;
       });
     }
   }
@@ -82,13 +75,15 @@ class _CharacterPageState extends State<CharacterPage> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      loadCharacter();
-      loadComments();
+      if (!mounted) return;
+      _loadCharacter();
+      _loadComments();
     });
   }
 
   @override
   Widget build(BuildContext context) {
+    final name = widget.characterName.trim();
     return DefaultTabController(
       length: 2,
       child: Scaffold(
@@ -96,8 +91,7 @@ class _CharacterPageState extends State<CharacterPage> {
         body: Column(
           children: [
             MaterialBottomSheetHeader(
-              title: _headerTitle,
-              description: _headerDescription,
+              title: name.isEmpty ? '人物' : name,
               onClose: () => Navigator.of(context).pop(),
             ),
             const ConnectedTabs(
@@ -106,7 +100,7 @@ class _CharacterPageState extends State<CharacterPage> {
             ),
             Expanded(
               child: TabBarView(
-                children: [characterInfoBody, characterCommentsBody],
+                children: [_characterInfoBody, _characterCommentsBody],
               ),
             ),
           ],
@@ -115,25 +109,14 @@ class _CharacterPageState extends State<CharacterPage> {
     );
   }
 
-  String get _headerTitle {
-    final name = widget.characterName.trim();
-    return name.isEmpty ? '人物' : name;
-  }
-
-  String? get _headerDescription {
-    final relation = widget.characterRelation.trim();
-    if (relation.isEmpty || relation == '未知') return null;
-    return relation;
-  }
-
-  Widget get characterInfoBody {
-    final character = characterFullItem;
+  Widget get _characterInfoBody {
+    final character = _character;
     if (character != null && character.id == 0) {
       return GeneralErrorWidget(
-        errMsg: '什么都没有找到 (´;ω;`)',
+        errMsg: '人物资料加载失败',
         actions: [
           GeneralErrorButton(
-            onPressed: loadCharacter,
+            onPressed: _loadCharacter,
             text: '点击重试',
           ),
         ],
@@ -147,143 +130,22 @@ class _CharacterPageState extends State<CharacterPage> {
             child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Bone(height: 180, width: 120, uniRadius: 16),
+            Bone(height: 300, width: double.infinity, uniRadius: 28),
             SizedBox(height: 24),
             Bone.multiText(lines: 5),
           ],
         )),
       );
     }
-    final fields = character.infobox
-        .where((f) => !_hiddenInfoKeys.contains(f.key))
-        .toList();
-    return SingleChildScrollView(
-      padding: materialBottomSheetContentPadding,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          TonalCard(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildPortrait(context, character, 104, 176),
-                  const SizedBox(width: 20),
-                  Expanded(
-                      child: SelectionArea(
-                          child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      for (final field in fields.take(3)) ...[
-                        _buildBlock(context, field),
-                        const SizedBox(height: 12),
-                      ],
-                      if (fields.isEmpty)
-                        Text('暂无资料',
-                            style: Theme.of(context).textTheme.bodyMedium),
-                    ],
-                  ))),
-                ],
-              ),
-            ),
-          ),
-          if (character.summary.trim().isNotEmpty) ...[
-            const SizedBox(height: 24),
-            ContentSection(
-              title: '简介',
-              child: SelectableText(character.summary.trim(),
-                  style: Theme.of(context)
-                      .textTheme
-                      .bodyMedium
-                      ?.copyWith(height: 1.6)),
-            ),
-          ],
-          if (fields.length > 3) ...[
-            const SizedBox(height: 24),
-            ContentSection(
-              title: '更多资料',
-              child: SelectionArea(
-                  child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  for (final field in fields.skip(3)) ...[
-                    _buildBlock(context, field),
-                    const SizedBox(height: 16),
-                  ],
-                ],
-              )),
-            ),
-          ],
-        ],
-      ),
+    return CharacterInfoView(
+      character: character,
+      characterName: widget.characterName,
+      characterRelation: widget.characterRelation,
+      actorNames: widget.actorNames,
     );
   }
 
-  Widget _buildPortrait(
-    BuildContext context,
-    CharacterFullItem character,
-    double width,
-    double height,
-  ) {
-    final heroTag = ImageViewer.heroTagFor(character.image, 0);
-
-    return Semantics(
-      button: true,
-      label: '查看人物图片',
-      child: Tooltip(
-        message: '查看原图',
-        child: Material(
-          color: Theme.of(context).colorScheme.surface,
-          borderRadius: const BorderRadius.all(StyleString.imgRadius),
-          clipBehavior: Clip.antiAlias,
-          child: InkWell(
-            onTap: () => ImageViewer.show(
-              context,
-              imageUrls: [character.image],
-              heroTag: heroTag,
-            ),
-            child: Hero(
-              tag: heroTag,
-              child: NetworkImgLayer(
-                width: width,
-                height: height,
-                src: character.image,
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildBlock(BuildContext context, CharacterInfoField field) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          field.key,
-          style: theme.textTheme.titleSmall?.copyWith(
-            color: colorScheme.primary,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          field.value,
-          style: theme.textTheme.bodyMedium?.copyWith(
-            color: colorScheme.onSurface,
-            height: 1.6,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget get characterCommentsBody {
+  Widget get _characterCommentsBody {
     return CustomScrollView(
       scrollBehavior: const ScrollBehavior().copyWith(
         scrollbars: false,
@@ -295,56 +157,56 @@ class _CharacterPageState extends State<CharacterPage> {
       slivers: [
         SliverPadding(
           padding: materialBottomSheetContentPadding,
-          sliver: Builder(builder: (context) {
-            if (loadingComments) {
-              return SliverList.builder(
-                itemCount: 3,
-                itemBuilder: (context, _) => const UserCommentsCardBone(),
-              );
-            }
-            if (commentsError) {
-              return SliverFillRemaining(
-                child: GeneralErrorWidget(
-                  errMsg: '什么都没有找到 (´;ω;`)',
-                  actions: [
-                    GeneralErrorButton(
-                      onPressed: () {
-                        loadComments();
-                      },
-                      text: '点击重试',
-                    ),
-                  ],
-                ),
-              );
-            }
-            if (commentsList.isEmpty) {
-              return const SliverFillRemaining(
-                child: Center(
-                  child: Text('什么都没有找到 (´;ω;`)'),
-                ),
-              );
-            }
-            return SliverList(
-              delegate: SliverChildBuilderDelegate(
-                (context, index) {
-                  // Keep loaded images alive to prevent scroll jumps.
-                  return KeepAlive(
-                    keepAlive: true,
-                    child: IndexedSemantics(
-                      index: index,
-                      child: UserCommentsCard.character(commentsList[index]),
-                    ),
-                  );
-                },
-                childCount: commentsList.length,
-                addAutomaticKeepAlives: false,
-                addRepaintBoundaries: false,
-                addSemanticIndexes: false,
-              ),
-            );
-          }),
+          sliver: _commentsSliver,
         ),
       ],
+    );
+  }
+
+  Widget get _commentsSliver {
+    if (_loadingComments) {
+      return SliverList.builder(
+        itemCount: 3,
+        itemBuilder: (context, _) => const UserCommentsCardBone(),
+      );
+    }
+    if (_commentsError) {
+      return SliverFillRemaining(
+        child: GeneralErrorWidget(
+          errMsg: '什么都没有找到 (´;ω;`)',
+          actions: [
+            GeneralErrorButton(
+              onPressed: _loadComments,
+              text: '点击重试',
+            ),
+          ],
+        ),
+      );
+    }
+    if (_comments.isEmpty) {
+      return const SliverFillRemaining(
+        child: Center(
+          child: Text('什么都没有找到 (´;ω;`)'),
+        ),
+      );
+    }
+    return SliverList(
+      delegate: SliverChildBuilderDelegate(
+        (context, index) {
+          // Keep loaded images alive to prevent scroll jumps.
+          return KeepAlive(
+            keepAlive: true,
+            child: IndexedSemantics(
+              index: index,
+              child: UserCommentsCard.character(_comments[index]),
+            ),
+          );
+        },
+        childCount: _comments.length,
+        addAutomaticKeepAlives: false,
+        addRepaintBoundaries: false,
+        addSemanticIndexes: false,
+      ),
     );
   }
 }
