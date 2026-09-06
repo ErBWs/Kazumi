@@ -261,7 +261,7 @@ class _SearchPageState extends State<SearchPage> {
                 ),
                 barTrailing: [
                   IconButton(
-                    tooltip: '图片搜索',
+                    tooltip: '以图搜番',
                     onPressed: () async {
                       final result = await context.pushNamed('/search/image');
                       if (result is String && result.isNotEmpty) {
