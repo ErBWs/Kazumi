@@ -306,56 +306,51 @@ class _CollectLibraryViewState extends State<CollectLibraryView> {
     return LayoutBuilder(builder: (context, constraints) {
       final contentWidth = constraints.maxWidth - rightInset;
       final columns = contentWidth >= 840 && textScale <= 1.3 ? 2 : 1;
-      return Scrollbar(
+      return CustomScrollView(
+        key: PageStorageKey('collect-results-${type?.value ?? 'all'}'),
         controller: scrollController,
-        child: CustomScrollView(
-          key: PageStorageKey('collect-results-${type?.value ?? 'all'}'),
-          controller: scrollController,
-          scrollBehavior:
-              ScrollConfiguration.of(context).copyWith(scrollbars: false),
-          keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-          slivers: [
-            if (header != null) SliverToBoxAdapter(child: header),
-            if (entries.isEmpty)
-              SliverFillRemaining(
-                hasScrollBody: false,
-                child: _emptyState(query.count(null), type: type),
-              )
-            else
-              SliverPadding(
-                padding: EdgeInsets.only(
-                    bottom: 24 + MediaQuery.paddingOf(context).bottom),
-                sliver: SliverList.builder(
-                  itemCount: (entries.length + columns - 1) ~/ columns,
-                  itemBuilder: (context, index) {
-                    final first = index * columns;
-                    return Padding(
-                      padding: const EdgeInsets.only(bottom: 10),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Expanded(child: _card(entries[first])),
-                          if (columns == 2) ...[
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: first + 1 < entries.length
-                                  ? _card(entries[first + 1])
-                                  : const SizedBox(),
-                            ),
-                          ],
+        keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+        slivers: [
+          if (header != null) SliverToBoxAdapter(child: header),
+          if (entries.isEmpty)
+            SliverFillRemaining(
+              hasScrollBody: false,
+              child: _emptyState(query.count(null), type: type),
+            )
+          else
+            SliverPadding(
+              padding: EdgeInsets.only(
+                  bottom: 24 + MediaQuery.paddingOf(context).bottom),
+              sliver: SliverList.builder(
+                itemCount: (entries.length + columns - 1) ~/ columns,
+                itemBuilder: (context, index) {
+                  final first = index * columns;
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 10),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(child: _card(entries[first])),
+                        if (columns == 2) ...[
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: first + 1 < entries.length
+                                ? _card(entries[first + 1])
+                                : const SizedBox(),
+                          ),
                         ],
-                      ),
-                    );
-                  },
-                ),
+                      ],
+                    ),
+                  );
+                },
               ),
-          ]
-              .map((sliver) => SliverPadding(
-                    padding: EdgeInsets.only(right: rightInset),
-                    sliver: sliver,
-                  ))
-              .toList(),
-        ),
+            ),
+        ]
+            .map((sliver) => SliverPadding(
+                  padding: EdgeInsets.only(right: rightInset),
+                  sliver: sliver,
+                ))
+            .toList(),
       );
     });
   }
