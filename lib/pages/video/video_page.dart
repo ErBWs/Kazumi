@@ -13,6 +13,7 @@ import 'package:kazumi/bean/dialog/adaptive_bottom_sheet.dart';
 import 'package:kazumi/bean/dialog/dialog_helper.dart';
 import 'package:kazumi/bean/widget/embedded_native_control_area.dart';
 import 'package:kazumi/bean/widget/loading_indicator.dart';
+import 'package:kazumi/bean/widget/media_error_widget.dart';
 import 'package:kazumi/modules/download/download_module.dart';
 import 'package:kazumi/pages/download/download_controller.dart';
 import 'package:kazumi/pages/download/download_episode_sheet.dart';
@@ -648,43 +649,31 @@ class _VideoPageState extends State<VideoPage>
                 Container(
                   color: Colors.black,
                   child: Observer(builder: (context) {
+                    final errorMessage = videoPageController.errorMessage;
+                    if (errorMessage != null) {
+                      return MediaErrorWidget(
+                        title: '暂时无法播放',
+                        errMsg: errorMessage,
+                        icon: Icons.videocam_off_outlined,
+                      );
+                    }
                     return Center(
-                      child: videoPageController.errorMessage != null
-                          ? Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(Icons.error_outline,
-                                    color: Theme.of(context).colorScheme.error,
-                                    size: 48),
-                                const SizedBox(height: 16),
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 32),
-                                  child: Text(
-                                    videoPageController.errorMessage!,
-                                    style: const TextStyle(
-                                        color: Colors.white, fontSize: 16),
-                                    textAlign: TextAlign.center,
-                                  ),
-                                ),
-                              ],
-                            )
-                          : Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                LoadingIndicator(
-                                    color: Theme.of(context)
-                                        .colorScheme
-                                        .tertiaryContainer),
-                                const SizedBox(height: 10),
-                                Text(
-                                  videoPageController.loading
-                                      ? '视频资源解析中'
-                                      : '视频资源解析成功, 播放器加载中',
-                                  style: const TextStyle(color: Colors.white),
-                                ),
-                              ],
-                            ),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          LoadingIndicator(
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .tertiaryContainer),
+                          const SizedBox(height: 10),
+                          Text(
+                            videoPageController.loading
+                                ? '视频资源解析中'
+                                : '视频资源解析成功, 播放器加载中',
+                            style: const TextStyle(color: Colors.white),
+                          ),
+                        ],
+                      ),
                     );
                   }),
                 ),

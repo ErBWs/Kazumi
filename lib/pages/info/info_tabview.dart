@@ -69,8 +69,7 @@ class InfoTabView extends StatefulWidget {
   State<InfoTabView> createState() => _InfoTabViewState();
 }
 
-class _InfoTabViewState extends State<InfoTabView>
-    with SingleTickerProviderStateMixin {
+class _InfoTabViewState extends State<InfoTabView> {
   final maxWidth = 950.0;
   bool fullIntro = false;
   bool fullTag = false;
@@ -109,8 +108,6 @@ class _InfoTabViewState extends State<InfoTabView>
             children: [
               Text('简介', style: TextStyle(fontSize: 18)),
               const SizedBox(height: 8),
-              // https://stackoverflow.com/questions/54091055/flutter-how-to-get-the-number-of-text-lines
-              // only show expand button when line > 7
               LayoutBuilder(builder: (context, constraints) {
                 final span = TextSpan(text: widget.bangumiItem.summary);
                 final tp =
@@ -122,7 +119,6 @@ class _InfoTabViewState extends State<InfoTabView>
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
                       SizedBox(
-                        // make intro expandable
                         height: fullIntro ? null : 120,
                         width: MediaQuery.sizeOf(context).width > maxWidth
                             ? maxWidth
@@ -167,7 +163,6 @@ class _InfoTabViewState extends State<InfoTabView>
                         ? widget.bangumiItem.tags.length
                         : 13, (int index) {
                   if (!fullTag && index == 12) {
-                    // make tag expandable
                     return ActionChip(
                       label: Text(
                         '更多 +',
@@ -226,13 +221,9 @@ class _InfoTabViewState extends State<InfoTabView>
                   return SliverFillRemaining(
                     hasScrollBody: false,
                     child: GeneralErrorWidget(
-                      errMsg: '获取关联条目失败，请重试',
-                      actions: [
-                        GeneralErrorButton(
-                          onPressed: widget.loadRelations,
-                          text: '重试',
-                        ),
-                      ],
+                      title: '关联条目加载失败',
+                      errMsg: '请检查网络连接后重试。',
+                      onRetry: widget.loadRelations,
                     ),
                   );
                 }
@@ -304,7 +295,6 @@ class _InfoTabViewState extends State<InfoTabView>
     );
   }
 
-  /// Bone for Skeleton Loader
   Widget get infoBodyBone {
     return Center(
       child: Padding(
@@ -343,6 +333,10 @@ class _InfoTabViewState extends State<InfoTabView>
       builder: (BuildContext context) {
         return NotificationListener<ScrollEndNotification>(
           onNotification: (scrollEnd) {
+            // Scrolling a long error message must not trigger pagination.
+            if (scrollEnd.depth != 0) {
+              return false;
+            }
             final metrics = scrollEnd.metrics;
             if (metrics.pixels >= metrics.maxScrollExtent - 200) {
               widget.loadMoreComments(loadMore: widget.commentsList.isNotEmpty);
@@ -430,16 +424,9 @@ class _InfoTabViewState extends State<InfoTabView>
                 if (widget.commentsQueryTimeout) {
                   return SliverFillRemaining(
                     child: GeneralErrorWidget(
-                      errMsg: '获取失败，请重试',
-                      actions: [
-                        GeneralErrorButton(
-                          onPressed: () {
-                            widget.loadMoreComments(
-                                loadMore: widget.commentsList.isNotEmpty);
-                          },
-                          text: '重试',
-                        ),
-                      ],
+                      title: '评论加载失败',
+                      errMsg: '请检查网络连接后重试。',
+                      onRetry: () => widget.loadMoreComments(loadMore: false),
                     ),
                   );
                 }
@@ -514,15 +501,9 @@ class _InfoTabViewState extends State<InfoTabView>
               if (widget.staffQueryTimeout) {
                 return SliverFillRemaining(
                   child: GeneralErrorWidget(
-                    errMsg: '获取失败，请重试',
-                    actions: [
-                      GeneralErrorButton(
-                        onPressed: () {
-                          widget.loadStaff();
-                        },
-                        text: '重试',
-                      ),
-                    ],
+                    title: '制作人员加载失败',
+                    errMsg: '请检查网络连接后重试。',
+                    onRetry: widget.loadStaff,
                   ),
                 );
               }
@@ -596,15 +577,9 @@ class _InfoTabViewState extends State<InfoTabView>
               if (widget.charactersQueryTimeout) {
                 return SliverFillRemaining(
                   child: GeneralErrorWidget(
-                    errMsg: '获取失败，请重试',
-                    actions: [
-                      GeneralErrorButton(
-                        onPressed: () {
-                          widget.loadCharacters();
-                        },
-                        text: '重试',
-                      ),
-                    ],
+                    title: '角色列表加载失败',
+                    errMsg: '请检查网络连接后重试。',
+                    onRetry: widget.loadCharacters,
                   ),
                 );
               }
@@ -648,18 +623,12 @@ class _InfoTabViewState extends State<InfoTabView>
       controller: widget.tabController,
       children: [
         Builder(
-          // This Builder is needed to provide a BuildContext that is
-          // "inside" the NestedScrollView, so that
-          // sliverOverlapAbsorberHandleFor() can find the
-          // NestedScrollView.
+          // Resolve the overlap handle inside the NestedScrollView.
           builder: (BuildContext context) {
             return CustomScrollView(
               scrollBehavior: const ScrollBehavior().copyWith(
                 scrollbars: false,
               ),
-              // The PageStorageKey should be unique to this ScrollView;
-              // it allows the list to remember its scroll position when
-              // the tab view is not on the screen.
               key: PageStorageKey<String>('概览'),
               slivers: <Widget>[
                 SliverOverlapInjector(

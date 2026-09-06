@@ -18,18 +18,18 @@ class BangumiMirrorErrorWidget extends StatelessWidget {
     final mirrorEnabled = GStorage.getSetting(SettingsKeys.enableBangumiProxy);
 
     return GeneralErrorWidget(
-      errMsg: '啊咧（⊙.⊙） 无法加载数据\nBangumi 镜像${mirrorEnabled ? '已启用' : '已禁用'}',
+      title: '暂时无法加载番剧',
+      errMsg: '请检查网络连接，或调整镜像设置后重试。\nBangumi 镜像${mirrorEnabled ? '已启用' : '已禁用'}',
+      icon: Icons.cloud_off_rounded,
+      onRetry: onRetry,
       actions: [
-        GeneralErrorButton(
+        GeneralErrorButton.tonal(
           onPressed: () async {
             await context.pushNamed('/settings/webdav/');
             onSettingsReturned?.call();
           },
-          text: '镜像开关',
-        ),
-        GeneralErrorButton(
-          onPressed: onRetry,
-          text: '点击重试',
+          icon: Icons.tune_rounded,
+          text: '镜像设置',
         ),
       ],
     );

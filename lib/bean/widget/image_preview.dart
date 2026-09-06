@@ -6,6 +6,7 @@ import 'package:photo_view/photo_view.dart';
 import 'package:photo_view/photo_view_gallery.dart';
 
 import 'package:kazumi/bean/widget/loading_indicator.dart';
+import 'package:kazumi/bean/widget/media_error_widget.dart';
 import 'package:kazumi/utils/device.dart';
 
 class ImageViewerRouteArgs {
@@ -263,27 +264,11 @@ class _ImageViewerState extends State<ImageViewer> {
     );
   }
 
-  Widget _buildErrorWidget(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            Icons.broken_image,
-            size: 48,
-            color: Theme.of(context).colorScheme.onErrorContainer,
-          ),
-          const SizedBox(height: 8),
-          Text(
-            '图片加载失败',
-            style: TextStyle(
-              color: Theme.of(context).colorScheme.onErrorContainer,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+  Widget _buildErrorWidget() => const MediaErrorWidget(
+        title: '图片加载失败',
+        errMsg: '请检查网络连接，返回后重新打开图片。',
+        icon: Icons.broken_image_outlined,
+      );
 
   Widget _buildSingleImage() {
     return Listener(
@@ -303,8 +288,7 @@ class _ImageViewerState extends State<ImageViewer> {
           loadingBuilder: (context, event) => const Center(
             child: LoadingIndicator(),
           ),
-          errorBuilder: (context, error, stackTrace) =>
-              _buildErrorWidget(context),
+          errorBuilder: (context, error, stackTrace) => _buildErrorWidget(),
         ),
       ),
     );
@@ -343,8 +327,7 @@ class _ImageViewerState extends State<ImageViewer> {
               heroAttributes: index == _currentIndex
                   ? PhotoViewHeroAttributes(tag: _heroTagForIndex(index))
                   : null,
-              errorBuilder: (context, error, stackTrace) =>
-                  _buildErrorWidget(context),
+              errorBuilder: (context, error, stackTrace) => _buildErrorWidget(),
             );
           },
         ),

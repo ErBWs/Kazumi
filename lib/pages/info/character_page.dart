@@ -113,13 +113,9 @@ class _CharacterPageState extends State<CharacterPage> {
     final character = _character;
     if (character != null && character.id == 0) {
       return GeneralErrorWidget(
-        errMsg: '人物资料加载失败',
-        actions: [
-          GeneralErrorButton(
-            onPressed: _loadCharacter,
-            text: '点击重试',
-          ),
-        ],
+        title: '人物资料加载失败',
+        errMsg: '请检查网络连接后重试。',
+        onRetry: _loadCharacter,
       );
     }
 
@@ -173,13 +169,9 @@ class _CharacterPageState extends State<CharacterPage> {
     if (_commentsError) {
       return SliverFillRemaining(
         child: GeneralErrorWidget(
-          errMsg: '什么都没有找到 (´;ω;`)',
-          actions: [
-            GeneralErrorButton(
-              onPressed: _loadComments,
-              text: '点击重试',
-            ),
-          ],
+          title: '人物吐槽加载失败',
+          errMsg: '请检查网络连接后重试。',
+          onRetry: _loadComments,
         ),
       );
     }

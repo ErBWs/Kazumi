@@ -151,16 +151,20 @@ class _ImageSearchResults extends StatelessWidget {
       );
     }
     if (results.isEmpty) {
-      final noMatch = error == '未找到匹配结果';
+      if (error != '未找到匹配结果') {
+        return GeneralErrorWidget(
+          title: '这次识别未完成',
+          errMsg: error,
+          icon: Icons.wifi_off_rounded,
+          onRetry: onRetry,
+          retryText: '重新识别',
+        );
+      }
       return _ResultStatus(
-        icon: Icon(
-            noMatch
-                ? Icons.image_not_supported_outlined
-                : Icons.wifi_off_rounded,
-            size: 48,
-            color: noMatch ? colors.onSurfaceVariant : colors.error),
-        title: noMatch ? '还没找到这一幕' : '这次识别未完成',
-        description: noMatch ? '试试同一场景的另一张截图，\n保留完整画面与原始比例。' : error,
+        icon: Icon(Icons.image_not_supported_outlined,
+            size: 48, color: colors.onSurfaceVariant),
+        title: '还没找到这一幕',
+        description: '试试同一场景的另一张截图，\n保留完整画面与原始比例。',
         action: onRetry == null
             ? null
             : FilledButton.tonalIcon(

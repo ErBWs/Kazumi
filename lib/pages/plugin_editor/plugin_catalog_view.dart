@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_mobx/flutter_mobx.dart';
 import 'package:kazumi/bean/card/rule_card.dart';
 import 'package:kazumi/bean/dialog/dialog_helper.dart';
+import 'package:kazumi/bean/widget/error_widget.dart';
 import 'package:kazumi/bean/widget/loading_indicator.dart';
 import 'package:kazumi/modules/plugin/plugin_http_module.dart';
 import 'package:kazumi/pages/plugin_editor/plugin_update_actions.dart';
@@ -219,23 +220,19 @@ class _PluginCatalogViewState extends State<PluginCatalogView> {
     }
     if (_loadFailed && _controller.pluginHTTPList.isEmpty) {
       final enabled = GStorage.getSetting(SettingsKeys.enableGitProxy);
-      return RuleEmptyState(
+      return GeneralErrorWidget(
         title: '无法访问规则仓库',
-        description: '请检查网络连接，或切换规则仓库镜像后重试。',
+        errMsg: '请检查网络连接，或切换规则仓库镜像后重试。',
         icon: Icons.cloud_off_rounded,
-        action: Wrap(
-            alignment: WrapAlignment.center,
-            spacing: 8,
-            runSpacing: 8,
-            children: [
-              TextButton(
-                  onPressed: _toggleGitProxyAndRefresh,
-                  child: Text(enabled ? '关闭规则镜像' : '启用规则镜像')),
-              FilledButton.tonalIcon(
-                  onPressed: _refresh,
-                  icon: const Icon(Icons.refresh_rounded),
-                  label: const Text('重新加载')),
-            ]),
+        onRetry: _refresh,
+        retryText: '重新加载',
+        actions: [
+          GeneralErrorButton.tonal(
+            onPressed: _toggleGitProxyAndRefresh,
+            icon: Icons.tune_rounded,
+            text: enabled ? '关闭规则镜像' : '启用规则镜像',
+          ),
+        ],
       );
     }
     return RuleEmptyState(

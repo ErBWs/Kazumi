@@ -2,6 +2,7 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:kazumi/bean/card/user_comments_card.dart';
+import 'package:kazumi/bean/widget/error_widget.dart';
 import 'package:kazumi/bean/widget/loading_indicator.dart';
 import 'package:kazumi/modules/bangumi/episode_item.dart';
 import 'package:kazumi/modules/comments/comment_item.dart';
@@ -66,29 +67,17 @@ class EpisodeCommentsView extends StatelessWidget {
             ),
             if (!isLoading && hasError && comments.isEmpty)
               SliverToBoxAdapter(
-                child: _DiscussionState(
+                child: GeneralErrorWidget(
                   icon: Icons.cloud_off_rounded,
                   title: '评论暂时未能加载',
-                  description: '请检查网络后重试，或切换分集查看讨论。',
-                  action: FilledButton.icon(
-                    onPressed: onRefresh,
-                    icon: const Icon(Icons.refresh_rounded, size: 20),
-                    label: const Text('重新加载'),
-                  ),
+                  errMsg: '请检查网络后重试，或切换分集查看讨论。',
+                  onRetry: onRefresh,
+                  retryText: '重新加载',
                 ),
               )
             else if (!isLoading && comments.isEmpty)
               SliverToBoxAdapter(
-                child: _DiscussionState(
-                  icon: Icons.chat_bubble_outline_rounded,
-                  title: '本集还没有讨论',
-                  description: '换一集看看，或稍后回来刷新。',
-                  action: FilledButton.tonalIcon(
-                    onPressed: onSelectEpisode,
-                    icon: const Icon(Icons.video_library_outlined, size: 20),
-                    label: const Text('切换分集'),
-                  ),
-                ),
+                child: _EmptyDiscussion(onSelectEpisode: onSelectEpisode),
               )
             else if (comments.isNotEmpty) ...[
               if (hasError)
@@ -328,18 +317,10 @@ class _EpisodeHeader extends StatelessWidget {
   }
 }
 
-class _DiscussionState extends StatelessWidget {
-  const _DiscussionState({
-    required this.title,
-    required this.description,
-    required this.icon,
-    required this.action,
-  });
+class _EmptyDiscussion extends StatelessWidget {
+  const _EmptyDiscussion({required this.onSelectEpisode});
 
-  final String title;
-  final String description;
-  final IconData icon;
-  final Widget action;
+  final VoidCallback onSelectEpisode;
 
   @override
   Widget build(BuildContext context) {
@@ -356,20 +337,25 @@ class _DiscussionState extends StatelessWidget {
             borderRadius: BorderRadius.circular(28),
           ),
           child: Center(
-            child: Icon(icon, size: 32, color: colors.onSecondaryContainer),
+            child: Icon(Icons.chat_bubble_outline_rounded,
+                size: 32, color: colors.onSecondaryContainer),
           ),
         ),
         const SizedBox(height: 20),
-        Text(title,
+        Text('本集还没有讨论',
             textAlign: TextAlign.center,
             style: type.titleMedium?.copyWith(fontWeight: FontWeight.w700)),
         const SizedBox(height: 8),
-        Text(description,
+        Text('换一集看看，或稍后回来刷新。',
             textAlign: TextAlign.center,
             style: type.bodyMedium
                 ?.copyWith(color: colors.onSurfaceVariant, height: 1.6)),
         const SizedBox(height: 20),
-        action,
+        FilledButton.tonalIcon(
+          onPressed: onSelectEpisode,
+          icon: const Icon(Icons.video_library_outlined, size: 20),
+          label: const Text('切换分集'),
+        ),
       ]),
     );
   }
