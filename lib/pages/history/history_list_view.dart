@@ -61,6 +61,17 @@ class _HistoryListViewState extends State<HistoryListView> {
     final colors = theme.colorScheme;
     final groups =
         groupHistoryEntries(widget.entries, query: _query, source: _source);
+    // Separate sliver delegates eagerly lay out the first card of every date.
+    final rows = <_HistoryListRow>[
+      for (final group in groups) ...[
+        _HistoryListRow(group),
+        for (var index = 0; index < group.entries.length; index++)
+          _HistoryListRow(group, entryIndex: index),
+      ],
+    ];
+    final rowIndices = <Key, int>{
+      for (var index = 0; index < rows.length; index++) rows[index].key: index,
+    };
     final count =
         groups.fold<int>(0, (total, group) => total + group.entries.length);
     final filtered =
@@ -86,7 +97,7 @@ class _HistoryListViewState extends State<HistoryListView> {
         autofocus: true,
         child: LayoutBuilder(builder: (context, constraints) {
           final contentWidth = constraints.maxWidth.clamp(0.0, 960.0);
-          // Keep the viewport full-width for edge scrollbars and gutter scrolling.
+          // Preserve full-width scrolling while centering the content.
           final inset = (constraints.maxWidth - contentWidth) / 2 +
               (constraints.maxWidth < 600 ? 16.0 : 24.0);
           return Scrollbar(
@@ -165,64 +176,59 @@ class _HistoryListViewState extends State<HistoryListView> {
                   SliverFillRemaining(
                     hasScrollBody: false,
                     child: _emptyState(filtered),
-                  ),
-                for (final group in groups) ...[
+                  )
+                else
                   SliverPadding(
-                    padding: EdgeInsets.fromLTRB(inset + 4, 24, inset + 4, 12),
-                    sliver: SliverToBoxAdapter(
-                      child: Semantics(
-                        header: true,
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: Text(group.label(now),
-                                  style: theme.textTheme.titleLarge
-                                      ?.copyWith(fontWeight: FontWeight.w700)),
-                            ),
-                            Text('${group.entries.length} 条',
-                                style: theme.textTheme.labelLarge
-                                    ?.copyWith(color: colors.onSurfaceVariant)),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                  SliverPadding(
-                    padding: EdgeInsets.symmetric(horizontal: inset),
+                    padding: EdgeInsets.fromLTRB(inset, 0, inset,
+                        24 + MediaQuery.paddingOf(context).bottom),
                     sliver: SliverList.builder(
-                      itemCount: group.entries.length,
-                      findChildIndexCallback: (key) {
-                        if (key is! ValueKey<String>) return null;
-                        final index = group.entries
-                            .indexWhere((entry) => entry.key == key.value);
-                        return index < 0 ? null : index;
-                      },
-                      itemBuilder: (context, index) {
-                        final history = group.entries[index];
-                        final shape = BorderRadius.vertical(
-                          top: Radius.circular(index == 0 ? 24 : 4),
-                          bottom: Radius.circular(
-                              index == group.entries.length - 1 ? 24 : 4),
-                        );
-                        return Padding(
-                          key: ValueKey(history.key),
-                          padding: const EdgeInsets.only(bottom: 2),
-                          child: widget.itemBuilder(history, shape),
-                        );
-                      },
+                      itemCount: rows.length,
+                      findChildIndexCallback: (key) => rowIndices[key],
+                      itemBuilder: (context, index) =>
+                          _buildRow(context, rows[index], now),
                     ),
-                  ),
-                ],
-                if (groups.isNotEmpty)
-                  SliverPadding(
-                    padding: EdgeInsets.only(
-                        bottom: 24 + MediaQuery.paddingOf(context).bottom),
                   ),
               ],
             ),
           );
         }),
       ),
+    );
+  }
+
+  Widget _buildRow(BuildContext context, _HistoryListRow row, DateTime now) {
+    final group = row.group;
+    final entryIndex = row.entryIndex;
+    if (entryIndex == null) {
+      final theme = Theme.of(context);
+      return Padding(
+        key: row.key,
+        padding: const EdgeInsets.fromLTRB(4, 24, 4, 12),
+        child: Semantics(
+          header: true,
+          child: Row(
+            children: [
+              Expanded(
+                child: Text(group.label(now),
+                    style: theme.textTheme.titleLarge
+                        ?.copyWith(fontWeight: FontWeight.w700)),
+              ),
+              Text('${group.entries.length} 条',
+                  style: theme.textTheme.labelLarge
+                      ?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
+            ],
+          ),
+        ),
+      );
+    }
+    final shape = BorderRadius.vertical(
+      top: Radius.circular(entryIndex == 0 ? 24 : 4),
+      bottom: Radius.circular(entryIndex == group.entries.length - 1 ? 24 : 4),
+    );
+    return Padding(
+      key: row.key,
+      padding: const EdgeInsets.only(bottom: 2),
+      child: widget.itemBuilder(group.entries[entryIndex], shape),
     );
   }
 
@@ -293,5 +299,19 @@ class _HistoryListViewState extends State<HistoryListView> {
           ),
       ],
     );
+  }
+}
+
+class _HistoryListRow {
+  const _HistoryListRow(this.group, {this.entryIndex});
+
+  final HistoryDateGroup group;
+  final int? entryIndex;
+
+  Key get key {
+    final index = entryIndex;
+    return index == null
+        ? ValueKey(group.date)
+        : ValueKey(group.entries[index].key);
   }
 }
