@@ -189,14 +189,9 @@ class EpisodeSelectionPanelState extends State<EpisodeSelectionPanel> {
               if (count == 0)
                 const SliverFillRemaining(
                   hasScrollBody: false,
-                  child: Padding(
-                    padding: EdgeInsets.all(24),
-                    child: Center(
-                      child: GeneralEmptyState(
-                        icon: Icons.video_library_outlined,
-                        title: '这条线路暂无剧集',
-                      ),
-                    ),
+                  child: GeneralEmptyState(
+                    icon: Icons.video_library_outlined,
+                    title: '这条线路暂无剧集',
                   ),
                 )
               else

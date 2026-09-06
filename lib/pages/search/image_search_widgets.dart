@@ -79,27 +79,14 @@ class _ImageSearchEmblem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
-    return ExcludeSemantics(
-        child: ClipPath(
-      clipper: const _SearchShapeClipper(),
-      child: ColoredBox(
-          color: colors.primaryContainer,
-          child: SizedBox.square(
-              dimension: size,
-              child: Icon(Icons.image_search_rounded,
-                  size: size * .44, color: colors.onPrimaryContainer))),
-    ));
+    return StateIconBadge(
+      icon: Icons.image_search_rounded,
+      size: size,
+      iconSize: size * .44,
+      backgroundColor: colors.primaryContainer,
+      foregroundColor: colors.onPrimaryContainer,
+    );
   }
-}
-
-class _SearchShapeClipper extends CustomClipper<Path> {
-  const _SearchShapeClipper();
-  static final _path = MaterialShapes.cookie4Sided.toPath();
-  @override
-  Path getClip(Size size) => _path
-      .transform(Matrix4.diagonal3Values(size.width, size.height, 1).storage);
-  @override
-  bool shouldReclip(_SearchShapeClipper oldClipper) => false;
 }
 
 class _ScreenshotTip extends StatelessWidget {
@@ -144,11 +131,7 @@ class _ImageSearchResults extends StatelessWidget {
     final colors = Theme.of(context).colorScheme;
     final type = Theme.of(context).textTheme;
     if (searching) {
-      return const _ResultStatus(
-        icon: LoadingIndicator(size: 72, semanticsLabel: '正在匹配动画画面'),
-        title: '正在寻找这一幕',
-        description: '正在比对动画画面，匹配番名、集数与时间。\n请稍等片刻。',
-      );
+      return const _ImageSearchLoadingState();
     }
     if (results.isEmpty) {
       if (error != '未找到匹配结果') {
@@ -160,17 +143,17 @@ class _ImageSearchResults extends StatelessWidget {
           retryText: '重新识别',
         );
       }
-      return _ResultStatus(
-        icon: Icon(Icons.image_not_supported_outlined,
-            size: 48, color: colors.onSurfaceVariant),
-        title: '还没找到这一幕',
-        description: '试试同一场景的另一张截图，\n保留完整画面与原始比例。',
-        action: onRetry == null
-            ? null
-            : FilledButton.tonalIcon(
-                onPressed: onRetry,
-                icon: const Icon(Icons.refresh_rounded),
-                label: const Text('重新识别')),
+      return GeneralEmptyState(
+        icon: Icons.image_search_rounded,
+        title: '没有找到匹配画面',
+        actions: [
+          if (onRetry != null)
+            StateActionButton.tonal(
+              onPressed: onRetry!,
+              icon: Icons.refresh_rounded,
+              text: '重新识别',
+            ),
+        ],
       );
     }
     return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
@@ -208,16 +191,8 @@ class _ImageSearchResults extends StatelessWidget {
   }
 }
 
-class _ResultStatus extends StatelessWidget {
-  const _ResultStatus(
-      {required this.icon,
-      required this.title,
-      required this.description,
-      this.action});
-  final Widget icon;
-  final String title;
-  final String description;
-  final Widget? action;
+class _ImageSearchLoadingState extends StatelessWidget {
+  const _ImageSearchLoadingState();
   @override
   Widget build(BuildContext context) {
     final type = Theme.of(context).textTheme;
@@ -226,18 +201,17 @@ class _ResultStatus extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 32),
           child: Column(children: [
-            icon,
+            const LoadingIndicator(size: 72, semanticsLabel: '正在匹配动画画面'),
             const SizedBox(height: 24),
-            Text(title,
+            Text('正在寻找这一幕',
                 textAlign: TextAlign.center,
                 style:
                     type.headlineSmall?.copyWith(fontWeight: FontWeight.w700)),
             const SizedBox(height: 12),
-            Text(description,
+            Text('正在比对动画画面，匹配番名、集数与时间。\n请稍等片刻。',
                 textAlign: TextAlign.center,
                 style: type.bodyLarge?.copyWith(
                     color: Theme.of(context).colorScheme.onSurfaceVariant)),
-            if (action != null) ...[const SizedBox(height: 24), action!],
           ]),
         ));
   }

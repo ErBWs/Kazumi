@@ -1,6 +1,7 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:kazumi/bean/widget/empty_state_widget.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
 import 'package:kazumi/bean/card/user_comments_card.dart';
@@ -177,8 +178,10 @@ class _CharacterPageState extends State<CharacterPage> {
     }
     if (_comments.isEmpty) {
       return const SliverFillRemaining(
-        child: Center(
-          child: Text('什么都没有找到 (´;ω;`)'),
+        hasScrollBody: false,
+        child: GeneralEmptyState(
+          icon: Icons.chat_bubble_outline_rounded,
+          title: '还没有评论',
         ),
       );
     }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:kazumi/bean/widget/error_widget.dart';
+import 'package:kazumi/bean/widget/state_presentation.dart';
 import 'package:kazumi/services/storage/storage.dart';
 
 class BangumiMirrorErrorWidget extends StatelessWidget {
@@ -23,7 +24,7 @@ class BangumiMirrorErrorWidget extends StatelessWidget {
       icon: Icons.cloud_off_rounded,
       onRetry: onRetry,
       actions: [
-        GeneralErrorButton.tonal(
+        StateActionButton.tonal(
           onPressed: () async {
             await context.pushNamed('/settings/webdav/');
             onSettingsReturned?.call();

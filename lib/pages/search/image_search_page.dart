@@ -7,13 +7,14 @@ import 'package:flutter/services.dart';
 import 'package:flutter_mobx/flutter_mobx.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:material_new_shapes/material_new_shapes.dart';
 import 'package:path/path.dart' as path;
 import 'package:url_launcher/url_launcher.dart';
 
 import 'package:kazumi/bean/appbar/sys_app_bar.dart';
+import 'package:kazumi/bean/widget/empty_state_widget.dart';
 import 'package:kazumi/bean/widget/error_widget.dart';
 import 'package:kazumi/bean/widget/loading_indicator.dart';
+import 'package:kazumi/bean/widget/state_presentation.dart';
 import 'package:kazumi/modules/search/image_search_module.dart';
 import 'package:kazumi/pages/search/search_controller.dart';
 

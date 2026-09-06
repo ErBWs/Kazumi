@@ -7,6 +7,7 @@ import 'package:kazumi/bean/dialog/dialog_helper.dart';
 import 'package:kazumi/bean/dialog/material_bottom_sheet.dart';
 import 'package:kazumi/bean/widget/connected_tabs.dart';
 import 'package:kazumi/bean/widget/content_section.dart';
+import 'package:kazumi/bean/widget/empty_state_widget.dart';
 import 'package:kazumi/bean/widget/tonal_card.dart';
 import 'package:kazumi/pages/player/player_controller.dart';
 
@@ -250,8 +251,11 @@ class _VideoDetailsSheetState extends State<_VideoDetailsSheet>
           Expanded(
               child: TonalCard(
             child: logs.isEmpty
-                ? Center(
-                    child: Text('暂无运行日志', style: theme.textTheme.bodyMedium))
+                ? const GeneralEmptyState(
+                    icon: Icons.receipt_long_rounded,
+                    title: '还没有运行日志',
+                    compact: true,
+                  )
                 : ListView.builder(
                     key: const PageStorageKey('videoDetailsLogList'),
                     controller: _logScrollController,

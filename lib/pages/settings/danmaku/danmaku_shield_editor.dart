@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_mobx/flutter_mobx.dart';
 
 import 'package:kazumi/bean/widget/content_section.dart';
+import 'package:kazumi/bean/widget/empty_state_widget.dart';
 import 'package:kazumi/pages/my/my_controller.dart';
 
 class DanmakuShieldEditor extends StatefulWidget {
@@ -72,11 +73,10 @@ class _DanmakuShieldEditorState extends State<DanmakuShieldEditor> {
         Observer(builder: (context) {
           final rules = myController.shieldList.toList();
           if (rules.isEmpty) {
-            return Padding(
-              padding: const EdgeInsets.all(24),
-              child: Text('还没有屏蔽规则',
-                  textAlign: TextAlign.center,
-                  style: Theme.of(context).textTheme.bodyMedium),
+            return const GeneralEmptyState(
+              icon: Icons.filter_alt_off_rounded,
+              title: '还没有屏蔽规则',
+              compact: true,
             );
           }
           return ContentSection.group(

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 import 'package:kazumi/bean/dialog/material_bottom_sheet.dart';
 import 'package:kazumi/bean/widget/content_section.dart';
+import 'package:kazumi/bean/widget/empty_state_widget.dart';
 import 'package:kazumi/bean/widget/image_preview.dart';
 import 'package:kazumi/bean/widget/tonal_card.dart';
 import 'package:kazumi/modules/character/character_full_item.dart';
@@ -183,12 +184,12 @@ class CharacterInfoView extends StatelessWidget {
                 character.unstructuredInfo.isEmpty &&
                 character.summary.isEmpty) ...[
               const SizedBox(height: 24),
-              TonalCard(
-                padding: const EdgeInsets.all(20),
-                child: Text('这个人物还没有补充资料',
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      color: theme.colorScheme.onSurfaceVariant,
-                    )),
+              const TonalCard(
+                child: GeneralEmptyState(
+                  icon: Icons.person_outline_rounded,
+                  title: '暂无人物资料',
+                  compact: true,
+                ),
               ),
             ],
           ],
@@ -229,10 +230,14 @@ class _CharacterPortrait extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
     if (imageUrl.isEmpty) {
-      return TonalCard(
+      return const TonalCard(
         child: SizedBox(
           height: 160,
-          child: _imageMessage(context, Icons.person_outline_rounded, '暂无人物图片'),
+          child: GeneralEmptyState(
+            icon: Icons.person_outline_rounded,
+            title: '暂无人物图片',
+            compact: true,
+          ),
         ),
       );
     }

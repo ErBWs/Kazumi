@@ -9,6 +9,8 @@ import 'package:kazumi/bean/card/network_img_layer.dart';
 import 'package:kazumi/bean/dialog/adaptive_bottom_sheet.dart';
 import 'package:kazumi/bean/dialog/material_bottom_sheet.dart';
 import 'package:kazumi/bean/widget/loading_indicator.dart';
+import 'package:kazumi/bean/widget/empty_state_widget.dart';
+import 'package:kazumi/bean/widget/state_presentation.dart';
 import 'package:kazumi/modules/bangumi/bangumi_item.dart';
 import 'package:kazumi/pages/search/search_controller.dart';
 import 'package:kazumi/utils/constants.dart';
@@ -305,36 +307,26 @@ class _SearchPageState extends State<SearchPage> {
         ]),
       )),
       if (busy && allItems.isEmpty)
-        const SliverToBoxAdapter(
-            child: _SearchStatus(
-                icon: Icons.search_rounded,
-                title: '正在搜索番剧',
-                message: '请稍候',
-                loading: true))
+        const SliverToBoxAdapter(child: _SearchLoadingState())
       else if (items.isEmpty)
         SliverToBoxAdapter(
-            child: _SearchStatus(
+            child: GeneralEmptyState(
           icon: allItems.isEmpty
-              ? Icons.travel_explore_rounded
+              ? Icons.search_off_rounded
               : Icons.filter_alt_off_rounded,
           title: allItems.isEmpty ? '没有找到番剧' : '这些番剧被筛选隐藏了',
-          message: allItems.isEmpty
-              ? (failed
-                  ? '没有找到结果，试试其他名称、放宽筛选，或重新搜索。'
-                  : '暂时没有匹配的番剧，可以继续加载或调整筛选。')
-              : '可以显示已看和已弃作品，或继续加载更多番剧。',
           actions: [
-            FilledButton.tonalIcon(
+            StateActionButton.tonal(
                 onPressed: allItems.isEmpty
                     ? () => _submit(_submittedQuery!)
                     : () async {
                         await _controller.setNotShowWatchedBangumis(false);
                         await _controller.setNotShowAbandonedBangumis(false);
                       },
-                icon: Icon(allItems.isEmpty
+                icon: allItems.isEmpty
                     ? Icons.refresh_rounded
-                    : Icons.visibility_outlined),
-                label: Text(allItems.isEmpty ? '重新搜索' : '显示全部')),
+                    : Icons.visibility_outlined,
+                text: allItems.isEmpty ? '重新搜索' : '显示全部'),
             TextButton(onPressed: _showFilters, child: const Text('调整筛选')),
           ],
         ))

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:kazumi/bean/card/network_img_layer.dart';
+import 'package:kazumi/bean/widget/empty_state_widget.dart';
 import 'package:kazumi/modules/bangumi/bangumi_item.dart';
 import 'package:kazumi/modules/collect/collect_module.dart';
 import 'package:kazumi/modules/collect/collect_type.dart';
@@ -497,8 +498,6 @@ class _CollectLibraryViewState extends State<CollectLibraryView> {
   }
 
   Widget _emptyState(int matchCount, {required CollectType? type}) {
-    final theme = Theme.of(context);
-    final colors = theme.colorScheme;
     final searching = _query.trim().isNotEmpty;
     final String title;
 
@@ -516,35 +515,9 @@ class _CollectLibraryViewState extends State<CollectLibraryView> {
         _ => '还没有收藏的番剧',
       };
     }
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 32),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 88,
-              height: 88,
-              decoration: BoxDecoration(
-                color: colors.secondaryContainer,
-                borderRadius: BorderRadius.circular(32),
-              ),
-              child: Icon(
-                searching
-                    ? Icons.search_off_rounded
-                    : Icons.video_library_outlined,
-                size: 36,
-                color: colors.onSecondaryContainer,
-              ),
-            ),
-            const SizedBox(height: 24),
-            Text(title,
-                textAlign: TextAlign.center,
-                style: theme.textTheme.titleLarge
-                    ?.copyWith(fontWeight: FontWeight.w700)),
-          ],
-        ),
-      ),
+    return GeneralEmptyState(
+      icon: searching ? Icons.search_off_rounded : Icons.video_library_outlined,
+      title: title,
     );
   }
 }

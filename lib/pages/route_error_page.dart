@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:kazumi/bean/appbar/sys_app_bar.dart';
 import 'package:kazumi/bean/widget/error_widget.dart';
+import 'package:kazumi/bean/widget/state_presentation.dart';
 
 class RouteErrorPage extends StatelessWidget {
   const RouteErrorPage({
@@ -19,7 +20,7 @@ class RouteErrorPage extends StatelessWidget {
         title: '无法打开页面',
         errMsg: message,
         actions: [
-          GeneralErrorButton(
+          StateActionButton(
             onPressed: () => context.navigate('/tab/popular/'),
             icon: Icons.home_outlined,
             text: '返回首页',

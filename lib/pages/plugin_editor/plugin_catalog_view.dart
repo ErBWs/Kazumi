@@ -5,7 +5,9 @@ import 'package:flutter_mobx/flutter_mobx.dart';
 import 'package:kazumi/bean/card/rule_card.dart';
 import 'package:kazumi/bean/dialog/dialog_helper.dart';
 import 'package:kazumi/bean/widget/error_widget.dart';
+import 'package:kazumi/bean/widget/empty_state_widget.dart';
 import 'package:kazumi/bean/widget/loading_indicator.dart';
+import 'package:kazumi/bean/widget/state_presentation.dart';
 import 'package:kazumi/modules/plugin/plugin_http_module.dart';
 import 'package:kazumi/pages/plugin_editor/plugin_update_actions.dart';
 import 'package:kazumi/pages/plugin_editor/rule_management_widgets.dart';
@@ -245,7 +247,7 @@ class _PluginCatalogViewState extends State<PluginCatalogView> {
         onRetry: _refresh,
         retryText: '重新加载',
         actions: [
-          GeneralErrorButton.tonal(
+          StateActionButton.tonal(
             onPressed: _toggleGitProxyAndRefresh,
             icon: Icons.tune_rounded,
             text: enabled ? '关闭规则镜像' : '启用规则镜像',
@@ -253,11 +255,11 @@ class _PluginCatalogViewState extends State<PluginCatalogView> {
         ],
       );
     }
-    return RuleEmptyState(
-      title: _controller.pluginHTTPList.isEmpty ? '仓库暂时没有规则' : '没有符合条件的规则',
-      description:
-          _controller.pluginHTTPList.isEmpty ? '稍后刷新再来看看。' : '试试其他关键词，或切换筛选。',
-      icon: Icons.search_off_rounded,
+    return GeneralEmptyState(
+      title: _controller.pluginHTTPList.isEmpty ? '仓库暂无规则' : '没有符合条件的规则',
+      icon: _controller.pluginHTTPList.isEmpty
+          ? Icons.extension_rounded
+          : Icons.search_off_rounded,
     );
   }
 

@@ -26,8 +26,7 @@ class DownloadPage extends StatefulWidget {
 class _DownloadPageState extends State<DownloadPage> {
   DownloadController get downloadController => widget.controller;
 
-  /// Expansion state per record key. Kept outside the record snapshots
-  /// because the controller replaces them on every refresh tick.
+  // Keep expansion state across controller snapshot replacements.
   final Map<String, bool> _expanded = {};
 
   @override
@@ -50,15 +49,11 @@ class _DownloadPageState extends State<DownloadPage> {
       appBar: const SysAppBar(title: Text('下载管理')),
       body: Observer(builder: (context) {
         final recordKeys = downloadController.recordKeys.toList();
-        // Drop expansion state for deleted records, so a re-downloaded
-        // bangumi gets a fresh default instead of a stale cached one.
         _expanded.removeWhere((key, _) => !recordKeys.contains(key));
         if (recordKeys.isEmpty) {
-          return const Center(
-            child: GeneralEmptyState(
-              icon: Icons.download_rounded,
-              title: '暂无下载内容',
-            ),
+          return const GeneralEmptyState(
+            icon: Icons.download_rounded,
+            title: '还没有下载记录',
           );
         }
         return ListView.builder(
@@ -210,8 +205,7 @@ class _DownloadPageState extends State<DownloadPage> {
         break;
       case DownloadStatus.pending:
         buttons.add(IconButton(
-          icon: Icon(Icons.priority_high,
-              size: 20, color: colorScheme.primary),
+          icon: Icon(Icons.priority_high, size: 20, color: colorScheme.primary),
           onPressed: () {
             downloadController.priorityDownload(
               bangumiId: record.bangumiId,

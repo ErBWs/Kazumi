@@ -3,7 +3,9 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:kazumi/bean/card/user_comments_card.dart';
 import 'package:kazumi/bean/widget/error_widget.dart';
+import 'package:kazumi/bean/widget/empty_state_widget.dart';
 import 'package:kazumi/bean/widget/loading_indicator.dart';
+import 'package:kazumi/bean/widget/state_presentation.dart';
 import 'package:kazumi/modules/bangumi/episode_item.dart';
 import 'package:kazumi/modules/comments/comment_item.dart';
 
@@ -77,7 +79,17 @@ class EpisodeCommentsView extends StatelessWidget {
               )
             else if (!isLoading && comments.isEmpty)
               SliverToBoxAdapter(
-                child: _EmptyDiscussion(onSelectEpisode: onSelectEpisode),
+                child: GeneralEmptyState(
+                  icon: Icons.chat_bubble_outline_rounded,
+                  title: '本集还没有讨论',
+                  actions: [
+                    StateActionButton.tonal(
+                      onPressed: onSelectEpisode,
+                      icon: Icons.video_library_outlined,
+                      text: '切换分集',
+                    ),
+                  ],
+                ),
               )
             else if (comments.isNotEmpty) ...[
               if (hasError)
@@ -313,50 +325,6 @@ class _EpisodeHeader extends StatelessWidget {
           ],
         ),
       ),
-    );
-  }
-}
-
-class _EmptyDiscussion extends StatelessWidget {
-  const _EmptyDiscussion({required this.onSelectEpisode});
-
-  final VoidCallback onSelectEpisode;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
-    final type = Theme.of(context).textTheme;
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 32),
-      child: Column(children: [
-        Container(
-          width: 80,
-          height: 80,
-          decoration: BoxDecoration(
-            color: colors.secondaryContainer,
-            borderRadius: BorderRadius.circular(28),
-          ),
-          child: Center(
-            child: Icon(Icons.chat_bubble_outline_rounded,
-                size: 32, color: colors.onSecondaryContainer),
-          ),
-        ),
-        const SizedBox(height: 20),
-        Text('本集还没有讨论',
-            textAlign: TextAlign.center,
-            style: type.titleMedium?.copyWith(fontWeight: FontWeight.w700)),
-        const SizedBox(height: 8),
-        Text('换一集看看，或稍后回来刷新。',
-            textAlign: TextAlign.center,
-            style: type.bodyMedium
-                ?.copyWith(color: colors.onSurfaceVariant, height: 1.6)),
-        const SizedBox(height: 20),
-        FilledButton.tonalIcon(
-          onPressed: onSelectEpisode,
-          icon: const Icon(Icons.video_library_outlined, size: 20),
-          label: const Text('切换分集'),
-        ),
-      ]),
     );
   }
 }

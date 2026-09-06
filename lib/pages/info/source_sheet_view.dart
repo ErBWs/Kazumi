@@ -143,7 +143,12 @@ class _SourceSheetViewState extends State<_SourceSheetView> {
                 controller: _scrollController,
                 slivers: [
                   if (widget.groups.isEmpty)
-                    SliverToBoxAdapter(child: _buildNoSources())
+                    const SliverToBoxAdapter(
+                      child: GeneralEmptyState(
+                        icon: Icons.extension_rounded,
+                        title: '请先在规则管理中添加来源',
+                      ),
+                    )
                   else
                     SliverPadding(
                       padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -272,7 +277,30 @@ class _SourceSheetViewState extends State<_SourceSheetView> {
       return SplitListRow(
         topRadius: splitListOuterRadius,
         bottomRadius: splitListOuterRadius,
-        child: group.isSearching ? _buildSearching() : _buildRecovery(group),
+        child: switch (group.status) {
+          PluginSearchStatus.pending => _buildSearching(),
+          PluginSearchStatus.success ||
+          PluginSearchStatus.noResult =>
+            GeneralEmptyState(
+              icon: Icons.search_off_rounded,
+              title: '没有找到匹配结果',
+              compact: true,
+              actions: [
+                StateActionButton.tonal(
+                  onPressed: () => widget.onSourceSearch(group.name),
+                  text: '修改检索词',
+                ),
+                TextButton(
+                  onPressed: () => widget.onSourceAliasSearch(group.name),
+                  child: const Text('使用别名'),
+                ),
+              ],
+            ),
+          PluginSearchStatus.captcha =>
+            _buildSourceIssue(group.name, requiresVerification: true),
+          PluginSearchStatus.error =>
+            _buildSourceIssue(group.name, requiresVerification: false),
+        },
       );
     }
 
@@ -406,39 +434,25 @@ class _SourceSheetViewState extends State<_SourceSheetView> {
         ),
       );
 
-  Widget _buildRecovery(_SourceSearchGroup group) {
+  Widget _buildSourceIssue(String sourceName,
+      {required bool requiresVerification}) {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
-    final (icon, title, hint, action, onAction, alternative, onAlternative) =
-        switch (group.status) {
-      PluginSearchStatus.captcha => (
-          Icons.verified_user_outlined,
-          '需要验证',
-          '完成网站验证后继续检索。',
-          '进行验证',
-          () => widget.onVerify(group.name),
-          '打开网站',
-          () => widget.onOpenBrowser(group.name),
-        ),
-      PluginSearchStatus.error => (
-          Icons.error_outline_rounded,
-          '检索失败',
-          '可以重试，或打开网站检查是否可用。',
-          '重试',
-          () => widget.onRetry(group.name),
-          '打开网站',
-          () => widget.onOpenBrowser(group.name),
-        ),
-      _ => (
-          Icons.search_off_rounded,
-          '没有匹配结果',
-          '试试别名或更短的关键词。',
-          '修改检索词',
-          () => widget.onSourceSearch(group.name),
-          '使用别名',
-          () => widget.onSourceAliasSearch(group.name),
-        ),
-    };
+    final (icon, title, hint, action, onAction) = requiresVerification
+        ? (
+            Icons.verified_user_outlined,
+            '需要验证',
+            '完成网站验证后继续检索。',
+            '进行验证',
+            () => widget.onVerify(sourceName),
+          )
+        : (
+            Icons.error_outline_rounded,
+            '检索失败',
+            '可以重试，或打开网站检查是否可用。',
+            '重试',
+            () => widget.onRetry(sourceName),
+          );
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 14, 16, 8),
       child: Column(
@@ -452,9 +466,9 @@ class _SourceSheetViewState extends State<_SourceSheetView> {
                 child: Icon(
                   icon,
                   size: 20,
-                  color: group.status == PluginSearchStatus.error
-                      ? colors.error
-                      : colors.onSurfaceVariant,
+                  color: requiresVerification
+                      ? colors.onSurfaceVariant
+                      : colors.error,
                 ),
               ),
               const SizedBox(width: 10),
@@ -482,28 +496,14 @@ class _SourceSheetViewState extends State<_SourceSheetView> {
             runSpacing: 4,
             children: [
               FilledButton.tonal(onPressed: onAction, child: Text(action)),
-              TextButton(onPressed: onAlternative, child: Text(alternative)),
+              TextButton(
+                onPressed: () => widget.onOpenBrowser(sourceName),
+                child: const Text('打开网站'),
+              ),
             ],
           ),
         ],
       ),
     );
   }
-
-  Widget _buildNoSources() => Padding(
-        padding: const EdgeInsets.fromLTRB(24, 32, 24, 24),
-        child: Column(
-          children: [
-            Text('还没有来源规则', style: Theme.of(context).textTheme.titleMedium),
-            const SizedBox(height: 8),
-            Text(
-              '请先在「规则管理」中添加来源，再开始播放。',
-              textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
-            ),
-          ],
-        ),
-      );
 }

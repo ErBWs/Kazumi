@@ -2,6 +2,7 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:kazumi/bean/widget/error_widget.dart';
+import 'package:kazumi/bean/widget/empty_state_widget.dart';
 import 'package:kazumi/bean/card/comments_card.dart';
 import 'package:kazumi/bean/card/character_card.dart';
 import 'package:kazumi/bean/card/staff_card.dart';
@@ -230,7 +231,10 @@ class _InfoTabViewState extends State<InfoTabView> {
                 if (widget.relationsHasLoaded && widget.relationList.isEmpty) {
                   return const SliverFillRemaining(
                     hasScrollBody: false,
-                    child: Center(child: Text('暂无关联条目')),
+                    child: GeneralEmptyState(
+                      icon: Icons.account_tree_rounded,
+                      title: '暂无关联条目',
+                    ),
                   );
                 }
 
@@ -432,8 +436,10 @@ class _InfoTabViewState extends State<InfoTabView> {
                 }
                 if (widget.commentsIsEmpty) {
                   return const SliverFillRemaining(
-                    child: Center(
-                      child: Text('什么都没有找到 (´;ω;`)'),
+                    hasScrollBody: false,
+                    child: GeneralEmptyState(
+                      icon: Icons.chat_bubble_outline_rounded,
+                      title: '还没有评论',
                     ),
                   );
                 }
@@ -509,8 +515,10 @@ class _InfoTabViewState extends State<InfoTabView> {
               }
               if (widget.staffIsEmpty) {
                 return const SliverFillRemaining(
-                  child: Center(
-                    child: Text('什么都没有找到 (´;ω;`)'),
+                  hasScrollBody: false,
+                  child: GeneralEmptyState(
+                    icon: Icons.groups_rounded,
+                    title: '暂无制作人员信息',
                   ),
                 );
               }
@@ -585,8 +593,10 @@ class _InfoTabViewState extends State<InfoTabView> {
               }
               if (widget.charactersIsEmpty) {
                 return const SliverFillRemaining(
-                  child: Center(
-                    child: Text('什么都没有找到 (´;ω;`)'),
+                  hasScrollBody: false,
+                  child: GeneralEmptyState(
+                    icon: Icons.people_alt_rounded,
+                    title: '暂无角色信息',
                   ),
                 );
               }

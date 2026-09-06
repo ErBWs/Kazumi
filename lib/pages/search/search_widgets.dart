@@ -130,19 +130,8 @@ class _SearchResultCard extends StatelessWidget {
   }
 }
 
-class _SearchStatus extends StatelessWidget {
-  const _SearchStatus(
-      {required this.icon,
-      required this.title,
-      required this.message,
-      this.loading = false,
-      this.actions = const []});
-
-  final IconData icon;
-  final String title;
-  final String message;
-  final bool loading;
-  final List<Widget> actions;
+class _SearchLoadingState extends StatelessWidget {
+  const _SearchLoadingState();
 
   @override
   Widget build(BuildContext context) {
@@ -150,31 +139,13 @@ class _SearchStatus extends StatelessWidget {
     return Padding(
         padding: const EdgeInsets.symmetric(vertical: 48, horizontal: 16),
         child: Column(children: [
-          if (loading)
-            const LoadingIndicator(size: 40)
-          else
-            Icon(icon, size: 40, color: theme.colorScheme.onSurfaceVariant),
+          const LoadingIndicator(size: 40),
           const SizedBox(height: 20),
           Semantics(
               liveRegion: true,
-              child: Text(title,
+              child: Text('正在搜索番剧',
                   textAlign: TextAlign.center,
                   style: theme.textTheme.titleMedium)),
-          const SizedBox(height: 8),
-          ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 360),
-              child: Text(message,
-                  textAlign: TextAlign.center,
-                  style: theme.textTheme.bodyMedium
-                      ?.copyWith(color: theme.colorScheme.onSurfaceVariant))),
-          if (actions.isNotEmpty) ...[
-            const SizedBox(height: 20),
-            Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                alignment: WrapAlignment.center,
-                children: actions),
-          ],
         ]));
   }
 }

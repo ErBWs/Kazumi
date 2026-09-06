@@ -8,7 +8,9 @@ import 'package:kazumi/bean/dialog/adaptive_bottom_sheet.dart';
 import 'package:kazumi/bean/dialog/material_bottom_sheet.dart';
 import 'package:kazumi/bean/widget/bangumi_mirror_error_widget.dart';
 import 'package:kazumi/bean/widget/content_section.dart';
+import 'package:kazumi/bean/widget/empty_state_widget.dart';
 import 'package:kazumi/bean/widget/loading_indicator.dart';
+import 'package:kazumi/bean/widget/state_presentation.dart';
 import 'package:kazumi/modules/bangumi/bangumi_item.dart';
 import 'package:kazumi/pages/timeline/timeline_controller.dart';
 import 'package:kazumi/services/storage/storage.dart';
@@ -366,8 +368,6 @@ class _TimelinePageState extends State<TimelinePage> {
     required bool compact,
     required bool loading,
   }) {
-    final theme = Theme.of(context);
-    final colors = theme.colorScheme;
     final cardHeight = BangumiTimelineCard.heightFor(
         MediaQuery.textScalerOf(context),
         compact: compact);
@@ -384,42 +384,21 @@ class _TimelinePageState extends State<TimelinePage> {
             ),
           ),
         if (items.isEmpty)
-          SliverToBoxAdapter(
+          SliverFillRemaining(
+            hasScrollBody: false,
             child: Padding(
-              padding: EdgeInsets.fromLTRB(inset + 16, 40, inset + 16, 40),
-              child: Column(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(24),
-                    decoration: BoxDecoration(
-                      color: colors.secondaryContainer,
-                      borderRadius: BorderRadius.circular(28),
+              padding: EdgeInsets.symmetric(horizontal: inset),
+              child: GeneralEmptyState(
+                icon: filteredOut
+                    ? Icons.filter_alt_off_rounded
+                    : Icons.event_available_rounded,
+                title: filteredOut ? '没有符合筛选的番剧' : '这一天暂无放送',
+                actions: [
+                  if (filteredOut)
+                    StateActionButton.tonal(
+                      onPressed: _controller.clearFilters,
+                      text: '清除筛选',
                     ),
-                    child: Icon(
-                      filteredOut
-                          ? Icons.filter_alt_off_outlined
-                          : Icons.event_available_outlined,
-                      size: 32,
-                      color: colors.onSecondaryContainer,
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  Text(filteredOut ? '没有符合筛选的番剧' : '这一天暂无放送',
-                      textAlign: TextAlign.center,
-                      style: theme.textTheme.titleMedium),
-                  const SizedBox(height: 8),
-                  Text(
-                    filteredOut ? '调整筛选条件，看看其他作品吧' : '切换其他星期，发现更多番剧',
-                    textAlign: TextAlign.center,
-                    style: theme.textTheme.bodyMedium
-                        ?.copyWith(color: colors.onSurfaceVariant),
-                  ),
-                  if (filteredOut) ...[
-                    const SizedBox(height: 20),
-                    FilledButton.tonal(
-                        onPressed: _controller.clearFilters,
-                        child: const Text('清除筛选')),
-                  ],
                 ],
               ),
             ),

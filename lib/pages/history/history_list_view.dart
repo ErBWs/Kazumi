@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:kazumi/bean/widget/empty_state_widget.dart';
+import 'package:kazumi/bean/widget/state_presentation.dart';
 import 'package:kazumi/modules/history/history_module.dart';
 import 'package:kazumi/pages/history/history_list_query.dart';
 
@@ -96,13 +98,13 @@ class _HistoryListViewState extends State<HistoryListView> {
                   ScrollConfiguration.of(context).copyWith(scrollbars: false),
               keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
               slivers: [
-                SliverPadding(
-                  padding: EdgeInsets.fromLTRB(inset, 16, inset, 0),
-                  sliver: SliverToBoxAdapter(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        if (widget.entries.isNotEmpty || filtered) ...[
+                if (widget.entries.isNotEmpty || filtered)
+                  SliverPadding(
+                    padding: EdgeInsets.fromLTRB(inset, 16, inset, 0),
+                    sliver: SliverToBoxAdapter(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
                           TextField(
                             controller: _searchController,
                             focusNode: _searchFocus,
@@ -156,10 +158,9 @@ class _HistoryListViewState extends State<HistoryListView> {
                             ),
                           ),
                         ],
-                      ],
+                      ),
                     ),
                   ),
-                ),
                 if (groups.isEmpty)
                   SliverFillRemaining(
                     hasScrollBody: false,
@@ -212,10 +213,11 @@ class _HistoryListViewState extends State<HistoryListView> {
                     ),
                   ),
                 ],
-                SliverPadding(
-                  padding: EdgeInsets.only(
-                      bottom: 24 + MediaQuery.paddingOf(context).bottom),
-                ),
+                if (groups.isNotEmpty)
+                  SliverPadding(
+                    padding: EdgeInsets.only(
+                        bottom: 24 + MediaQuery.paddingOf(context).bottom),
+                  ),
               ],
             ),
           );
@@ -280,49 +282,16 @@ class _HistoryListViewState extends State<HistoryListView> {
   }
 
   Widget _emptyState(bool filtered) {
-    final theme = Theme.of(context);
-    final colors = theme.colorScheme;
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 40),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 88,
-              height: 88,
-              decoration: BoxDecoration(
-                color: colors.secondaryContainer,
-                borderRadius: BorderRadius.circular(32),
-              ),
-              child: Icon(
-                filtered ? Icons.search_off_rounded : Icons.history_rounded,
-                size: 36,
-                color: colors.onSecondaryContainer,
-              ),
-            ),
-            const SizedBox(height: 24),
-            Text(filtered ? '没有找到相关记录' : '还没有观看记录',
-                textAlign: TextAlign.center,
-                style: theme.textTheme.titleLarge
-                    ?.copyWith(fontWeight: FontWeight.w700)),
-            const SizedBox(height: 8),
-            Text(
-              filtered ? '试试其他关键词，或查看全部记录' : '看过的番剧会留在这里，随时接着看',
-              textAlign: TextAlign.center,
-              style: theme.textTheme.bodyMedium
-                  ?.copyWith(color: colors.onSurfaceVariant),
-            ),
-            if (filtered) ...[
-              const SizedBox(height: 20),
-              FilledButton.tonal(
-                onPressed: _resetFilters,
-                child: const Text('查看全部记录'),
-              ),
-            ],
-          ],
-        ),
-      ),
+    return GeneralEmptyState(
+      icon: filtered ? Icons.search_off_rounded : Icons.history_rounded,
+      title: filtered ? '没有找到相关记录' : '还没有观看记录',
+      actions: [
+        if (filtered)
+          StateActionButton.tonal(
+            onPressed: _resetFilters,
+            text: '查看全部记录',
+          ),
+      ],
     );
   }
 }

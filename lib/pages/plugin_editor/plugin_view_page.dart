@@ -11,6 +11,8 @@ import 'package:kazumi/bean/card/rule_card.dart';
 import 'package:kazumi/bean/dialog/dialog_helper.dart';
 import 'package:kazumi/bean/settings/settings_detail_scaffold.dart';
 import 'package:kazumi/bean/widget/loading_indicator.dart';
+import 'package:kazumi/bean/widget/empty_state_widget.dart';
+import 'package:kazumi/bean/widget/state_presentation.dart';
 import 'package:kazumi/pages/plugin_editor/plugin_update_actions.dart';
 import 'package:kazumi/pages/plugin_editor/rule_dialogs.dart';
 import 'package:kazumi/pages/plugin_editor/rule_management_widgets.dart';
@@ -342,26 +344,30 @@ class _PluginViewPageState extends State<PluginViewPage> {
                       ],
                     ),
                     footer: visible.isEmpty
-                        ? RuleEmptyState(
-                            title: all.isEmpty ? '从第一条规则开始' : '没有符合条件的规则',
-                            description: all.isEmpty
-                                ? '前往规则仓库，添加一个喜欢的番剧来源。'
+                        ? GeneralEmptyState(
+                            icon: all.isEmpty
+                                ? Icons.extension_rounded
+                                : Icons.search_off_rounded,
+                            title: all.isEmpty
+                                ? '还没有安装规则'
                                 : _updatesOnly && query.isEmpty
-                                    ? '当前没有可更新的规则。'
-                                    : '试试其他名称，或清除筛选。',
-                            action: all.isEmpty
-                                ? FilledButton.tonalIcon(
+                                    ? '没有可更新的规则'
+                                    : '没有符合条件的规则',
+                            actions: [
+                              if (all.isEmpty)
+                                StateActionButton.tonal(
                                     onPressed: () => context
                                         .pushNamed('/settings/plugin/shop'),
-                                    icon: const Icon(
-                                        Icons.travel_explore_rounded),
-                                    label: const Text('浏览规则仓库'))
-                                : TextButton(
+                                    icon: Icons.travel_explore_rounded,
+                                    text: '浏览规则仓库')
+                              else
+                                StateActionButton.tonal(
                                     onPressed: () => setState(() {
                                           _search.clear();
                                           _updatesOnly = false;
                                         }),
-                                    child: const Text('显示全部规则')),
+                                    text: '显示全部规则'),
+                            ],
                           )
                         : null,
                     itemCount: visible.length,

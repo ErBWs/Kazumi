@@ -103,51 +103,6 @@ class RuleSection extends StatelessWidget {
   }
 }
 
-class RuleEmptyState extends StatelessWidget {
-  const RuleEmptyState({
-    super.key,
-    required this.title,
-    required this.description,
-    this.icon = Icons.extension_outlined,
-    this.action,
-  });
-
-  final String title;
-  final String description;
-  final IconData icon;
-  final Widget? action;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
-        child: Column(mainAxisSize: MainAxisSize.min, children: [
-          Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: theme.colorScheme.secondaryContainer,
-              borderRadius: BorderRadius.circular(24),
-            ),
-            child: Icon(icon,
-                size: 36, color: theme.colorScheme.onSecondaryContainer),
-          ),
-          const SizedBox(height: 20),
-          Text(title,
-              textAlign: TextAlign.center, style: theme.textTheme.titleLarge),
-          const SizedBox(height: 8),
-          Text(description,
-              textAlign: TextAlign.center,
-              style: theme.textTheme.bodyMedium
-                  ?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
-          if (action != null) ...[const SizedBox(height: 20), action!],
-        ]),
-      ),
-    );
-  }
-}
-
 InputDecoration ruleInputDecoration(BuildContext context,
     {String? label, String? hint, Widget? prefix, Widget? suffix}) {
   final colors = Theme.of(context).colorScheme;

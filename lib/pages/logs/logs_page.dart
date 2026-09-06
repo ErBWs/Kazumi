@@ -186,11 +186,9 @@ class _LogsPageState extends State<LogsPage> {
     }
 
     if (_logLines.isEmpty) {
-      return const Center(
-        child: GeneralEmptyState(
-          icon: Icons.receipt_long_rounded,
-          title: '暂无日志',
-        ),
+      return const GeneralEmptyState(
+        icon: Icons.receipt_long_rounded,
+        title: '还没有日志记录',
       );
     }
 

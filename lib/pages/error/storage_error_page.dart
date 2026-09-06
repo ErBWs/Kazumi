@@ -5,6 +5,7 @@ import 'package:path_provider/path_provider.dart';
 
 import 'package:kazumi/bean/widget/error_widget.dart';
 import 'package:kazumi/bean/widget/loading_indicator.dart';
+import 'package:kazumi/bean/widget/state_presentation.dart';
 
 class StorageErrorPage extends StatelessWidget {
   const StorageErrorPage({super.key});
@@ -25,7 +26,7 @@ class StorageErrorPage extends StatelessWidget {
               icon: Icons.storage_rounded,
               errMsg: '当前存储位置：\n$path\n\n可在退出后删除该目录以重置本地存储，此操作会清除本地数据。',
               actions: [
-                GeneralErrorButton(
+                StateActionButton(
                   onPressed: () {
                     exit(0);
                   },
