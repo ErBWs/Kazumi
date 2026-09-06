@@ -12,17 +12,10 @@ class PluginShopStep extends StatelessWidget {
   final PluginsController controller;
 
   @override
-  Widget build(BuildContext context) {
-    return OnboardingStepLayout(
-      leading: const OnboardingStepIcon(icon: Icons.travel_explore_rounded),
-      title: '添加规则',
-      subtitle: '规则提供番剧搜索源，可稍后在 设置 → 规则管理 中调整',
-      child: PluginCatalogView(
-        controller: controller,
-        listPadding: EdgeInsets.zero,
-        showRefreshButton: true,
-        compactLastUpdate: true,
-      ),
-    );
-  }
+  Widget build(BuildContext context) => OnboardingStepLayout(
+        leading: const OnboardingStepIcon(icon: Icons.travel_explore_rounded),
+        title: '添加规则',
+        subtitle: '规则提供番剧搜索源，可稍后在 设置 → 规则管理 中调整',
+        child: PluginCatalogView(controller: controller, onboarding: true),
+      );
 }
