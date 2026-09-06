@@ -14,15 +14,8 @@ import 'package:kazumi/pages/timeline/timeline_controller.dart';
 import 'package:kazumi/services/storage/storage.dart';
 import 'package:kazumi/utils/anime_season.dart';
 
+part 'timeline_options.dart';
 part 'timeline_week_selector.dart';
-
-extension _TimelineSortLabel on TimelineSort {
-  String get label => switch (this) {
-        TimelineSort.popularity => '热度优先',
-        TimelineSort.rating => '评分优先',
-        TimelineSort.defaultOrder => '默认顺序',
-      };
-}
 
 class TimelinePage extends StatefulWidget {
   const TimelinePage({
@@ -125,71 +118,13 @@ class _TimelinePageState extends State<TimelinePage> {
     );
   }
 
-  Widget _buildTimelineOptionsSheet(BuildContext context) {
-    return Observer(builder: (context) {
-      return Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          MaterialBottomSheetHeader(
-            title: '排序与筛选',
-            onClose: () => Navigator.of(context).pop(),
-          ),
-          Flexible(
-            child: ListView(
-              shrinkWrap: true,
-              padding: materialBottomSheetContentPadding,
-              children: [
-                ContentSection(
-                  title: '排序',
-                  child: Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: [
-                      for (final option in TimelineSort.values)
-                        ChoiceChip(
-                          label: Text(option.label),
-                          selected: _controller.sort == option,
-                          onSelected: (_) => _controller.changeSort(option),
-                        ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 24),
-                ContentSection.group(
-                  title: '显示范围',
-                  children: [
-                    SwitchListTile(
-                      title: const Text('隐藏看过的番剧'),
-                      value: _controller.notShowWatchedBangumis,
-                      onChanged: _controller.setNotShowWatchedBangumis,
-                    ),
-                    SwitchListTile(
-                      title: const Text('隐藏抛弃的番剧'),
-                      value: _controller.notShowAbandonedBangumis,
-                      onChanged: _controller.setNotShowAbandonedBangumis,
-                    ),
-                    SwitchListTile(
-                      title: const Text('只看正在追的番剧'),
-                      value: _controller.onlyShowWatchingBangumis,
-                      onChanged: _controller.setOnlyShowWatchingBangumis,
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ],
-      );
-    });
-  }
-
   void _showOptions() {
     showAdaptiveBottomSheet<void>(
       context: context,
       useRootNavigator: true,
       maxHeightFactor: .8,
       compactLandscapeMaxHeightFactor: 1,
-      builder: _buildTimelineOptionsSheet,
+      builder: (_) => _TimelineOptionsSheet(controller: _controller),
     );
   }
 
@@ -222,15 +157,12 @@ class _TimelinePageState extends State<TimelinePage> {
         final failed = _controller.isTimeOut;
         final watchingIds = _controller.loadWatchingBangumiIds();
         final calendar = _controller.filterCalendar(watchingIds);
-        final filters = _controller.activeFilterCount;
         final today = DateTime.now();
         final currentSeason = isSameSeason(_controller.selectedDate, today);
-        final header = narrowPortrait
+        final seasonHeader = narrowPortrait
             ? null
-            : _buildHeader(context,
-                loading: loading,
-                compact: constraints.maxHeight < 500,
-                horizontal: contentWidth >= scaler.scale(16) * 40);
+            : _buildSeasonHeader(context,
+                loading: loading, compact: constraints.maxHeight < 500);
         final weekHeight = _TimelineWeekSelector.heightFor(scaler) + 16;
         final weekSelector = Padding(
           padding: EdgeInsets.fromLTRB(inset, 0, inset, 16),
@@ -254,14 +186,11 @@ class _TimelinePageState extends State<TimelinePage> {
             actions: [
               Padding(
                 padding: const EdgeInsets.only(right: 12),
-                child: IconButton.filledTonal(
-                  tooltip: '排序与筛选',
+                child: _TimelineOptionsButton(
+                  availableWidth: constraints.maxWidth,
+                  sort: _controller.sort,
+                  filterCount: _controller.activeFilterCount,
                   onPressed: _showOptions,
-                  icon: Badge(
-                    isLabelVisible: filters > 0,
-                    label: Text('$filters'),
-                    child: const Icon(Icons.tune_rounded),
-                  ),
                 ),
               ),
             ],
@@ -271,11 +200,11 @@ class _TimelinePageState extends State<TimelinePage> {
             child: LayoutBuilder(
                 builder: (context, viewport) => NestedScrollView(
                       headerSliverBuilder: (context, innerBoxIsScrolled) => [
-                        if (header != null)
+                        if (seasonHeader != null)
                           SliverToBoxAdapter(
                             child: Padding(
                               padding: EdgeInsets.fromLTRB(inset, 8, inset, 20),
-                              child: header,
+                              child: seasonHeader,
                             ),
                           ),
                         SliverOverlapAbsorber(
@@ -335,7 +264,7 @@ class _TimelinePageState extends State<TimelinePage> {
 
   Widget _buildLoading(double viewportHeight, double overlapHeight) {
     return LayoutBuilder(builder: (context, constraints) {
-      // The injector prevents overlap; this offset centers loading in the whole page.
+      // Center loading in the full viewport, including the scroll headers.
       final contentHeight =
           (constraints.maxHeight - overlapHeight).clamp(0.0, double.infinity);
       final headerHeight = viewportHeight - contentHeight;
@@ -407,15 +336,13 @@ class _TimelinePageState extends State<TimelinePage> {
     );
   }
 
-  Widget _buildHeader(BuildContext context,
-      {required bool loading,
-      required bool compact,
-      required bool horizontal}) {
+  Widget _buildSeasonHeader(BuildContext context,
+      {required bool loading, required bool compact}) {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
     final date = _controller.selectedDate;
     final startMonth = ((date.month - 1) ~/ 3) * 3 + 1;
-    final seasonPicker = Column(
+    return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _buildSeasonPicker(context, loading: loading, compact: compact),
@@ -426,53 +353,6 @@ class _TimelinePageState extends State<TimelinePage> {
                 ?.copyWith(color: colors.onSurfaceVariant),
           ),
       ],
-    );
-    final filters = Wrap(
-      spacing: 8,
-      runSpacing: 8,
-      crossAxisAlignment: WrapCrossAlignment.center,
-      children: [
-        FilterChip(
-          avatar: _controller.onlyShowWatchingBangumis
-              ? null
-              : const Icon(Icons.bookmark_border_rounded, size: 18),
-          label: const Text('只看在追'),
-          selected: _controller.onlyShowWatchingBangumis,
-          onSelected: _controller.setOnlyShowWatchingBangumis,
-        ),
-        ActionChip(
-          avatar: const Icon(Icons.sort_rounded, size: 18),
-          label: Text(_controller.sort.label),
-          onPressed: _showOptions,
-        ),
-        if (_controller.notShowWatchedBangumis)
-          InputChip(
-            label: const Text('隐藏看过'),
-            onDeleted: () => _controller.setNotShowWatchedBangumis(false),
-            deleteButtonTooltipMessage: '显示看过的番剧',
-          ),
-        if (_controller.notShowAbandonedBangumis)
-          InputChip(
-            label: const Text('隐藏抛弃'),
-            onDeleted: () => _controller.setNotShowAbandonedBangumis(false),
-            deleteButtonTooltipMessage: '显示抛弃的番剧',
-          ),
-      ],
-    );
-    if (horizontal) {
-      return Row(
-        children: [
-          Expanded(child: seasonPicker),
-          const SizedBox(width: 24),
-          Flexible(
-            child: Align(alignment: Alignment.centerRight, child: filters),
-          ),
-        ],
-      );
-    }
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [seasonPicker, SizedBox(height: compact ? 8 : 16), filters],
     );
   }
 
