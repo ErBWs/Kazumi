@@ -77,7 +77,7 @@ class _ImageSearchPageState extends State<ImageSearchPage> {
 
   void _onUrlChanged() {
     final value = _urlController.text.trim();
-    // Selection changes must not invalidate a running search.
+    // Ignore cursor moves so they do not clear active results.
     if (value == _lastUrlText) return;
     _lastUrlText = value;
     _previewDebounce?.cancel();
@@ -241,7 +241,6 @@ class _ImageSearchPageState extends State<ImageSearchPage> {
       backgroundColor: colors.surface,
       appBar: SysAppBar(
         backgroundColor: colors.surface,
-        title: const Text('以图搜番'),
         actions: [
           IconButton(
               onPressed: _showHelp,
@@ -253,125 +252,133 @@ class _ImageSearchPageState extends State<ImageSearchPage> {
         top: false,
         child: NotificationListener<UserScrollNotification>(
             onNotification: (notification) {
-          if (_controller.isImageSearching &&
-              notification.direction != ScrollDirection.idle) {
-            _userScrolledDuringSearch = true;
-          }
-          return false;
-        }, child: LayoutBuilder(builder: (context, constraints) {
-          final window = MediaQuery.sizeOf(context);
-          final textScale = MediaQuery.textScalerOf(context).scale(16) / 16;
-          final splitLayout = constraints.maxWidth >= 840 ||
-              (constraints.maxWidth >= 600 &&
-                  window.width > window.height &&
-                  textScale < 1.5);
-          final padding = constraints.maxWidth < 600 ? 16.0 : 24.0;
-          return Observer(builder: (context) {
-            final searching = _controller.isImageSearching;
-            final error = _controller.imageSearchError;
-            final results = _controller.imageSearchResults.toList()
-              ..sort(
-                  (a, b) => (b.similarity ?? 0).compareTo(a.similarity ?? 0));
-            final showResults =
-                searching || results.isNotEmpty || error.isNotEmpty;
-            final short = constraints.maxHeight < 440;
-            // Keep the form scrollable when the keyboard consumes most of the height.
-            final pinAction = splitLayout && constraints.maxHeight >= 240;
-            final source = _buildSource(context, searching, showResults,
-                short: short, inlineAction: !pinAction);
-            final resultContent = _ImageSearchResults(
-              results: results,
-              searching: searching,
-              error: error,
-              onRetry: _hasImage ? _search : null,
-              onSelect: (title) => context.pop(title),
-              onPreview: _openExternal,
-            );
-            if (splitLayout) {
-              return Center(
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 1440),
-                  child: Padding(
-                    padding: EdgeInsets.fromLTRB(padding, 8, padding, 16),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      spacing: 24,
-                      children: [
-                        SizedBox(
-                          width:
-                              ((constraints.maxWidth - padding * 2 - 24) * .36)
-                                  .clamp(264.0, 400.0),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
-                              Expanded(
-                                  child: Scrollbar(
-                                controller: _sourceScroll,
-                                child: SingleChildScrollView(
-                                  key: const PageStorageKey(
-                                      'image-search-source'),
-                                  controller: _sourceScroll,
-                                  padding: const EdgeInsets.only(bottom: 16),
-                                  child: source,
-                                ),
-                              )),
-                              if (pinAction) ...[
-                                const SizedBox(height: 8),
-                                _buildPrimaryAction(searching),
-                              ],
-                            ],
-                          ),
-                        ),
-                        Expanded(
-                          child: Material(
-                            color: colors.surface,
-                            borderRadius: BorderRadius.circular(28),
-                            clipBehavior: Clip.antiAlias,
-                            child: Scrollbar(
-                              controller: _resultScroll,
-                              child: SingleChildScrollView(
-                                key: const PageStorageKey(
-                                    'image-search-results'),
-                                controller: _resultScroll,
-                                padding: const EdgeInsets.all(20),
-                                child: resultContent,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              );
-            }
-            return Scrollbar(
-              controller: _pageScroll,
-              child: SingleChildScrollView(
-                key: const PageStorageKey('image-search-page'),
-                controller: _pageScroll,
-                keyboardDismissBehavior:
-                    ScrollViewKeyboardDismissBehavior.onDrag,
-                padding: EdgeInsets.fromLTRB(padding, 8, padding, 24),
-                child: Center(
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 640),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      spacing: 24,
-                      children: [
-                        source,
-                        if (showResults)
-                          SizedBox(key: _resultsKey, child: resultContent),
-                      ],
-                    ),
-                  ),
-                ),
+              if (_controller.isImageSearching &&
+                  notification.direction != ScrollDirection.idle) {
+                _userScrolledDuringSearch = true;
+              }
+              return false;
+            },
+            child: LayoutBuilder(
+              builder: (context, constraints) => Observer(
+                builder: (context) => _buildContent(context, constraints),
               ),
-            );
-          });
-        })),
+            )),
       ),
+    );
+  }
+
+  Widget _buildContent(BuildContext context, BoxConstraints constraints) {
+    final window = MediaQuery.sizeOf(context);
+    final textScale = MediaQuery.textScalerOf(context).scale(16) / 16;
+    final splitLayout = constraints.maxWidth >= 840 ||
+        (constraints.maxWidth >= 600 &&
+            window.width > window.height &&
+            textScale < 1.5);
+    final padding = constraints.maxWidth < 600 ? 16.0 : 24.0;
+    final searching = _controller.isImageSearching;
+    final error = _controller.imageSearchError;
+    final results = _controller.imageSearchResults.toList()
+      ..sort((a, b) => (b.similarity ?? 0).compareTo(a.similarity ?? 0));
+    final showResults = searching || results.isNotEmpty || error.isNotEmpty;
+    final short = constraints.maxHeight < 440;
+    // Keep the form scrollable when the keyboard consumes most of the height.
+    final pinAction =
+        splitLayout && (showResults || short) && constraints.maxHeight >= 240;
+    final source = _buildSource(context, searching, showResults,
+        short: short, inlineAction: !pinAction);
+    final resultContent = showResults
+        ? _ImageSearchResults(
+            results: results,
+            searching: searching,
+            error: error,
+            onRetry: _hasImage ? _search : null,
+            onSelect: (title) => context.pop(title),
+            onPreview: _openExternal,
+          )
+        : null;
+    if (splitLayout) {
+      return Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 1440),
+          child: Padding(
+            padding: EdgeInsets.fromLTRB(padding, 0, padding, 16),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              spacing: 24,
+              children: [
+                SizedBox(
+                  width: showResults
+                      ? ((constraints.maxWidth - padding * 2 - 24) * .36)
+                          .clamp(264.0, 400.0)
+                      : (constraints.maxWidth - padding * 2).clamp(0.0, 520.0),
+                  child: _buildSourcePane(source,
+                      action:
+                          pinAction ? _buildPrimaryAction(searching) : null),
+                ),
+                if (resultContent != null)
+                  Expanded(
+                    child: Scrollbar(
+                      controller: _resultScroll,
+                      child: SingleChildScrollView(
+                        key: const PageStorageKey('image-search-results'),
+                        controller: _resultScroll,
+                        padding: const EdgeInsets.only(bottom: 8),
+                        child: resultContent,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+    return Scrollbar(
+      controller: _pageScroll,
+      child: SingleChildScrollView(
+        key: const PageStorageKey('image-search-page'),
+        controller: _pageScroll,
+        keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+        padding: EdgeInsets.fromLTRB(padding, 0, padding, 24),
+        child: Center(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(maxWidth: showResults ? 640 : 520),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              spacing: 24,
+              children: [
+                source,
+                if (resultContent != null)
+                  SizedBox(key: _resultsKey, child: resultContent),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSourcePane(Widget source, {Widget? action}) {
+    final scrollable = Scrollbar(
+      controller: _sourceScroll,
+      child: SingleChildScrollView(
+        key: const PageStorageKey('image-search-source'),
+        controller: _sourceScroll,
+        padding: EdgeInsets.only(bottom: action == null ? 0 : 16),
+        child: source,
+      ),
+    );
+    // Preserve input focus when the keyboard changes button placement.
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Flexible(
+            fit: action == null ? FlexFit.loose : FlexFit.tight,
+            child: scrollable),
+        if (action != null) action,
+      ],
     );
   }
 
@@ -502,11 +509,7 @@ class _ImageSearchPageState extends State<ImageSearchPage> {
             style: type.bodySmall?.copyWith(color: colors.onSurfaceVariant)),
         if (!showResults && !short) ...[
           const SizedBox(height: 24),
-          const _ImageSearchTip(
-            icon: Icons.aspect_ratio_rounded,
-            title: '保留完整画面，识别更准确',
-            description: '保持原始比例，尽量避开黑边、水印和拼图。',
-          ),
+          const _ScreenshotTip(),
         ],
       ],
     );

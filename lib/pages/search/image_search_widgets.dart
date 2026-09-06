@@ -102,25 +102,22 @@ class _SearchShapeClipper extends CustomClipper<Path> {
   bool shouldReclip(_SearchShapeClipper oldClipper) => false;
 }
 
-class _ImageSearchTip extends StatelessWidget {
-  const _ImageSearchTip(
-      {required this.icon, required this.title, required this.description});
-  final IconData icon;
-  final String title;
-  final String description;
+class _ScreenshotTip extends StatelessWidget {
+  const _ScreenshotTip();
+
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
     final type = Theme.of(context).textTheme;
     return Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      Icon(icon, size: 24, color: colors.primary),
+      Icon(Icons.aspect_ratio_rounded, size: 24, color: colors.primary),
       const SizedBox(width: 12),
       Expanded(
           child:
               Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Text(title, style: type.titleSmall),
+        Text('保留完整画面，识别更准确', style: type.titleSmall),
         const SizedBox(height: 4),
-        Text(description,
+        Text('保持原始比例，尽量避开黑边、水印和拼图。',
             style: type.bodyMedium?.copyWith(color: colors.onSurfaceVariant)),
       ])),
     ]);
@@ -152,33 +149,6 @@ class _ImageSearchResults extends StatelessWidget {
         title: '正在寻找这一幕',
         description: '正在比对动画画面，匹配番名、集数与时间。\n请稍等片刻。',
       );
-    }
-    if (results.isEmpty && error.isEmpty) {
-      return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        const SizedBox(height: 12),
-        Text('让画面接上故事',
-            style: type.headlineMedium?.copyWith(fontWeight: FontWeight.w700)),
-        const SizedBox(height: 8),
-        Text('选好截图，剩下的交给识别。',
-            style: type.bodyLarge?.copyWith(color: colors.onSurfaceVariant)),
-        const SizedBox(height: 28),
-        ...[
-          (Icons.movie_outlined, '找到番名', '从动画正片中匹配候选作品'),
-          (Icons.schedule_rounded, '定位这一幕', '查看画面所在的集数与时间'),
-          (Icons.manage_search_rounded, '继续找番', '确认结果后，直接搜索这部番'),
-        ].indexed.map((entry) => Container(
-              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 20),
-              decoration: BoxDecoration(
-                border: entry.$1 == 2
-                    ? null
-                    : Border(bottom: BorderSide(color: colors.outlineVariant)),
-              ),
-              child: _ImageSearchTip(
-                  icon: entry.$2.$1,
-                  title: entry.$2.$2,
-                  description: entry.$2.$3),
-            )),
-      ]);
     }
     if (results.isEmpty) {
       final noMatch = error == '未找到匹配结果';
