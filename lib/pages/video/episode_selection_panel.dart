@@ -291,7 +291,8 @@ class _RoadSelector extends StatefulWidget {
 
 class _RoadSelectorState extends State<_RoadSelector> {
   final _focusNode = FocusNode(debugLabel: 'Playback road selector');
-  bool _open = false;
+  FocusNode? _focusBeforeOpen;
+  bool _pointerActivation = false;
 
   String _name(int index) => index >= 0 && index < widget.roads.length
       ? (widget.roads[index].name.trim().isEmpty
@@ -299,8 +300,36 @@ class _RoadSelectorState extends State<_RoadSelector> {
           : widget.roads[index].name)
       : '暂无线路';
 
-  void _setOpen(bool value) {
-    if (mounted) setState(() => _open = value);
+  void _toggleMenu(MenuController controller) {
+    final pointerActivation = _pointerActivation;
+    _pointerActivation = false;
+    if (controller.isOpen) {
+      controller.close();
+      return;
+    }
+    final previousFocus = FocusManager.instance.primaryFocus;
+    _focusBeforeOpen =
+        pointerActivation && previousFocus == _focusNode ? null : previousFocus;
+    controller.open();
+  }
+
+  void _handleClose() {
+    if (!mounted) return;
+    final previousFocus = _focusBeforeOpen;
+    _focusBeforeOpen = null;
+    if (previousFocus == null ||
+        previousFocus.context?.mounted != true ||
+        !previousFocus.canRequestFocus) {
+      _focusNode.unfocus(
+          disposition: UnfocusDisposition.previouslyFocusedChild);
+      return;
+    }
+    if (previousFocus is FocusScopeNode) {
+      // Do not restore the scope's last child: it may be this menu button.
+      previousFocus.requestScopeFocus();
+    } else {
+      previousFocus.requestFocus();
+    }
   }
 
   @override
@@ -381,7 +410,6 @@ class _RoadSelectorState extends State<_RoadSelector> {
         widget.disableAnimations || MediaQuery.disableAnimationsOf(context);
     final duration =
         reduceMotion ? Duration.zero : const Duration(milliseconds: 200);
-    final foreground = _open ? colors.onSecondaryContainer : colors.onSurface;
 
     return LayoutBuilder(builder: (context, constraints) {
       final width =
@@ -391,8 +419,7 @@ class _RoadSelectorState extends State<_RoadSelector> {
         crossAxisUnconstrained: false,
         consumeOutsideTap: true,
         animated: !reduceMotion,
-        onOpen: () => _setOpen(true),
-        onClose: () => _setOpen(false),
+        onClose: _handleClose,
         alignmentOffset: const Offset(0, 8),
         style: MenuStyle(
           alignment: AlignmentDirectional.bottomStart,
@@ -421,65 +448,68 @@ class _RoadSelectorState extends State<_RoadSelector> {
           for (var i = 0; i < widget.roads.length; i++)
             _buildMenuItem(i, width - 16),
         ],
-        builder: (context, controller, child) => Semantics(
-          button: canSwitch,
-          expanded: canSwitch ? _open : null,
-          label: canSwitch ? '切换播放线路' : null,
-          child: Material(
-            animationDuration: duration,
-            color:
-                _open ? colors.secondaryContainer : colors.surfaceContainerLow,
-            borderRadius: BorderRadius.circular(_open ? 16 : 20),
-            clipBehavior: Clip.antiAlias,
-            child: InkWell(
-              focusNode: _focusNode,
-              onTap: canSwitch
-                  ? () =>
-                      controller.isOpen ? controller.close() : controller.open()
-                  : null,
-              child: Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            widget.isOffline ? '离线观看' : '播放线路',
-                            style: theme.textTheme.labelMedium
-                                ?.copyWith(color: foreground),
-                          ),
-                          const SizedBox(height: 2),
-                          Text(
-                            _name(widget.visibleRoad),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: theme.textTheme.titleSmall?.copyWith(
-                              fontWeight: FontWeight.w700,
-                              color: foreground,
+        builder: (context, controller, child) {
+          final open = controller.isOpen;
+          final foreground =
+              open ? colors.onSecondaryContainer : colors.onSurface;
+          return Semantics(
+            button: canSwitch,
+            expanded: canSwitch ? open : null,
+            label: canSwitch ? '切换播放线路' : null,
+            child: Material(
+              animationDuration: duration,
+              color:
+                  open ? colors.secondaryContainer : colors.surfaceContainerLow,
+              borderRadius: BorderRadius.circular(open ? 16 : 20),
+              clipBehavior: Clip.antiAlias,
+              child: InkWell(
+                focusNode: _focusNode,
+                onTapUp: canSwitch ? (_) => _pointerActivation = true : null,
+                onTap: canSwitch ? () => _toggleMenu(controller) : null,
+                child: Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              widget.isOffline ? '离线观看' : '播放线路',
+                              style: theme.textTheme.labelMedium
+                                  ?.copyWith(color: foreground),
                             ),
-                          ),
-                        ],
+                            const SizedBox(height: 2),
+                            Text(
+                              _name(widget.visibleRoad),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: theme.textTheme.titleSmall?.copyWith(
+                                fontWeight: FontWeight.w700,
+                                color: foreground,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                    if (canSwitch) ...[
-                      const SizedBox(width: 8),
-                      AnimatedRotation(
-                        turns: _open ? 0.5 : 0,
-                        duration: duration,
-                        curve: Curves.easeOutCubic,
-                        child: Icon(Icons.keyboard_arrow_down_rounded,
-                            color: foreground),
-                      ),
+                      if (canSwitch) ...[
+                        const SizedBox(width: 8),
+                        AnimatedRotation(
+                          turns: open ? 0.5 : 0,
+                          duration: duration,
+                          curve: Curves.easeOutCubic,
+                          child: Icon(Icons.keyboard_arrow_down_rounded,
+                              color: foreground),
+                        ),
+                      ],
                     ],
-                  ],
+                  ),
                 ),
               ),
             ),
-          ),
-        ),
+          );
+        },
       );
     });
   }
