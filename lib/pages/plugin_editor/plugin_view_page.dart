@@ -248,7 +248,7 @@ class _PluginViewPageState extends State<PluginViewPage> {
                     buildDefaultDragHandles: false,
                     proxyDecorator: (child, index, animation) => Material(
                         elevation: 0, color: Colors.transparent, child: child),
-                    onReorderItem: (oldIndex, newIndex) =>
+                    onReorder: (oldIndex, newIndex) =>
                         unawaited(_reorder(oldIndex, newIndex)),
                     header: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
