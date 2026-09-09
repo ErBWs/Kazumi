@@ -20,23 +20,30 @@ const ProgressIndicatorThemeData progressIndicatorTheme2024 =
 
 /// Opts into the newer Material slider appearance while Flutter still exposes
 /// the compatibility flag.
-/// ignore: deprecated_member_use
 const SliderThemeData sliderTheme2024 = SliderThemeData(
   // ignore: deprecated_member_use
   year2023: false,
   showValueIndicator: ShowValueIndicator.onDrag,
 );
 
-/// Flutter-managed platform transitions. Route-level Modular transitions should
-/// avoid overriding these unless the native page transition is intentionally bypassed.
-const PageTransitionsTheme pageTransitionsTheme2024 = PageTransitionsTheme(
+const _pageTransitionBuilders = <TargetPlatform, PageTransitionsBuilder>{
+  TargetPlatform.android: CupertinoPageTransitionsBuilder(),
+  TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
+  TargetPlatform.linux: FadeUpwardsPageTransitionsBuilder(),
+  TargetPlatform.macOS: CupertinoPageTransitionsBuilder(),
+  TargetPlatform.windows: FadeUpwardsPageTransitionsBuilder(),
+  TargetPlatform.ohos: CupertinoPageTransitionsBuilder(),
+};
+
+const PageTransitionsTheme pageTransitionsTheme2024 =
+    PageTransitionsTheme(builders: _pageTransitionBuilders);
+
+// Applied only to the settings navigator; fullscreen routes use the app theme.
+final PageTransitionsTheme settingsPageTransitionsTheme = PageTransitionsTheme(
   builders: {
-    TargetPlatform.android: CupertinoPageTransitionsBuilder(),
-    TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
-    TargetPlatform.linux: FadeUpwardsPageTransitionsBuilder(),
-    TargetPlatform.macOS: CupertinoPageTransitionsBuilder(),
-    TargetPlatform.windows: FadeUpwardsPageTransitionsBuilder(),
-    TargetPlatform.ohos: CupertinoPageTransitionsBuilder(),
+    ..._pageTransitionBuilders,
+    TargetPlatform.linux: const FadeForwardsPageTransitionsBuilder(),
+    TargetPlatform.windows: const FadeForwardsPageTransitionsBuilder(),
   },
 );
 
