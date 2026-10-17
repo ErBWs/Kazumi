@@ -7,39 +7,34 @@ class ExternalPlaybackLauncher {
   final String Function() videoUrl;
   final String Function() referer;
 
-  ExternalPlaybackLauncher({
-    required this.videoUrl,
-    required this.referer,
-  });
+  ExternalPlaybackLauncher({required this.videoUrl, required this.referer});
 
   Future<void> launch() async {
     final currentVideoUrl = videoUrl();
     final currentReferer = referer();
-    if ((Platform.isAndroid || Platform.isWindows || Platform.isOhos) && currentReferer.isEmpty) {
+    if ((Platform.isAndroid || Platform.isWindows || Platform.isOhos) &&
+        currentReferer.isEmpty) {
       if (await ExternalPlayer.launchUrlWithMime(
-          currentVideoUrl, 'video/mp4')) {
-        KazumiDialog.showToast(
-          message: '尝试唤起外部播放器',
-        );
+        currentVideoUrl,
+        'video/mp4',
+      )) {
+        KazumiDialog.showToast(message: '尝试唤起外部播放器');
       } else {
-        KazumiDialog.showToast(
-          message: '唤起外部播放器失败',
-        );
+        KazumiDialog.showToast(message: '唤起外部播放器失败');
       }
     } else if (Platform.isMacOS || Platform.isIOS) {
       if (await ExternalPlayer.launchUrlWithReferer(
-          currentVideoUrl, currentReferer)) {
-        KazumiDialog.showToast(
-          message: '尝试唤起外部播放器',
-        );
+        currentVideoUrl,
+        currentReferer,
+      )) {
+        KazumiDialog.showToast(message: '尝试唤起外部播放器');
       } else {
-        KazumiDialog.showToast(
-          message: '唤起外部播放器失败',
-        );
+        KazumiDialog.showToast(message: '唤起外部播放器失败');
       }
     } else if (Platform.isLinux && currentReferer.isEmpty) {
-      final result =
-          await ExternalPlayer.launchLinuxDesktopPlayer(currentVideoUrl);
+      final result = await ExternalPlayer.launchLinuxDesktopPlayer(
+        currentVideoUrl,
+      );
       switch (result) {
         case LinuxExternalPlayerResult.launched:
           KazumiDialog.showToast(message: '尝试唤起外部播放器');
@@ -52,13 +47,9 @@ class ExternalPlaybackLauncher {
       }
     } else {
       if (currentReferer.isEmpty) {
-        KazumiDialog.showToast(
-          message: '暂不支持该设备',
-        );
+        KazumiDialog.showToast(message: '暂不支持该设备');
       } else {
-        KazumiDialog.showToast(
-          message: '暂不支持该规则',
-        );
+        KazumiDialog.showToast(message: '暂不支持该规则');
       }
     }
   }

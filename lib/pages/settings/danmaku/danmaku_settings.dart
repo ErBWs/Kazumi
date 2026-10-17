@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
-import 'package:kazumi/services/storage/storage.dart';
 import 'package:kazumi/bean/dialog/dialog_helper.dart';
 import 'package:kazumi/bean/settings/settings_detail_scaffold.dart';
 import 'package:kazumi/bean/settings/settings_list.dart';
-import 'package:kazumi/utils/device.dart';
+import 'package:kazumi/pages/settings/danmaku/danmaku_ch_convert_tile.dart';
+import 'package:kazumi/services/storage/storage.dart';
 
 class DanmakuSettingsPage extends StatefulWidget {
   const DanmakuSettingsPage({super.key});
@@ -14,7 +14,6 @@ class DanmakuSettingsPage extends StatefulWidget {
 }
 
 class _DanmakuSettingsPageState extends State<DanmakuSettingsPage> {
-  late final bool compactLayout;
   late double defaultDanmakuArea;
   late double defaultDanmakuOpacity;
   late double defaultDanmakuFontSize;
@@ -35,14 +34,15 @@ class _DanmakuSettingsPageState extends State<DanmakuSettingsPage> {
   late bool danmakuFollowSpeed;
 
   @override
-  void initState() {
-    super.initState();
-    compactLayout = isCompact();
+  void didChangeDependencies() {
+    super.didChangeDependencies();
     _loadSettingsFromStorage();
   }
 
   void _loadSettingsFromStorage() {
-    final settingContext = SettingContext(compactLayout: compactLayout);
+    final settingContext = SettingContext(
+      compactLayout: MediaQuery.sizeOf(context).shortestSide < 600,
+    );
     defaultDanmakuArea = GStorage.getSetting(SettingsKeys.danmakuArea);
     defaultDanmakuOpacity = GStorage.getSetting(SettingsKeys.danmakuOpacity);
     defaultDanmakuFontSize = GStorage.getSetting<double>(
@@ -208,6 +208,7 @@ class _DanmakuSettingsPageState extends State<DanmakuSettingsPage> {
           SettingsSection(
             title: Text('弹幕显示'),
             tiles: [
+              const DanmakuChConvertTile(),
               SettingsSliderTile(
                 leading: Icons.crop_free_rounded,
                 title: Text('弹幕区域'),
@@ -352,7 +353,7 @@ class _DanmakuSettingsPageState extends State<DanmakuSettingsPage> {
                 title: Text('字体大小'),
                 value: defaultDanmakuFontSize,
                 min: 10,
-                max: isCompact() ? 32 : 48,
+                max: 48,
                 valueLabel: '${defaultDanmakuFontSize.floor()}',
                 onChanged: (value) =>
                     updateDanmakuFontSize(value.floorToDouble()),

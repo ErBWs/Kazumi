@@ -5,8 +5,6 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/physics.dart';
 
-import 'package:kazumi/utils/device.dart';
-
 BoxConstraints _adaptiveBottomSheetConstraints(
   BuildContext context, {
   required double maxHeightFactor,
@@ -14,12 +12,10 @@ BoxConstraints _adaptiveBottomSheetConstraints(
 }) {
   final size = MediaQuery.sizeOf(context);
   final isLandscape = size.width > size.height;
-  final isLargeScreen = size.shortestSide >= 600;
   final useFullWidth = !isLandscape && size.width < 600;
   final maxWidth =
       useFullWidth ? size.width : math.min(size.width * 0.72, 640.0);
-  final useExpandedLandscapeHeight =
-      isLandscape && !isDesktop() && !isLargeScreen;
+  final useExpandedLandscapeHeight = isLandscape && size.height < 600;
   final maxHeight = size.height *
       (useExpandedLandscapeHeight
           ? compactLandscapeMaxHeightFactor
@@ -28,25 +24,6 @@ BoxConstraints _adaptiveBottomSheetConstraints(
   return BoxConstraints(
     maxWidth: maxWidth,
     maxHeight: maxHeight,
-  );
-}
-
-Future<T?> showAdaptiveBottomSheet<T>({
-  required BuildContext context,
-  required WidgetBuilder builder,
-  double maxHeightFactor = 0.75,
-  double compactLandscapeMaxHeightFactor = 0.9,
-  bool useRootNavigator = false,
-}) {
-  return _showMaterialBottomSheet<T>(
-    context: context,
-    builder: builder,
-    useRootNavigator: useRootNavigator,
-    constraints: _adaptiveBottomSheetConstraints(
-      context,
-      maxHeightFactor: maxHeightFactor,
-      compactLandscapeMaxHeightFactor: compactLandscapeMaxHeightFactor,
-    ),
   );
 }
 
@@ -62,11 +39,13 @@ const AnimationStyle _materialSheetAnimationStyle = AnimationStyle(
   reverseCurve: Easing.legacyDecelerate,
 );
 
-Future<T?> _showMaterialBottomSheet<T>({
+Future<T?> showAdaptiveBottomSheet<T>({
   required BuildContext context,
   required WidgetBuilder builder,
-  required BoxConstraints constraints,
-  required bool useRootNavigator,
+  double maxHeightFactor = 0.75,
+  double compactLandscapeMaxHeightFactor = 0.9,
+  bool useRootNavigator = false,
+  RouteSettings? routeSettings,
 }) {
   return showModalBottomSheet<T>(
     context: context,
@@ -75,9 +54,14 @@ Future<T?> _showMaterialBottomSheet<T>({
     elevation: 0,
     shape: const RoundedRectangleBorder(),
     clipBehavior: Clip.none,
-    constraints: constraints,
+    constraints: _adaptiveBottomSheetConstraints(
+      context,
+      maxHeightFactor: maxHeightFactor,
+      compactLandscapeMaxHeightFactor: compactLandscapeMaxHeightFactor,
+    ),
     isScrollControlled: true,
     useRootNavigator: useRootNavigator,
+    routeSettings: routeSettings,
     showDragHandle: false,
     useSafeArea: true,
     sheetAnimationStyle: MediaQuery.disableAnimationsOf(context)
@@ -113,7 +97,6 @@ class _MaterialSheetSurfaceState extends State<_MaterialSheetSurface>
       _started = true;
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted || MediaQuery.disableAnimationsOf(context)) return;
-        // Preserve the reference spring overshoot.
         _entrance.animateWith(SpringSimulation(
           SpringDescription.withDampingRatio(
             mass: 1,

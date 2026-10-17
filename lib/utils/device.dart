@@ -27,7 +27,10 @@ Future<Map<String, double>> getScreenInfo() async {
 }
 
 bool isDesktop() {
-  return Platform.isWindows || Platform.isMacOS || Platform.isLinux || isOhosDesktop;
+  return Platform.isWindows ||
+      Platform.isMacOS ||
+      Platform.isLinux ||
+      isOhosDesktop;
 }
 
 Future<void> checkOhosDesktop() async {
@@ -41,20 +44,4 @@ Future<void> checkOhosDesktop() async {
     }
     debugPrint("ohos 桌面: $isOhosDesktop");
   }
-}
-
-bool isWideScreen() {
-  final mediaQuery = MediaQueryData.fromView(
-    WidgetsBinding.instance.platformDispatcher.views.first,
-  );
-  return mediaQuery.size.shortestSide >= 600 &&
-      mediaQuery.size.shortestSide / mediaQuery.size.longestSide >= 9 / 16;
-}
-
-bool isTablet() {
-  return isWideScreen() && !isDesktop();
-}
-
-bool isCompact() {
-  return !isDesktop() && !isWideScreen();
 }

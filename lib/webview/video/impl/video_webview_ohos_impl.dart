@@ -56,8 +56,11 @@ class VideoWebviewOhosImpl
     await headlessWebView?.run();
   }
 
-  Future<void> _loadUrl(String url, bool useLegacyParser,
-      {int offset = 0}) async {
+  Future<void> _loadUrl(
+    String url,
+    bool useLegacyParser, {
+    int offset = 0,
+  }) async {
     // Do not unloadPage here or reload will throw error because webview is not
     // yet initialized here.
     count = 0;
@@ -70,8 +73,11 @@ class VideoWebviewOhosImpl
   }
 
   @override
-  Future<void> loadUrl(String url, bool useLegacyParser,
-      {int offset = 0}) async {
+  Future<void> loadUrl(
+    String url,
+    bool useLegacyParser, {
+    int offset = 0,
+  }) async {
     if (shouldWaitForInit) {
       webviewSubscription = onInitialized.listen((initialized) async {
         if (initialized) {
@@ -101,48 +107,52 @@ class VideoWebviewOhosImpl
     if (useLegacyParser) {
       logEventController.add('Adding JSBridgeDebug handler');
       webviewController?.addJavaScriptHandler(
-          handlerName: 'JSBridgeDebug',
-          callback: (args) {
-            String message = args[0].toString();
-            logEventController.add('Callback received: $message');
-            logEventController.add(
-                'If there is audio but no video, please report it to the rule developer.');
-            if ((message.contains('http') || message.startsWith('//')) &&
-                !message.contains('googleads') &&
-                !message.contains('googlesyndication.com') &&
-                !message.contains('prestrain.html') &&
-                !message.contains('prestrain%2Ehtml') &&
-                !message.contains('adtrafficquality')) {
-              logEventController.add('Parsing video source $message');
-              String encodedUrl = Uri.encodeFull(message);
-              if (decodeVideoSource(encodedUrl) != encodedUrl) {
-                isIframeLoaded = true;
-                isVideoSourceLoaded = true;
-                videoLoadingEventController.add(false);
-                logEventController.add(
-                    'Loading video source ${decodeVideoSource(encodedUrl)}');
-                unloadPage();
-                final videoUrl = decodeVideoSource(encodedUrl);
-                notifyVideoSourceResolved(videoUrl);
-              }
-            }
-          });
-    } else {
-      logEventController.add('Adding VideoBridgeDebug handler');
-      webviewController?.addJavaScriptHandler(
-          handlerName: 'VideoBridgeDebug',
-          callback: (args) {
-            String message = args[0].toString();
-            logEventController.add('Callback received: $message');
-            if (message.contains('http') && !isVideoSourceLoaded) {
-              logEventController.add('Loading video source: $message');
+        handlerName: 'JSBridgeDebug',
+        callback: (args) {
+          String message = args[0].toString();
+          logEventController.add('Callback received: $message');
+          logEventController.add(
+            'If there is audio but no video, please report it to the rule developer.',
+          );
+          if ((message.contains('http') || message.startsWith('//')) &&
+              !message.contains('googleads') &&
+              !message.contains('googlesyndication.com') &&
+              !message.contains('prestrain.html') &&
+              !message.contains('prestrain%2Ehtml') &&
+              !message.contains('adtrafficquality')) {
+            logEventController.add('Parsing video source $message');
+            String encodedUrl = Uri.encodeFull(message);
+            if (decodeVideoSource(encodedUrl) != encodedUrl) {
               isIframeLoaded = true;
               isVideoSourceLoaded = true;
               videoLoadingEventController.add(false);
+              logEventController.add(
+                'Loading video source ${decodeVideoSource(encodedUrl)}',
+              );
               unloadPage();
-              notifyVideoSourceResolved(message);
+              final videoUrl = decodeVideoSource(encodedUrl);
+              notifyVideoSourceResolved(videoUrl);
             }
-          });
+          }
+        },
+      );
+    } else {
+      logEventController.add('Adding VideoBridgeDebug handler');
+      webviewController?.addJavaScriptHandler(
+        handlerName: 'VideoBridgeDebug',
+        callback: (args) {
+          String message = args[0].toString();
+          logEventController.add('Callback received: $message');
+          if (message.contains('http') && !isVideoSourceLoaded) {
+            logEventController.add('Loading video source: $message');
+            isIframeLoaded = true;
+            isVideoSourceLoaded = true;
+            videoLoadingEventController.add(false);
+            unloadPage();
+            notifyVideoSourceResolved(message);
+          }
+        },
+      );
     }
   }
 
@@ -173,7 +183,7 @@ class VideoWebviewOhosImpl
                 }
               });
             }
-          });  
+          });
         });
 
         _observer.observe(document.documentElement, {
@@ -183,10 +193,12 @@ class VideoWebviewOhosImpl
           attributeFilter: ['src']
         });
       """;
-      scripts.add(UserScript(
-        source: jsBridgeDebugScript,
-        injectionTime: UserScriptInjectionTime.AT_DOCUMENT_START,
-      ));
+      scripts.add(
+        UserScript(
+          source: jsBridgeDebugScript,
+          injectionTime: UserScriptInjectionTime.AT_DOCUMENT_START,
+        ),
+      );
     } else {
       logEventController.add('Adding VideoBridgeDebug UserScripts');
       const String blobParserScript = """
@@ -276,14 +288,18 @@ class VideoWebviewOhosImpl
           setupVideoProcessing();
         }
     """;
-      scripts.add(UserScript(
-        source: blobParserScript,
-        injectionTime: UserScriptInjectionTime.AT_DOCUMENT_START,
-      ));
-      scripts.add(UserScript(
-        source: videoTagParserScript,
-        injectionTime: UserScriptInjectionTime.AT_DOCUMENT_START,
-      ));
+      scripts.add(
+        UserScript(
+          source: blobParserScript,
+          injectionTime: UserScriptInjectionTime.AT_DOCUMENT_START,
+        ),
+      );
+      scripts.add(
+        UserScript(
+          source: videoTagParserScript,
+          injectionTime: UserScriptInjectionTime.AT_DOCUMENT_START,
+        ),
+      );
     }
 
     return scripts;
@@ -292,8 +308,9 @@ class VideoWebviewOhosImpl
   @override
   Future<void> unloadPage() async {
     await webviewController!.clearAllCache();
-    await webviewController!
-        .loadUrl(urlRequest: URLRequest(url: WebUri("about:blank")));
+    await webviewController!.loadUrl(
+      urlRequest: URLRequest(url: WebUri("about:blank")),
+    );
     webviewSubscription?.cancel();
     webviewSubscription = null;
   }

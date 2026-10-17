@@ -42,6 +42,10 @@ export default class MethodCallPlugin implements FlutterPlugin, AbilityAware {
             this.exitFullScreen();
             result.success("");
             break;
+          case "setSystemBarsHidden":
+            this.setSystemBarsHidden(Boolean(call.args));
+            result.success("");
+            break;
           case "checkOhosIsDesktop":
             let isDesktop = this.checkOhosDesktop();
             result.success(isDesktop);
@@ -104,6 +108,13 @@ export default class MethodCallPlugin implements FlutterPlugin, AbilityAware {
       lastWindow.enableLandscapeMultiWindow();
       lastWindow.maximize();
     })
+  }
+
+  private setSystemBarsHidden(hidden: boolean): void {
+    window.getLastWindow(this.context).then((lastWindow) => {
+      lastWindow.setSpecificSystemBarEnabled("status", !hidden, true);
+      lastWindow.setSpecificSystemBarEnabled("navigationIndicator", !hidden, true);
+    });
   }
 
   private exitFullScreen(): void {

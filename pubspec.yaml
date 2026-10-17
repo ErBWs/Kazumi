@@ -1,11 +1,11 @@
 name: kazumi
 description: "A new Flutter project."
 publish_to: "none"
-version: 2.3.1+20301
+version: 2.3.9+20309
 
 environment:
-  sdk: ">=3.3.4 <4.0.0"
-  flutter: 3.41.9
+  sdk: ">=3.10.0 <4.0.0"
+  flutter: ">=3.41.0 <3.42.0"
 
 dependencies:
   flutter:
@@ -26,6 +26,8 @@ dependencies:
   hive_ce_flutter: ^2.3.3
   cached_network_image: ^3.4.1
   flutter_cache_manager: ^3.4.1
+  ech_http: ^0.2.1
+  http: ^1.6.0
   image: ^4.8.0
   file_picker: ^10.3.7
 
@@ -94,51 +96,14 @@ dependencies:
   media_kit:
     git:
       url: https://github.com/Predidit/media-kit.git
-      ref: 994465d9bfca3f39d0b41199d16e7fd93fe97881
+      ref: 9c31fe57c5c4492835dcd6fea968920f3b01bcb1
       path: ./media_kit
   media_kit_video:
     git:
       url: https://github.com/Predidit/media-kit.git
-      ref: 994465d9bfca3f39d0b41199d16e7fd93fe97881
+      ref: 9c31fe57c5c4492835dcd6fea968920f3b01bcb1
       path: ./media_kit_video
-  media_kit_libs_video:
-    git:
-      url: https://github.com/Predidit/media-kit.git
-      ref: 994465d9bfca3f39d0b41199d16e7fd93fe97881
-      path: ./libs/universal/media_kit_libs_video
   macos_secure_bookmarks: ^0.2.1
-
-dependency_overrides:
-  media_kit_libs_linux:
-    git:
-      url: https://github.com/Predidit/media-kit.git
-      ref: 994465d9bfca3f39d0b41199d16e7fd93fe97881
-      path: ./libs/linux/media_kit_libs_linux
-  media_kit_libs_ios_video:
-    git:
-      url: https://github.com/Predidit/media-kit.git
-      ref: 994465d9bfca3f39d0b41199d16e7fd93fe97881
-      path: ./libs/ios/media_kit_libs_ios_video
-  media_kit_libs_android_video:
-    git:
-      url: https://github.com/Predidit/media-kit.git
-      ref: 994465d9bfca3f39d0b41199d16e7fd93fe97881
-      path: ./libs/android/media_kit_libs_android_video
-  media_kit_libs_windows_video:
-    git:
-      url: https://github.com/Predidit/media-kit.git
-      ref: 994465d9bfca3f39d0b41199d16e7fd93fe97881
-      path: ./libs/windows/media_kit_libs_windows_video
-  media_kit_libs_macos_video:
-    git:
-      url: https://github.com/Predidit/media-kit.git
-      ref: 994465d9bfca3f39d0b41199d16e7fd93fe97881
-      path: ./libs/macos/media_kit_libs_macos_video
-  media_kit_libs_ohos:
-    git:
-      url: https://github.com/Predidit/media-kit.git
-      ref: 994465d9bfca3f39d0b41199d16e7fd93fe97881
-      path: ./libs/ohos/media_kit_libs_ohos
 
 dev_dependencies:
   path_provider_platform_interface: ^2.1.2
@@ -193,10 +158,10 @@ flutter:
   uses-material-design: true
   assets:
     - assets/images/
-    - assets/plugins/
     - assets/shaders/
     - assets/images/logo/
     - assets/statements/
+    - licenses/ech_http/
   fonts:
     - family: MI_Sans_Regular
       fonts:

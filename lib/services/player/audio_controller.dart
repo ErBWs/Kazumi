@@ -73,12 +73,12 @@ class AudioController {
 
       if (Platform.isAndroid || Platform.isIOS || Platform.isOhos) {
         _becomingNoisySubscription?.cancel();
-        _becomingNoisySubscription =
-            _audioSession!.becomingNoisyEventStream.listen((_) {
-          if (_handler?.playbackState.value.playing ?? false) {
-            unawaited(_safePause());
-          }
-        });
+        _becomingNoisySubscription = _audioSession!.becomingNoisyEventStream
+            .listen((_) {
+              if (_handler?.playbackState.value.playing ?? false) {
+                unawaited(_safePause());
+              }
+            });
       }
     } catch (e) {
       KazumiLogger().w('AudioController: audio_session init failed', error: e);
@@ -241,21 +241,21 @@ class AudioController {
     final processingState = completed
         ? AudioProcessingState.completed
         : loading
-            ? AudioProcessingState.loading
-            : buffering
-                ? AudioProcessingState.buffering
-                : AudioProcessingState.ready;
+        ? AudioProcessingState.loading
+        : buffering
+        ? AudioProcessingState.buffering
+        : AudioProcessingState.ready;
 
     final normalizedPosition = duration == null
         ? updatePosition
         : updatePosition > duration
-            ? duration
-            : updatePosition;
+        ? duration
+        : updatePosition;
     final normalizedBufferedPosition = duration == null
         ? bufferedPosition
         : bufferedPosition > duration
-            ? duration
-            : bufferedPosition;
+        ? duration
+        : bufferedPosition;
 
     handler.updatePlaybackState(
       PlaybackState(
@@ -263,9 +263,7 @@ class AudioController {
         androidCompactActionIndices: compactActionIndices,
         systemActions: duration == null || duration == Duration.zero
             ? const {}
-            : const {
-                MediaAction.seek,
-              },
+            : const {MediaAction.seek},
         processingState: processingState,
         playing: playing,
         updatePosition: normalizedPosition,

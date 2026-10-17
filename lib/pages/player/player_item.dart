@@ -5,14 +5,15 @@ import 'package:kazumi/pages/player/player_keyboard_shortcuts.dart';
 import 'package:kazumi/pages/player/controller/player_super_resolution.dart';
 import 'package:kazumi/pages/player/player_panel_hold.dart';
 import 'package:kazumi/pages/player/player_pointer_interaction.dart';
+import 'package:kazumi/pages/player/player_gesture_detector.dart';
 import 'package:kazumi/pages/player/player_screenshot_feedback_overlay.dart';
-import 'package:kazumi/pages/player/smallest_player_item_panel.dart';
+import 'package:kazumi/pages/player/player_screenshot_sheet.dart';
+import 'package:kazumi/pages/player/controller/player_screenshot_controller.dart';
 import 'package:kazumi/pages/player/syncplay_sheet.dart';
 import 'package:kazumi/utils/constants.dart';
 import 'package:kazumi/services/logging/logger.dart';
 import 'package:kazumi/services/player/pip_utils.dart';
 import 'package:kazumi/services/sync/webdav.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter/gestures.dart';
 import 'package:kazumi/pages/player/player_controller.dart';
 import 'package:flutter/material.dart';
@@ -26,18 +27,16 @@ import 'package:kazumi/pages/player/video_details_sheet.dart';
 import 'package:screen_brightness_platform_interface/screen_brightness_platform_interface.dart';
 import 'package:kazumi/pages/history/history_controller.dart';
 import 'package:kazumi/services/storage/storage.dart';
-import 'package:kazumi/request/apis/danmaku_api.dart';
-import 'package:kazumi/modules/danmaku/danmaku_search_response.dart';
-import 'package:kazumi/modules/danmaku/danmaku_episode_response.dart';
 import 'package:kazumi/modules/danmaku/danmaku_module.dart';
 import 'package:kazumi/pages/player/controller/player_danmaku_controller.dart';
+import 'package:kazumi/pages/player/danmaku_source_sheet.dart';
 import 'package:kazumi/pages/player/player_item_surface.dart';
 import 'package:mobx/mobx.dart' as mobx;
 import 'package:kazumi/pages/my/my_controller.dart';
 import 'package:saver_gallery/saver_gallery.dart';
 import 'package:kazumi/services/player/audio_controller.dart';
+import 'package:kazumi/services/player/timed_shutdown_service.dart';
 import 'package:kazumi/utils/device.dart';
-import 'package:kazumi/services/platform/display_mode_service.dart';
 import 'package:kazumi/services/platform/player_menu_service.dart';
 
 class PlayerItem extends StatefulWidget {
@@ -45,9 +44,8 @@ class PlayerItem extends StatefulWidget {
     super.key,
     required this.playerController,
     required this.videoPageController,
-    required this.toggleMenu,
-    required this.showMenuImmediately,
-    required this.hideMenuImmediately,
+    required this.fillsWindow,
+    this.onToggleSidePanel,
     required this.changeEpisode,
     required this.onBackPressed,
     required this.keyboardFocus,
@@ -57,12 +55,11 @@ class PlayerItem extends StatefulWidget {
 
   final PlayerController playerController;
   final VideoPageController videoPageController;
-  final VoidCallback toggleMenu;
-  final VoidCallback showMenuImmediately;
-  final VoidCallback hideMenuImmediately;
+  final bool fillsWindow;
+  final VoidCallback? onToggleSidePanel;
   final Future<void> Function(int episode, {int currentRoad, int offset})
       changeEpisode;
-  final void Function(BuildContext) onBackPressed;
+  final VoidCallback onBackPressed;
   final FocusNode keyboardFocus;
   final bool disableAnimations;
   final VoidCallback pauseForTimedShutdown;
@@ -94,7 +91,12 @@ class _PlayerItemState extends State<PlayerItem>
   final _videoSurfaceKey = GlobalKey();
   late bool _border;
   late double _opacity;
-  late double _fontSize;
+  double get _fontSize => GStorage.getSetting(
+        SettingsKeys.danmakuFontSize,
+        context: SettingContext(
+          compactLayout: MediaQuery.sizeOf(context).shortestSide < 600,
+        ),
+      );
   late double _danmakuArea;
   late bool _hideTop;
   late bool _hideBottom;
@@ -130,6 +132,9 @@ class _PlayerItemState extends State<PlayerItem>
   late final AnimationController _panelVisibilityController;
   late final AnimationController _screenshotFeedbackController;
   late final Animation<double> _screenshotFeedbackAnimation;
+  late final PlayerScreenshotController _screenshots =
+      playerController.screenshots;
+  bool _screenshotSheetOpen = false;
 
   double lastPlayerSpeed = 1.0;
   late double longPressPlaySpeed;
@@ -245,7 +250,7 @@ class _PlayerItemState extends State<PlayerItem>
     if (size.isEmpty) {
       return null;
     }
-    Rect rect = renderObject.localToGlobal(Offset.zero) & size;
+    Rect rect = Offset.zero & size;
     final int videoWidth = playerController.debug.playerWidth;
     final int videoHeight = playerController.debug.playerHeight;
     if (videoWidth > 0 && videoHeight > 0) {
@@ -259,6 +264,8 @@ class _PlayerItemState extends State<PlayerItem>
         height: videoHeight * scale,
       );
     }
+    // Convert the fitted video rectangle to window coordinates for native PiP.
+    rect = MatrixUtils.transformRect(renderObject.getTransformTo(null), rect);
     final double ratio = MediaQuery.devicePixelRatioOf(context);
     return Rect.fromLTRB(
       rect.left * ratio,
@@ -465,13 +472,9 @@ class _PlayerItemState extends State<PlayerItem>
   }
 
   void handleShortcutExitFullscreen() {
-    if (videoPageController.isFullscreen && !isTablet()) {
-      try {
-        playerController.danmaku.canvasController.clear();
-      } catch (_) {}
-      DisplayModeService.exitFullScreen();
-      videoPageController.isFullscreen = !videoPageController.isFullscreen;
-    } else if (!Platform.isMacOS) {
+    if (videoPageController.isFullscreen) {
+      unawaited(videoPageController.fullscreen.setFullscreen(false));
+    } else if (isDesktop() && !Platform.isMacOS) {
       playerController.pause();
       windowManager.hide();
     }
@@ -666,7 +669,7 @@ class _PlayerItemState extends State<PlayerItem>
     }
   }
 
-  void _handleFullscreenChange(BuildContext context) async {
+  void _handleFullscreenChange() async {
     playerController.panel.lockPanel = false;
     _releasePlayerPanelHolds();
     playerController.danmaku.canvasController.clear();
@@ -686,7 +689,7 @@ class _PlayerItemState extends State<PlayerItem>
       await playerController.seek(duration);
       return;
     }
-    await _commitInteractiveSeek();
+    await _finishInteractiveSeek();
   }
 
   void _beginInteractiveSeek() {
@@ -696,10 +699,11 @@ class _PlayerItemState extends State<PlayerItem>
     playerController.seeking.beginInteractiveSeek();
   }
 
-  Future<void> _commitInteractiveSeek() async {
+  Future<void> _finishInteractiveSeek({bool cancelled = false}) async {
     var completed = false;
     try {
-      completed = await playerController.seeking.commitInteractiveSeek();
+      completed = await playerController.seeking
+          .finishInteractiveSeek(cancelled: cancelled);
     } catch (e) {
       KazumiLogger().e('PlayerController: interactive seek failed', error: e);
     }
@@ -734,36 +738,120 @@ class _PlayerItemState extends State<PlayerItem>
   }
 
   Future<void> handleScreenshot() async {
-    _playScreenshotFeedback();
-
-    if (isDesktop()) {
-      KazumiDialog.showToast(message: '桌面端暂未支持保存截图');
+    if (!mounted) return;
+    if (!isDesktop()) {
+      await _saveScreenshotToGallery();
       return;
     }
+    if (_screenshots.busy || _screenshotSheetOpen) return;
+    final episode = videoPageController.playbackEpisode;
+    final source = videoPageController.src;
+    final player = playerController.playback.mediaPlayer;
+    if (videoPageController.loading || player == null) {
+      KazumiDialog.showToast(message: '暂未获取到画面，请等视频显示后重试');
+      return;
+    }
+    final added = await _screenshots.capture(
+      capturePng: playerController.screenshotPng,
+      title: videoPageController.title,
+      episode:
+          videoPageController.resolveEpisode(episode)?.displayTitle ??
+          '第 ${episode.episode} 集',
+      position: player.state.position,
+      isCurrent: () =>
+          mounted &&
+          !videoPageController.loading &&
+          videoPageController.playbackEpisode == episode &&
+          videoPageController.src == source &&
+          identical(playerController.playback.mediaPlayer, player),
+    );
+    if (!mounted) return;
+    if (added) _playScreenshotFeedback();
+    if (!_screenshotSheetOpen) {
+      showVideoController();
+      if (!added || _screenshots.candidates.length == 1) {
+        KazumiDialog.showToast(
+          message: added
+              ? '已截取画面，点击右上角图库挑选保存'
+              : _screenshots.message ?? '截图失败，请重试',
+          showActionButton: _screenshots.candidates.isNotEmpty,
+          actionLabel: '挑选截图',
+          onActionPressed: showScreenshotCandidates,
+        );
+      }
+    }
+  }
 
+  Future<void> _saveScreenshotToGallery() async {
+    _playScreenshotFeedback();
     try {
-      Uint8List? screenshot = await playerController.screenshotPng();
-
-      if (screenshot == null) {
+      final screenshot = await playerController.screenshotPng();
+      if (!mounted) return;
+      if (screenshot == null || screenshot.isEmpty) {
         KazumiDialog.showToast(message: '截图失败：未获取到图像');
         return;
       }
-
       final result = await SaverGallery.saveImage(
         screenshot,
         fileName: DateTime.timestamp().millisecondsSinceEpoch.toString(),
+        extension: 'png',
         skipIfExists: false,
       );
-      if (!result.isSuccess) {
+      if (mounted && !result.isSuccess) {
         KazumiDialog.showToast(message: '截图保存失败：${result.errorMessage}');
       }
     } catch (e) {
-      KazumiDialog.showToast(message: '截图失败：$e');
+      if (mounted) KazumiDialog.showToast(message: '截图失败：$e');
+    }
+  }
+
+  Future<void> showScreenshotCandidates() async {
+    if (!isDesktop() || !mounted || _screenshotSheetOpen || _screenshots.busy) {
+      return;
+    }
+    _screenshotSheetOpen = true;
+    final hold = acquirePlayerPanelHold();
+    final player = playerController.playback.mediaPlayer;
+    final episode = videoPageController.playbackEpisode;
+    final source = videoPageController.src;
+    final resume =
+        playerController.playback.playing &&
+        !playerController.syncplay.hasSession;
+    final sleepRemaining = TimedShutdownService().remainingSecondsNotifier.value;
+    final sleepDeadline = sleepRemaining > 0
+        ? DateTime.now().add(Duration(seconds: sleepRemaining))
+        : null;
+    try {
+      if (resume) await playerController.pause(enableSync: false);
+      if (!mounted) return;
+      await showPlayerScreenshotSheet(context, controller: _screenshots);
+    } finally {
+      _screenshotSheetOpen = false;
+      if (mounted) {
+        hold.release();
+        widget.keyboardFocus.requestFocus();
+        // Resume only the same local playback, respecting the sleep timer.
+        if (resume &&
+            identical(player, playerController.playback.mediaPlayer) &&
+            videoPageController.playbackEpisode == episode &&
+            videoPageController.src == source &&
+            !videoPageController.loading &&
+            !playerController.syncplay.hasSession &&
+            (sleepDeadline == null || DateTime.now().isBefore(sleepDeadline)) &&
+            WidgetsBinding.instance.lifecycleState == AppLifecycleState.resumed &&
+            (ModalRoute.of(context)?.isCurrent ?? false)) {
+          await playerController.play(enableSync: false);
+        }
+      } else {
+        hold.releaseSilently();
+      }
     }
   }
 
   void _playScreenshotFeedback() {
-    if (!mounted) {
+    if (!mounted ||
+        widget.disableAnimations ||
+        MediaQuery.disableAnimationsOf(context)) {
       return;
     }
     _screenshotFeedbackController.forward(from: 0);
@@ -872,24 +960,19 @@ class _PlayerItemState extends State<PlayerItem>
   }
 
   void handleFullscreen() {
-    _handleFullscreenChange(context);
-    if (videoPageController.isFullscreen) {
-      DisplayModeService.exitFullScreen();
-      if (!isDesktop()) {
-        widget.showMenuImmediately();
-      }
-    } else {
-      DisplayModeService.enterFullScreen();
-      widget.hideMenuImmediately();
+    if (!videoPageController.isPip) {
+      unawaited(videoPageController.fullscreen.toggle());
     }
-    videoPageController.isFullscreen = !videoPageController.isFullscreen;
   }
 
   bool get _canHidePlayerPanel =>
       playerController.panel.canHidePlayerPanel && _playerPanelHolds.isEmpty;
 
   void showVideoController({bool restartHideTimer = true}) {
-    _panelVisibilityController.forward();
+    // Re-forwarding restarts the ticker and stalls a frame, so hover must not.
+    if (!_panelVisibilityController.isForwardOrCompleted) {
+      _panelVisibilityController.forward();
+    }
     playerController.panel.showVideoController = true;
     if (restartHideTimer && _canHidePlayerPanel) {
       _startHideTimer();
@@ -1152,107 +1235,15 @@ class _PlayerItemState extends State<PlayerItem>
     });
   }
 
-  Future<void> showDanmakuSwitch() => dialogs.run((task) async {
-        String keyword = videoPageController.title;
-        final query = await task.show<String>(
-          builder: (context) => AlertDialog(
-            title: const Text('弹幕检索'),
-            content: TextFormField(
-              initialValue: keyword,
-              decoration: const InputDecoration(hintText: '番剧名'),
-              onChanged: (value) => keyword = value,
-              onFieldSubmitted: (value) =>
-                  KazumiDialog.dismiss(context: context, popWith: value),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => KazumiDialog.dismiss(context: context),
-                child: const Text('取消'),
-              ),
-              TextButton(
-                onPressed: () =>
-                    KazumiDialog.dismiss(context: context, popWith: keyword),
-                child: const Text('提交'),
-              ),
-            ],
-          ),
-        );
-        final response = await task.loading(
-          message: '弹幕检索中',
-          action: () => DanmakuApi.searchAnimes(query),
-        );
-        if (response.animes.isEmpty) {
-          KazumiDialog.showToast(message: '未找到匹配结果');
-          return;
-        }
-        final anime = await task.show<DanmakuSearchAnime>(
-          builder: (context) => Dialog(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 560),
-              child: ListView(
-                shrinkWrap: true,
-                children: [
-                  if (response.hasMore)
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(24, 16, 24, 8),
-                      child: Text(
-                        '结果较多，仅显示部分条目，可补充更完整的番剧名缩小范围',
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: Theme.of(context).colorScheme.outline,
-                            ),
-                      ),
-                    ),
-                  for (final anime in response.animes)
-                    ListTile(
-                      title: Text(anime.animeTitle),
-                      subtitle: anime.typeDescription.isEmpty
-                          ? null
-                          : Text(anime.typeDescription),
-                      onTap: () => KazumiDialog.dismiss(
-                          context: context, popWith: anime),
-                    ),
-                ],
-              ),
-            ),
-          ),
-        );
-        final episodeResponse = await task.loading(
-          message: '弹幕检索中',
-          action: () =>
-              DanmakuApi.getDanDanEpisodesByDanDanBangumiID(anime.animeId),
-        );
-        if (episodeResponse.episodes.isEmpty) {
-          KazumiDialog.showToast(message: '未找到匹配结果');
-          return;
-        }
-        final episode = await task.show<DanmakuEpisode>(
-          builder: (context) => Dialog(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 560),
-              child: ListView.builder(
-                shrinkWrap: true,
-                itemCount: episodeResponse.episodes.length,
-                itemBuilder: (context, index) {
-                  final episode = episodeResponse.episodes[index];
-                  return ListTile(
-                    title: Text(episode.episodeTitle),
-                    onTap: () => KazumiDialog.dismiss(
-                        context: context, popWith: episode),
-                  );
-                },
-              ),
-            ),
-          ),
-        );
-        videoPageController.cancelAutomaticDanmakuLoad();
-        final hasDanmakus = await task.wait(
-          playerController.danmaku.getDanDanmakuByEpisodeID(episode.episodeId),
-        );
-        playerController.danmaku.setDanmakuEnabled(hasDanmakus);
-        KazumiDialog.showToast(message: hasDanmakus ? '弹幕切换成功' : '未找到弹幕内容');
-      }, onError: (error, stackTrace) {
-        KazumiDialog.showToast(message: '弹幕检索错误: $error');
-      });
+  void showDanmakuSwitch() {
+    unawaited(showDanmakuSourceSheet(
+      context,
+      bangumiId: videoPageController.bangumiItem.id,
+      initialKeyword: videoPageController.title,
+      danmakuController: playerController.danmaku,
+      onBeforeApply: videoPageController.cancelAutomaticDanmakuLoad,
+    ));
+  }
 
   void showVideoInfo() {
     showVideoDetailsSheet(context, playerController: playerController);
@@ -1264,22 +1255,6 @@ class _PlayerItemState extends State<PlayerItem>
       playerController: playerController,
       changeEpisode: widget.changeEpisode,
     );
-  }
-
-  bool _needsFullPanel(BuildContext context) {
-    final size = MediaQuery.sizeOf(context);
-    if (size.width < LayoutBreakpoint.compact['width']!) {
-      return false;
-    }
-    if (videoPageController.isPip) {
-      return false;
-    }
-    if (!isDesktop() &&
-        size.height > LayoutBreakpoint.compact['height']! &&
-        size.width < LayoutBreakpoint.medium['width']!) {
-      return false;
-    }
-    return true;
   }
 
   @override
@@ -1296,7 +1271,7 @@ class _PlayerItemState extends State<PlayerItem>
     _fullscreenListener = mobx.reaction<bool>(
       (_) => videoPageController.isFullscreen,
       (_) {
-        _handleFullscreenChange(context);
+        _handleFullscreenChange();
       },
     );
     _playerSizeListener = mobx.reaction<String>(
@@ -1354,10 +1329,6 @@ class _PlayerItemState extends State<PlayerItem>
     );
     _border = GStorage.getSetting(SettingsKeys.danmakuBorder);
     _opacity = GStorage.getSetting(SettingsKeys.danmakuOpacity);
-    _fontSize = GStorage.getSetting(
-      SettingsKeys.danmakuFontSize,
-      context: SettingContext(compactLayout: isCompact()),
-    );
     _danmakuArea = GStorage.getSetting(SettingsKeys.danmakuArea);
     _hideTop = !GStorage.getSetting(SettingsKeys.danmakuTop);
     _hideBottom = !GStorage.getSetting(SettingsKeys.danmakuBottom);
@@ -1448,12 +1419,7 @@ class _PlayerItemState extends State<PlayerItem>
                     playerController.setVolume(volume);
                   }
                 },
-                child: SizedBox(
-                  height: videoPageController.isFullscreen ||
-                          videoPageController.isPip
-                      ? (MediaQuery.of(context).size.height)
-                      : (MediaQuery.of(context).size.width * 9.0 / (16.0)),
-                  width: MediaQuery.of(context).size.width,
+                child: SizedBox.expand(
                   child: Stack(alignment: Alignment.center, children: [
                     PlayerKeyboardShortcuts(
                       focusScopeNode: widget.keyboardFocus,
@@ -1526,14 +1492,7 @@ class _PlayerItemState extends State<PlayerItem>
                         height: double.infinity,
                       ),
                     ),
-                    Positioned(
-                      top: 0,
-                      left: 0,
-                      right: 0,
-                      height: videoPageController.isFullscreen ||
-                              videoPageController.isPip
-                          ? MediaQuery.sizeOf(context).height
-                          : (MediaQuery.sizeOf(context).width * 9 / 16),
+                    Positioned.fill(
                       child: DanmakuScreen(
                         key: _danmuKey,
                         createdController: (DanmakuController e) {
@@ -1569,65 +1528,38 @@ class _PlayerItemState extends State<PlayerItem>
                     (Platform.isAndroid &&
                             (videoPageController.isPip || _pipEnterRequested))
                         ? const SizedBox.shrink()
-                        : (_needsFullPanel(context))
-                            ? PlayerItemPanel(
-                                playerController: playerController,
-                                videoPageController: videoPageController,
-                                onBackPressed: widget.onBackPressed,
-                                setPlaybackSpeed: setPlaybackSpeed,
-                                showDanmakuSwitch: showDanmakuSwitch,
-                                toggleMenu: widget.toggleMenu,
-                                handleFullscreen: handleFullscreen,
-                                enterAndroidPictureInPicture:
-                                    enterAndroidPictureInPicture,
-                                handleProgressBarDragStart:
-                                    handleProgressBarDragStart,
-                                handleProgressBarSeek: handleProgressBarSeek,
-                                handleSuperResolutionChange:
-                                    handleSuperResolutionChange,
-                                handlePreNextEpisode: handlePreNextEpisode,
-                                panelVisibilityController:
-                                    _panelVisibilityController,
-                                keyboardFocus: widget.keyboardFocus,
-                                acquirePlayerPanelHold: acquirePlayerPanelHold,
-                                onMenuVisibilityChanged:
-                                    _handlePlayerMenuVisibilityChanged,
-                                handleDanmaku: handleDanmaku,
-                                showVideoInfo: showVideoInfo,
-                                showSyncPlayPanel: showSyncPlayPanel,
-                                pauseForTimedShutdown:
-                                    widget.pauseForTimedShutdown,
-                                disableAnimations: widget.disableAnimations,
-                                handleScreenShot: handleScreenshot,
-                                skipOP: skipOP,
-                              )
-                            : SmallestPlayerItemPanel(
-                                playerController: playerController,
-                                videoPageController: videoPageController,
-                                onBackPressed: widget.onBackPressed,
-                                setPlaybackSpeed: setPlaybackSpeed,
-                                showDanmakuSwitch: showDanmakuSwitch,
-                                handleFullscreen: handleFullscreen,
-                                enterAndroidPictureInPicture:
-                                    enterAndroidPictureInPicture,
-                                handleProgressBarDragStart:
-                                    handleProgressBarDragStart,
-                                handleProgressBarSeek: handleProgressBarSeek,
-                                handleSuperResolutionChange:
-                                    handleSuperResolutionChange,
-                                panelVisibilityController:
-                                    _panelVisibilityController,
-                                acquirePlayerPanelHold: acquirePlayerPanelHold,
-                                onMenuVisibilityChanged:
-                                    _handlePlayerMenuVisibilityChanged,
-                                handleDanmaku: handleDanmaku,
-                                showVideoInfo: showVideoInfo,
-                                showSyncPlayPanel: showSyncPlayPanel,
-                                pauseForTimedShutdown:
-                                    widget.pauseForTimedShutdown,
-                                disableAnimations: widget.disableAnimations,
-                                skipOP: skipOP,
-                              ),
+                        : PlayerItemPanel(
+                            fillsWindow: widget.fillsWindow,
+                            playerController: playerController,
+                            videoPageController: videoPageController,
+                            onBackPressed: widget.onBackPressed,
+                            setPlaybackSpeed: setPlaybackSpeed,
+                            showDanmakuSwitch: showDanmakuSwitch,
+                            onToggleSidePanel: widget.onToggleSidePanel,
+                            handleFullscreen: handleFullscreen,
+                            enterAndroidPictureInPicture:
+                                enterAndroidPictureInPicture,
+                            handleProgressBarDragStart:
+                                handleProgressBarDragStart,
+                            handleProgressBarSeek: handleProgressBarSeek,
+                            handleSuperResolutionChange:
+                                handleSuperResolutionChange,
+                            onNextEpisode: () => handlePreNextEpisode('next'),
+                            panelVisibilityController:
+                                _panelVisibilityController,
+                            keyboardFocus: widget.keyboardFocus,
+                            acquirePlayerPanelHold: acquirePlayerPanelHold,
+                            onMenuVisibilityChanged:
+                                _handlePlayerMenuVisibilityChanged,
+                            handleDanmaku: handleDanmaku,
+                            showVideoInfo: showVideoInfo,
+                            showSyncPlayPanel: showSyncPlayPanel,
+                            pauseForTimedShutdown: widget.pauseForTimedShutdown,
+                            disableAnimations: widget.disableAnimations,
+                            handleScreenShot: handleScreenshot,
+                            showScreenshotCandidates: showScreenshotCandidates,
+                            skipOP: skipOP,
+                          ),
                     Positioned.fill(
                       left: 16,
                       top: 25,
@@ -1635,37 +1567,36 @@ class _PlayerItemState extends State<PlayerItem>
                       bottom: 15,
                       child: (isDesktop() || playerController.panel.lockPanel)
                           ? Container()
-                          : GestureDetector(
-                              onHorizontalDragStart: (_) {
+                          : PlayerGestureDetector(
+                              onSeekStart: () {
                                 playerController.panel.seekDirection = 0;
+                                playerController.panel.seekCancelPending = false;
                                 _beginInteractiveSeek();
                               },
-                              onHorizontalDragUpdate:
-                                  (DragUpdateDetails details) {
+                              onSeekUpdate: (delta, cancelPending) {
                                 playerController.panel.showSeekTime = true;
-                                if (details.delta.dx != 0) {
-                                  playerController.panel.seekDirection =
-                                      details.delta.dx > 0 ? 1 : -1;
-                                }
+                                playerController.panel.seekCancelPending =
+                                    cancelPending;
+                                if (delta == 0) return;
+                                playerController.panel.seekDirection =
+                                    delta > 0 ? 1 : -1;
                                 final double scale =
                                     180000 / MediaQuery.sizeOf(context).width;
                                 playerController.seeking.updateInteractiveSeek(
                                   playerController.playback.currentPosition +
                                       Duration(
                                         milliseconds:
-                                            (details.delta.dx * scale).round(),
+                                            (delta * scale).round(),
                                       ),
                                 );
                               },
-                              onHorizontalDragEnd: (_) {
+                              onSeekEnd: (cancelled) {
                                 playerController.panel.showSeekTime = false;
+                                playerController.panel.seekCancelPending = false;
                                 playerController.panel.seekDirection = 0;
-                                if (playerController
-                                    .seeking.hasActiveInteractiveSeek) {
-                                  unawaited(
-                                    _commitInteractiveSeek(),
-                                  );
-                                }
+                                unawaited(
+                                  _finishInteractiveSeek(cancelled: cancelled),
+                                );
                               },
                               onVerticalDragUpdate:
                                   (DragUpdateDetails details) async {

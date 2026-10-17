@@ -1,9 +1,12 @@
 class ApiEndpoints {
   /// 当前版本
-  static const String version = String.fromEnvironment("KAZUMI_VERSION", defaultValue: "1145.1.4");
+  static const String version = String.fromEnvironment(
+    'KAZUMI_VERSION',
+    defaultValue: '2.3.9',
+  );
 
   /// 规则API级别
-  static const int apiLevel = 8;
+  static const int apiLevel = 9;
 
   /// 项目主页
   static const String projectUrl = "https://kazumi.app/";
@@ -79,6 +82,8 @@ class ApiEndpoints {
 
   /// Bangumi Next API Domain
   static const String bangumiAPINextDomain = 'https://next.bgm.tv';
+
+  static const bangumiPublicApiHosts = {'api.bgm.tv', 'next.bgm.tv'};
 
   /// 每日放送
   static const String bangumiCalendar = '/p1/calendar';

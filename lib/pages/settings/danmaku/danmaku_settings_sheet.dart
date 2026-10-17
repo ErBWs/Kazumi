@@ -6,10 +6,10 @@ import 'package:kazumi/bean/dialog/material_bottom_sheet.dart';
 import 'package:kazumi/bean/settings/settings_list.dart';
 import 'package:kazumi/bean/widget/connected_tabs.dart';
 import 'package:kazumi/bean/widget/content_section.dart';
+import 'package:kazumi/pages/settings/danmaku/danmaku_ch_convert_tile.dart';
 import 'package:kazumi/pages/settings/danmaku/danmaku_shield_settings_sheet.dart';
 import 'package:kazumi/pages/settings/danmaku/danmaku_time_offset_sheet.dart';
 import 'package:kazumi/services/storage/storage.dart';
-import 'package:kazumi/utils/device.dart';
 
 enum _DanmakuSettingsDestination {
   timeOffset,
@@ -97,7 +97,7 @@ class _DanmakuSettingsSheetState extends State<_DanmakuSettingsSheet> {
                     title: Text('字体大小'),
                     value: _option.fontSize,
                     min: 10,
-                    max: isCompact() ? 32 : 48,
+                    max: 48,
                     valueLabel: '${_option.fontSize.floor()}',
                     onChanged: (value) {
                       final fontSize = value.floorToDouble();
@@ -205,6 +205,7 @@ class _DanmakuSettingsSheetState extends State<_DanmakuSettingsSheet> {
                 ]),
                 const SizedBox(height: 24),
                 ContentSection.group(title: '校准与过滤', children: [
+                  const DanmakuChConvertTile(),
                   SettingsTile(
                     leading: Icons.sync_rounded,
                     title: const Text('时间校准'),

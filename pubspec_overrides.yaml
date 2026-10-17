@@ -1,55 +1,75 @@
 dependency_overrides:
+  ech_http:
+    git:
+      url: https://github.com/ech-research/ech_http.git
+      ref: 2c58622b3596593b1c6818ddca7cdd0a0631aa15
   connectivity_plus:
     git:
       url: https://gitcode.com/CPF-Flutter/flutter_plus_plugins.git
-      ref: br_connectivity_plus-v6.1.0_ohos
+      ref: 4ca461ac6e42c2b6e856897a8612041bef2a5a8e
       path: packages/connectivity_plus/connectivity_plus
   path_provider:
     git:
       url: https://gitcode.com/CPF-Flutter/flutter_packages.git
-      ref: br_path_provider-v2.1.5_ohos
+      ref: d4e49daa0acbd0bc419d58b1da27d64d44fab54b
       path: packages/path_provider/path_provider
   url_launcher:
     git:
       url: https://gitcode.com/CPF-Flutter/flutter_packages.git
-      ref: br_url_launcher-v6.3.0_ohos
+      ref: 356c309c65ac156bb957487f149019214470bfad
       path: packages/url_launcher/url_launcher
   flutter_inappwebview_platform_interface:
     git:
       url: https://gitcode.com/ErBW_s/flutter_inappwebview.git
-      ref: br_v6.1.5_ohos_dev
+      ref: 96ea27044655a4c701f34b53a973565fbe422a94
       path: flutter_inappwebview_platform_interface
   flutter_inappwebview_ios:
     git:
       url: https://gitcode.com/ErBW_s/flutter_inappwebview.git
-      ref: br_v6.1.5_ohos_dev
+      ref: 96ea27044655a4c701f34b53a973565fbe422a94
       path: flutter_inappwebview_ios
   flutter_inappwebview_macos:
     git:
       url: https://gitcode.com/ErBW_s/flutter_inappwebview.git
-      ref: br_v6.1.5_ohos_dev
+      ref: 96ea27044655a4c701f34b53a973565fbe422a94
       path: flutter_inappwebview_macos
   flutter_inappwebview_android:
     git:
       url: https://gitcode.com/ErBW_s/flutter_inappwebview.git
-      ref: br_v6.1.5_ohos_dev
+      ref: 96ea27044655a4c701f34b53a973565fbe422a94
       path: flutter_inappwebview_android
   flutter_inappwebview_ohos:
     git:
       url: https://gitcode.com/ErBW_s/flutter_inappwebview.git
-      ref: br_v6.1.5_ohos_dev
+      ref: 96ea27044655a4c701f34b53a973565fbe422a94
       path: flutter_inappwebview_ohos
   audio_service:
     git:
       url: https://gitcode.com/CPF-Flutter/fluttertpc_audio_service.git
-      ref: br_v0.18.18_ohos_dev
+      ref: a5e555d64c109c01910552a961dc8e0449b45a19
       path: audio_service
   audio_session:
     git:
       url: https://gitcode.com/CPF-Flutter/flutter_audio_session.git
-      ref: br_v0.2.2_ohos_dev
+      ref: 8c5a8b85b497525716f453d73c2d2626e977e2c0
   image_picker:
     git:
       url: https://gitcode.com/CPF-Flutter/flutter_packages.git
-      ref: br_image_picker-v1.2.1_ohos
+      ref: 1af98579e1a95d4fca19e422d26f5b6856ac38ba
       path: packages/image_picker/image_picker
+  # Use the federated plugin from the same monorepo checkout as image_picker.
+  image_picker_ohos:
+    git:
+      url: https://gitcode.com/CPF-Flutter/flutter_packages.git
+      ref: 1af98579e1a95d4fca19e422d26f5b6856ac38ba
+      path: packages/image_picker/image_picker_ohos
+  path_provider_ohos:
+    git:
+      url: https://gitcode.com/CPF-Flutter/flutter_packages.git
+      ref: d4e49daa0acbd0bc419d58b1da27d64d44fab54b
+      path: packages/path_provider/path_provider_ohos
+  url_launcher_ohos:
+    git:
+      url: https://gitcode.com/CPF-Flutter/flutter_packages.git
+      ref: 356c309c65ac156bb957487f149019214470bfad
+      path: packages/url_launcher/url_launcher_ohos

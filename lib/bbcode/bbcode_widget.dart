@@ -82,12 +82,12 @@ class _BBCodeWidgetState extends State<BBCodeWidget> {
                 Color? textColor = (!_isVisible && e.masked)
                     ? Colors.transparent
                     : (e.link != null)
-                        ? Colors.blue
-                        : (e.quoted)
-                            ? Theme.of(context).colorScheme.outline
-                            : (e.color != null)
-                                ? _parseColor(e.color!)
-                                : null;
+                    ? Colors.blue
+                    : (e.quoted)
+                    ? Theme.of(context).colorScheme.outline
+                    : (e.color != null)
+                    ? _parseColor(e.color!)
+                    : null;
                 return TextSpan(
                   text: e.text,
                   mouseCursor: (e.link != null || e.masked)
@@ -119,15 +119,18 @@ class _BBCodeWidgetState extends State<BBCodeWidget> {
                     decorationColor: textColor,
                     fontSize: e.size.toDouble(),
                     color: textColor,
-                    backgroundColor:
-                        (!_isVisible && e.masked) ? Color(0xFF555555) : null,
+                    backgroundColor: (!_isVisible && e.masked)
+                        ? Color(0xFF555555)
+                        : null,
                     fontFeatures: [FontFeature.tabularFigures()],
                   ),
                 );
               } else if (e is BBCodeImg) {
                 final currentIndex = imageIndex++;
-                final heroTag =
-                    ImageViewer.heroTagFor(e.imageUrl, currentIndex);
+                final heroTag = ImageViewer.heroTagFor(
+                  e.imageUrl,
+                  currentIndex,
+                );
                 return WidgetSpan(
                   child: GestureDetector(
                     onTap: () => ImageViewer.show(

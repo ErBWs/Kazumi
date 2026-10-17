@@ -39,11 +39,12 @@ void main() {
     await GStorage.collectibles.clear();
     DioFactory.reset();
     adapter = _BangumiAdapter();
-    DioFactory.apiDio.httpClientAdapter = adapter;
+    DioFactory.bangumiDio.httpClientAdapter.close();
+    DioFactory.bangumiDio.httpClientAdapter = adapter;
   });
 
   tearDownAll(() async {
-    DioFactory.apiDio.close(force: true);
+    DioFactory.bangumiDio.close(force: true);
     DioFactory.reset();
     await Hive.close();
     PathProviderPlatform.instance = originalPathProvider;
@@ -79,6 +80,27 @@ void main() {
     expect(
         adapter.requests.single.headers['Authorization'], 'Bearer saved-token');
     expect(GStorage.getSetting(SettingsKeys.bangumiSyncEnable), isTrue);
+  });
+
+  test('ECH image acceleration preserves Bangumi API mirror routing', () async {
+    final previousMode = GStorage.getSetting<String>(
+      SettingsKeys.imageAcceleration,
+    );
+    addTearDown(
+      () => GStorage.putSetting(SettingsKeys.imageAcceleration, previousMode),
+    );
+    await GStorage.putSetting(SettingsKeys.imageAcceleration, 'ech');
+    await GStorage.putSetting(SettingsKeys.enableBangumiProxy, true);
+    for (final url in [
+      'https://api.bgm.tv/v0/subjects/1',
+      'https://next.bgm.tv/p1/subjects/1?test=value',
+    ]) {
+      await BangumiClient.instance.get(url);
+      expect(
+        adapter.requests.last.uri,
+        Uri.parse(url).replace(host: 'api.kazumi.fyi'),
+      );
+    }
   });
 
   test('failed draft validation preserves credentials and connected account',

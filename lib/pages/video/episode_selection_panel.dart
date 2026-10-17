@@ -373,8 +373,6 @@ class _RoadSelectorState extends State<_RoadSelector> {
                     ),
             )),
           ),
-          trailingIcon:
-              selected ? const Icon(Icons.check_rounded, size: 20) : null,
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -413,7 +411,6 @@ class _RoadSelectorState extends State<_RoadSelector> {
         childFocusNode: _focusNode,
         crossAxisUnconstrained: false,
         consumeOutsideTap: true,
-        // animated: !reduceMotion,
         onClose: _handleClose,
         alignmentOffset: const Offset(0, 8),
         style: MenuStyle(
