@@ -91,4 +91,36 @@ hdc shell hilog -x -e KAZUMI_OHOS_SMOKE
 截图可用于确认 Flutter 纹理实际显示测试画面。
 
 测试完成后重新构建、签名并安装正常入口的 Release 包，停止本地 HTTP 服务，
-并执行 `hdc rport rm tcp:18765 tcp:18765` 清理本次转发。
+并执行 `hdc fport rm tcp:18765 tcp:18765` 清理本次转发。
+
+## 集成分支验证记录（2026-10-17）
+
+- `flutter pub get --enforce-lockfile` 成功，无本地路径依赖。
+  `dart analyze lib tool test` 无 error/warning，保留 27 条现有 info 级 lint；
+  213 项 Flutter 测试全部通过。
+- 现有 build/release 工作流通过 actionlint 检查。本轮未运行远程 CI。
+- 正常入口及自检入口的 arm64 Release HAP 均构建、原生库校验、签名和验签通过。
+  包名为 `com.predidit.kazumi`，版本 `2.3.9` / `20309`，最低 API 为 20，
+  编译 SDK 为 `26.0.0.105`。两个包均为 `debug=false`，包含 AOT `libapp.so`，
+  无 Debug kernel，ECH、mpv、C 事件循环及 C++ 运行库和映射完整。
+- MatePad mini（MLR-AL10，HarmonyOS API 26）完成正式包名应用的首次安装、
+  引导和规则安装。原有独立测试应用保留。
+- 两轮 Release 自检均记录 `mode=release`、`network PASS`、`playback PASS`。
+  ECH 握手被接受，Bangumi 直接请求、实际 Dio adapter、封面请求均 HTTP 200，
+  封面接收 6643 字节。
+- 每轮软解 `hwdec=no` / 硬解 `hwdec=ohcodec` 与同步/异步四种组合各测试 3 次，
+  两轮合计 24 次播放/销毁和 6 次初始化期间销毁通过。每次确认纹理首帧、
+  播放进度、并发销毁复用 Future、重复销毁完成及 mpv 句柄归零，
+  销毁耗时为 70–189 ms。截图确认实际软解和硬解纹理画面显示。
+  未观察到 Dart 未处理异常、进程崩溃或销毁超时，仍有 Flutter-OH 图片方向等平台日志。
+- 本机日志和截图保存在 `build/integration/`，包括 `smoke-first.log`、`smoke.log`、
+  两轮完整 runtime 日志、`smoke-software.png` 和 `smoke-hardware.png`，不随源码提交。
+- 自检后已恢复正常 `lib/main.dart` 入口。使用安装的 `mgnacg` 规则完成搜索、
+  来源检索和《游戏人生》第 1 话播放，确认实际画面及进度推进超过 2 分钟，
+  横屏全屏进入和返回正常。截图为 `online-playback.png`、`online-progress.png`、
+  `online-fullscreen.png`。本地构建未传入弹弹 API 凭据，弹幕接口返回 HTTP 403，
+  本轮未验证弹幕加载。CI 继续沿用现有 API Secrets 配置。
+- 检查后返回正常入口首页，停止本地 HTTP 服务并删除 USB 反向转发。
+  最终首页截图为 `normal-final-home.png`，正常入口日志为 `normal-runtime.log`。
+- 尚未覆盖低 API、其他设备、模拟器、后台续播、下载和账号同步；
+  工程的最低 API 声明不代表已完成 API 20 真机回归。
