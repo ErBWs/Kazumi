@@ -123,6 +123,9 @@ export default class MethodCallPlugin implements FlutterPlugin, AbilityAware {
       lastWindow.setSpecificSystemBarEnabled("navigationIndicator", true, true);
       if (this.deviceType == "phone" && display.getFoldDisplayMode() != 1) {
         lastWindow.setPreferredOrientation(window.Orientation.USER_ROTATION_PORTRAIT);
+      } else {
+        // Release the fullscreen landscape lock and restore the launch rotation policy.
+        lastWindow.setPreferredOrientation(window.Orientation.AUTO_ROTATION_UNSPECIFIED);
       }
       lastWindow.disableLandscapeMultiWindow();
       lastWindow.recover();

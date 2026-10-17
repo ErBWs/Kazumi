@@ -124,3 +124,25 @@ hdc shell hilog -x -e KAZUMI_OHOS_SMOKE
   最终首页截图为 `normal-final-home.png`，正常入口日志为 `normal-runtime.log`。
 - 尚未覆盖低 API、其他设备、模拟器、后台续播、下载和账号同步；
   工程的最低 API 声明不代表已完成 API 20 真机回归。
+
+## 全屏退出方向修复与回归（2026-10-18）
+
+- 原生 `enterFullscreen` 将方向设为 `AUTO_ROTATION_LANDSCAPE`，但原来的
+  `exitFullscreen` 仅为非展开态手机重设方向，遗漏了平板和展开态设备。
+  退出播放后仍可残留横屏锁定；此前的全屏进出验证没有检查这一残留策略。
+- 退出时为上述设备恢复 `module.json5` 声明的 `AUTO_ROTATION_UNSPECIFIED`，
+  允许按重力感应和系统旋转设置切换方向。保留手机现有的
+  `USER_ROTATION_PORTRAIT` 行为。
+- MatePad mini（MLR-AL10，API 26）修复前在历史记录页仍有横屏锁定，
+  WindowManagerService 的 `Orientation: 7`，窗口为 `2560×1600`。
+  安装修复后的正常入口 Release 包，实际在线播放后，分别使用全屏退出按钮和
+  系统返回退出全屏，方向策略均恢复为 `Orientation: 13`，窗口回到 `1600×2560`，
+  选集和评论布局恢复。再重复 3 次全屏/返回，并退出播放页，结果相同。
+  此处数值来自系统窗口 dump，不是 ArkTS `window.Orientation` 枚举值。
+- 使用实际原生插件源码和模拟窗口执行回归：旧代码复现平板残留横屏锁定；
+  修复后平板、普通/折叠态手机、展开态手机、2in1，以及未显式全屏即退出的
+  6 项策略检查通过。手机、折叠屏和 2in1 尚未做真机回归；横屏握持启动、
+  进入播放后再竖握的连续传感器姿态切换也尚未人工复测。
+- 正常入口 arm64 Release 构建、原生库校验、签名和验签通过；213 项 Flutter
+  测试通过；`dart analyze lib tool test` 无 error/warning，保留 27 条现有 info。
+  本轮日志、窗口 dump 和截图保存在本地 `build/integration/orientation-*`。
