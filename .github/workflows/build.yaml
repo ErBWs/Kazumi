@@ -25,7 +25,9 @@ on:
           - debug
 
 env:
-  FLUTTER_VERSION: oh-3.41.9-release
+  FLUTTER_VERSION: 3.41.9+ohos-1.0.2
+  FLUTTER_REVISION: 62357a93d653bf844f730bb1f4b7cc9e2139d14e
+  GIT_LFS_SKIP_SMUDGE: '1'
   DANDANAPI_APPID: ${{ secrets.DANDANAPI_APPID }}
   DANDANAPI_KEY: ${{ secrets.DANDANAPI_KEY }}
   KAZUMI_APPID: ${{ secrets.KAZUMI_APPID }}
@@ -34,20 +36,21 @@ env:
 jobs:
   flutter_build_ohos:
     name: Release for ohos
-    runs-on: ubuntu-latest
-    permissions: write-all
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
     steps:
       - name: Clone repository
         uses: actions/checkout@v4
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y curl xz-utils zip libglu1-mesa
+          sudo apt-get install -y curl xz-utils zip libglu1-mesa cmake ninja-build g++
         shell: bash
       - name: Setup HarmonyOS toolchain
-        uses: ErBWs/setup-ohos@v1
+        uses: ErBWs/setup-ohos@3a251d7e29546c19a9f5fbd3aa4614f6df196910
         with:
-          version: latest
+          version: 26.0.0.821
           cache: true
       - name: Setup JDK17
         uses: actions/setup-java@v4
@@ -56,21 +59,30 @@ jobs:
           distribution: 'temurin'
       - name: Setup flutter-ohos
         run: |
-          git clone -b $FLUTTER_VERSION https://gitcode.com/CPF-Flutter/flutter_flutter.git $GITHUB_WORKSPACE/flutter
-          echo "$GITHUB_WORKSPACE/flutter/bin" >> $GITHUB_PATH
+          git clone --depth=1 --branch "$FLUTTER_VERSION" https://gitcode.com/CPF-Flutter/flutter_flutter.git "$RUNNER_TEMP/flutter-ohos"
+          test "$(git -C "$RUNNER_TEMP/flutter-ohos" rev-parse HEAD)" = "$FLUTTER_REVISION"
+          echo "$RUNNER_TEMP/flutter-ohos/bin" >> "$GITHUB_PATH"
+          echo "DEVECO_NODE_HOME=$HOME/ohos-sdk/command-line-tools/tool/node" >> "$GITHUB_ENV"
         shell: bash
       - name: Get Flutter dependencies
-        run: GIT_LFS_SKIP_SMUDGE=1 flutter pub get
+        run: flutter pub get --enforce-lockfile
         shell: bash
+      - name: Analyze and test
+        run: |
+          dart analyze lib tool test
+          flutter test --no-pub
       - name: Build Flutter for ohos
-        run: >- 
-          flutter build hap --release --no-codesign
+        run: >-
+          flutter build hap --release --no-codesign --no-pub
+          --dart-define=KAZUMI_VERSION=$(sed -n 's/^version: \([^+]*\).*/\1/p' pubspec.yaml)
           --dart-define=ENABLE_FLEX_OVERFLOW=false
           --dart-define=DANDANAPI_APPID=$DANDANAPI_APPID
           --dart-define=DANDANAPI_KEY=$DANDANAPI_KEY
           --dart-define=KAZUMI_APPID=$KAZUMI_APPID
           --dart-define=KAZUMI_KEY=$KAZUMI_KEY
         shell: bash
+      - name: Verify Release HAP
+        run: python3 tool/verify_ohos_hap.py build/ohos/hap/entry-default-unsigned.hap
       - name: Package ohos build output
         run: cp ./ohos/entry/build/default/outputs/default/entry-default-unsigned.hap Kazumi_ohos_canary.hap
         shell: bash
