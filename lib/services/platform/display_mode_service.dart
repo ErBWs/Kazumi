@@ -21,6 +21,12 @@ class DisplayModeService {
         return;
       }
 
+      if (defaultTargetPlatform == TargetPlatform.ohos) {
+        await _intentChannel.invokeMethod(
+            'toggleFullscreen', <String, bool>{'fullscreen': fullscreen});
+        return;
+      }
+
       // Restore system orientation on exit, including an existing landscape.
       await _attempt(() => SystemChrome.setPreferredOrientations(
             fullscreen
@@ -59,7 +65,8 @@ class DisplayModeService {
     late final Future<void> request;
     request = (_pendingSystemBars ?? Future<void>.value())
         .then((_) => _attempt(() async {
-              if (defaultTargetPlatform == TargetPlatform.android) {
+              if (defaultTargetPlatform == TargetPlatform.android ||
+                  defaultTargetPlatform == TargetPlatform.ohos) {
                 await _intentChannel.invokeMethod(
                     'setSystemBarsHidden', hidden);
               } else if (defaultTargetPlatform == TargetPlatform.iOS) {

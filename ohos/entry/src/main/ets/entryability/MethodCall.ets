@@ -33,13 +33,14 @@ export default class MethodCallPlugin implements FlutterPlugin, AbilityAware {
             this.openWithMime(url, mimeType);
             result.success("");
             break;
-          case "enterFullscreen":
-            let needSet = Boolean(call.argument("needSet"));
-            this.enterFullScreen(needSet);
+          case "toggleFullscreen":
+            let fullscreen = Boolean(call.argument("fullscreen"));
+            this.toggleFullscreen(fullscreen);
             result.success("");
             break;
-          case "exitFullscreen":
-            this.exitFullScreen();
+          case "setSystemBarsHidden":
+            let hidden = Boolean(call.args);
+            this.setSystemBarsHidden(hidden);
             result.success("");
             break;
           case "checkOhosIsDesktop":
@@ -92,29 +93,33 @@ export default class MethodCallPlugin implements FlutterPlugin, AbilityAware {
     });
   }
 
-  private enterFullScreen(needSet: boolean): void {
+  private toggleFullscreen(fullscreen: boolean) {
     window.getLastWindow(this.context).then((lastWindow) => {
-      lastWindow.setSpecificSystemBarEnabled("status", false, true);
-      lastWindow.setSpecificSystemBarEnabled("navigationIndicator", false, true);
-      if (needSet) {
-        lastWindow.setPreferredOrientation(window.Orientation.AUTO_ROTATION_LANDSCAPE);
+      if (fullscreen) {
+        if (this.deviceType == "phone" && display.getFoldDisplayMode() != 1) {
+          lastWindow.setPreferredOrientation(window.Orientation.AUTO_ROTATION_LANDSCAPE);
+        }
+        lastWindow.enableLandscapeMultiWindow();
+        lastWindow.maximize();
       } else {
-        lastWindow.setPreferredOrientation(window.Orientation.AUTO_ROTATION_UNSPECIFIED);
+        if (this.deviceType == "phone" && display.getFoldDisplayMode() != 1) {
+          lastWindow.setPreferredOrientation(window.Orientation.USER_ROTATION_PORTRAIT);
+        }
+        lastWindow.disableLandscapeMultiWindow();
+        lastWindow.recover();
       }
-      lastWindow.enableLandscapeMultiWindow();
-      lastWindow.maximize();
     })
   }
 
-  private exitFullScreen(): void {
+  private setSystemBarsHidden(hidden: boolean) {
     window.getLastWindow(this.context).then((lastWindow) => {
-      lastWindow.setSpecificSystemBarEnabled("status", true, true);
-      lastWindow.setSpecificSystemBarEnabled("navigationIndicator", true, true);
-      if (this.deviceType == "phone" && display.getFoldDisplayMode() != 1) {
-        lastWindow.setPreferredOrientation(window.Orientation.USER_ROTATION_PORTRAIT);
+      if (hidden) {
+        lastWindow.setSpecificSystemBarEnabled("status", false, true);
+        lastWindow.setSpecificSystemBarEnabled("navigationIndicator", false, true);
+      } else {
+        lastWindow.setSpecificSystemBarEnabled("status", true, true);
+        lastWindow.setSpecificSystemBarEnabled("navigationIndicator", true, true);
       }
-      lastWindow.disableLandscapeMultiWindow();
-      lastWindow.recover();
     })
   }
 
