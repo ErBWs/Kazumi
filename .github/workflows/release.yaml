@@ -45,7 +45,7 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y curl xz-utils zip libglu1-mesa
+          sudo apt-get install -y curl xz-utils zip libglu1-mesa cmake ninja-build g++
         shell: bash
       - name: Setup HarmonyOS toolchain
         uses: ErBWs/setup-ohos@v1

@@ -5,7 +5,6 @@ import SaverGalleryPlugin from 'saver_gallery';
 import PathProviderPlugin from 'path_provider_ohos';
 import MediaKitVideoPlugin from 'media_kit_video';
 import WakelockPlugin from 'wakelock_plus_ohos';
-import MediaKitLibsOhosPlugin from 'media_kit_libs_ohos';
 import ImagePickerPlugin from 'image_picker_ohos';
 import FlutterVolumeControllerPlugin from 'flutter_volume_controller';
 import InAppWebViewFlutterPlugin from 'flutter_inappwebview_ohos';
@@ -31,7 +30,6 @@ export class GeneratedPluginRegistrant {
       flutterEngine.getPlugins()?.add(new PathProviderPlugin());
       flutterEngine.getPlugins()?.add(new MediaKitVideoPlugin());
       flutterEngine.getPlugins()?.add(new WakelockPlugin());
-      flutterEngine.getPlugins()?.add(new MediaKitLibsOhosPlugin());
       flutterEngine.getPlugins()?.add(new ImagePickerPlugin());
       flutterEngine.getPlugins()?.add(new FlutterVolumeControllerPlugin());
       flutterEngine.getPlugins()?.add(new InAppWebViewFlutterPlugin());

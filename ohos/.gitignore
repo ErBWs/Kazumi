@@ -13,6 +13,7 @@
 **/oh-package-lock.json5
 /package.json
 /package-lock.json
+entry/libs
 
 **/src/main/resources/rawfile/flutter_assets/
 **/libs/arm64-v8a/libapp.so

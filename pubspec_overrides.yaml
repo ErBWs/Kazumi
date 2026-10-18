@@ -47,7 +47,7 @@ dependency_overrides:
   audio_session:
     git:
       url: https://gitcode.com/CPF-Flutter/flutter_audio_session.git
-      ref: br_v0.2.2_ohos_dev
+      ref: br_v0.2.2_ohos
   image_picker:
     git:
       url: https://gitcode.com/CPF-Flutter/flutter_packages.git
