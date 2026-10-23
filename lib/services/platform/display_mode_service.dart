@@ -16,14 +16,13 @@ class DisplayModeService {
 
   static Future<void> applyVideoFullscreen(bool fullscreen) {
     return _pendingFullscreen = _pendingFullscreen.then((_) async {
-      if (isDesktop()) {
-        await _attempt(() => windowManager.setFullScreen(fullscreen));
+      if (Platform.isOhos) {
+        await _intentChannel.invokeMethod('toggleFullscreen', fullscreen);
         return;
       }
 
-      if (defaultTargetPlatform == TargetPlatform.ohos) {
-        await _intentChannel.invokeMethod(
-            'toggleFullscreen', <String, bool>{'fullscreen': fullscreen});
+      if (isDesktop()) {
+        await _attempt(() => windowManager.setFullScreen(fullscreen));
         return;
       }
 
@@ -65,7 +64,7 @@ class DisplayModeService {
     late final Future<void> request;
     request = (_pendingSystemBars ?? Future<void>.value())
         .then((_) => _attempt(() async {
-              if (Platform.isAndroid) {
+              if (Platform.isAndroid || Platform.isOhos) {
                 await _intentChannel.invokeMethod(
                     'setSystemBarsHidden', hidden);
               } else if (Platform.isIOS) {

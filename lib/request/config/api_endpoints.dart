@@ -20,7 +20,7 @@ class ApiEndpoints {
 
   /// 规则仓库镜像
   static const String pluginShopMirror =
-      'https://raw.gitcode.com/gh_mirrors/ka/KazumiRules/raw/main/';
+      'https://raw.atomgit.com/gh_mirrors/ka/KazumiRules/raw/main/';
 
   /// 在线升级
   static const String latestApp =

@@ -34,7 +34,7 @@ export default class MethodCallPlugin implements FlutterPlugin, AbilityAware {
             result.success("");
             break;
           case "toggleFullscreen":
-            let fullscreen = Boolean(call.argument("fullscreen"));
+            let fullscreen = Boolean(call.args);
             this.toggleFullscreen(fullscreen);
             result.success("");
             break;
