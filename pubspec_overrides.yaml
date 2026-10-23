@@ -1,55 +1,60 @@
 dependency_overrides:
   connectivity_plus:
     git:
-      url: https://gitcode.com/CPF-Flutter/flutter_plus_plugins.git
+      url: https://atomgit.com/CPF-Flutter/flutter_plus_plugins.git
       ref: br_connectivity_plus-v6.1.0_ohos
       path: packages/connectivity_plus/connectivity_plus
   path_provider:
     git:
-      url: https://gitcode.com/CPF-Flutter/flutter_packages.git
+      url: https://atomgit.com/CPF-Flutter/flutter_packages.git
       ref: br_path_provider-v2.1.5_ohos
       path: packages/path_provider/path_provider
   url_launcher:
     git:
-      url: https://gitcode.com/CPF-Flutter/flutter_packages.git
+      url: https://atomgit.com/CPF-Flutter/flutter_packages.git
       ref: br_url_launcher-v6.3.0_ohos
       path: packages/url_launcher/url_launcher
   flutter_inappwebview_platform_interface:
     git:
-      url: https://gitcode.com/ErBW_s/flutter_inappwebview.git
+      url: https://atomgit.com/ErBW_s/flutter_inappwebview.git
       ref: br_v6.1.5_ohos_dev
       path: flutter_inappwebview_platform_interface
   flutter_inappwebview_ios:
     git:
-      url: https://gitcode.com/ErBW_s/flutter_inappwebview.git
+      url: https://atomgit.com/ErBW_s/flutter_inappwebview.git
       ref: br_v6.1.5_ohos_dev
       path: flutter_inappwebview_ios
   flutter_inappwebview_macos:
     git:
-      url: https://gitcode.com/ErBW_s/flutter_inappwebview.git
+      url: https://atomgit.com/ErBW_s/flutter_inappwebview.git
       ref: br_v6.1.5_ohos_dev
       path: flutter_inappwebview_macos
   flutter_inappwebview_android:
     git:
-      url: https://gitcode.com/ErBW_s/flutter_inappwebview.git
+      url: https://atomgit.com/ErBW_s/flutter_inappwebview.git
       ref: br_v6.1.5_ohos_dev
       path: flutter_inappwebview_android
   flutter_inappwebview_ohos:
     git:
-      url: https://gitcode.com/ErBW_s/flutter_inappwebview.git
+      url: https://atomgit.com/ErBW_s/flutter_inappwebview.git
       ref: br_v6.1.5_ohos_dev
       path: flutter_inappwebview_ohos
   audio_service:
     git:
-      url: https://gitcode.com/CPF-Flutter/fluttertpc_audio_service.git
+      url: https://atomgit.com/CPF-Flutter/fluttertpc_audio_service.git
       ref: br_v0.18.18_ohos_dev
       path: audio_service
   audio_session:
     git:
-      url: https://gitcode.com/CPF-Flutter/flutter_audio_session.git
+      url: https://atomgit.com/CPF-Flutter/flutter_audio_session.git
       ref: br_v0.2.2_ohos
   image_picker:
     git:
-      url: https://gitcode.com/CPF-Flutter/flutter_packages.git
+      url: https://atomgit.com/CPF-Flutter/flutter_packages.git
       ref: br_image_picker-v1.2.1_ohos
       path: packages/image_picker/image_picker
+  app_links:
+    git:
+      url: https://atomgit.com/CPF-Flutter/fluttertpc_app_links.git
+      ref: br_7.2.2_ohos_dev
+      path: app_links

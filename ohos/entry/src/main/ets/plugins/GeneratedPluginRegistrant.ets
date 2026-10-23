@@ -11,6 +11,7 @@ import InAppWebViewFlutterPlugin from 'flutter_inappwebview_ohos';
 import ConnectivityPlugin from 'connectivity_plus';
 import AudioSessionPlugin from 'audio_session';
 import AudioServicePlugin from 'audio_service';
+import AppLinksPlugin from 'app_links';
 
 /**
  * Generated file. Do not edit.
@@ -36,6 +37,7 @@ export class GeneratedPluginRegistrant {
       flutterEngine.getPlugins()?.add(new ConnectivityPlugin());
       flutterEngine.getPlugins()?.add(new AudioSessionPlugin());
       flutterEngine.getPlugins()?.add(new AudioServicePlugin());
+      flutterEngine.getPlugins()?.add(new AppLinksPlugin());
     } catch (e) {
       Log.e(
         TAG,

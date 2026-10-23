@@ -47,7 +47,7 @@ class KazumiMenuButton extends StatelessWidget {
         controller: controller,
         consumeOutsideTap: true,
         crossAxisUnconstrained: crossAxisUnconstrained,
-        // animated: animated && !MediaQuery.disableAnimationsOf(context),
+        animated: animated && !MediaQuery.disableAnimationsOf(context),
         onOpen: onOpen,
         onClose: onClose,
         style: style,
